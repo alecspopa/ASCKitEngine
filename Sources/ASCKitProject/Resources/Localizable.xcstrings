@@ -1,0 +1,4002 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@" : {
+      "comment" : "A value that the app shows as it is. It holds a product id, or a reason that a person or the JSON reader wrote. Keep only the placeholder."
+    },
+    "%@  %@  %@ to %@  %@" : {
+      "comment" : "One row of the price list in the publish plan, in a fixed-width font. The values are a country code, the length of the plan, the old price, the new price, and a direction such as up or down. Each price already has its currency, such as $12.13.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  %2$@  %3$@ to %4$@  %5$@"
+          }
+        }
+      }
+    },
+    "%@ %@ in %@ matches %@." : {
+      "comment" : "Problem message in the problem list, about an in-app purchase. The first value is a product id. The second is a field name such as name or description, and it stays in English. The third and the fourth are language codes.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ in %3$@ matches %4$@."
+          }
+        }
+      }
+    },
+    "%@ %@ inch" : {
+      "comment" : "The name of a device class for screenshots, such as iPhone 6.9 inch. The first value is a device family such as iPhone or iPad. The second is the screen size in inches. Translate only the word inch.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ inch"
+          }
+        }
+      }
+    },
+    "%@ %@ matches %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second is a JSON field name such as whatsNew, and it stays in English. The third is the language code of the source language.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ matches %3$@."
+          }
+        }
+      }
+    },
+    "%@ %@: placing %lld images" : {
+      "comment" : "Progress line while a push makes new placements. The values are the language, the device class ID and the count of images placed.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@: placing %#@arg3@"
+          },
+          "substitutions" : {
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg image"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg images"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ %@: removing %lld images" : {
+      "comment" : "Progress line while a push runs. The first value is a language code. The second is a device class name. The count is the number of images.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@: removing %#@arg3@"
+          },
+          "substitutions" : {
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg image"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg images"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ %@: setting the order" : {
+      "comment" : "Progress line while a push runs. The first value is a language code. The second is a device class name. The app sets the order of the uploaded screenshots.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@: setting the order"
+          }
+        }
+      }
+    },
+    "%@ %@: uploading %@" : {
+      "comment" : "Progress line while a push runs. The first value is a language code. The second is a device class name. The third is a file name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@: uploading %3$@"
+          }
+        }
+      }
+    },
+    "%@ Affects %@." : {
+      "comment" : "Line in the publish plan and in the publish sheet about a change that cannot be done. The first value is a full sentence that gives the reason. The second value is the thing that the reason stops, such as a product id or a count of changes.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ Affects %2$@."
+          }
+        }
+      }
+    },
+    "%@ Affects %@. And %lld more." : {
+      "comment" : "Line in the publish sheet about changes that cannot be done. The first value is a full sentence that gives the reason. The second value is the thing that the reason stops. The count is the number of other reasons.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ Affects %2$@. And %#@arg3@ more."
+          },
+          "substitutions" : {
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ already holds %lld screenshots. Adding %lld would pass the limit of %lld. Remove some first." : {
+      "comment" : "Error sentence when a person adds screenshots to a set. The first value is a device class id. The first count is the screenshots in the set. The second count is the new screenshots, and the third count is the limit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ already holds %#@arg2@. Adding %3$lld would pass the limit of %4$lld. Remove some first."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg screenshot"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg screenshots"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ also goes into search results, because this language has no search results file. Only a universal image fits both." : {
+      "comment" : "Problem in a check. The value is the header file name."
+    },
+    "%@ and %@ are different languages, so the pictures say different words. Screenshots are copied only between languages such as es-ES and es-MX. To show another language's screenshots, put %@ in usesSourceScreenshots." : {
+      "comment" : "Error sentence when a person copies screenshots between languages. The first and the second values are language codes. Do not translate es-ES, es-MX or usesSourceScreenshots. usesSourceScreenshots is a JSON key.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ and %2$@ are different languages, so the pictures say different words. Screenshots are copied only between languages such as es-ES and es-MX. To show another language's screenshots, put %3$@ in usesSourceScreenshots."
+          }
+        }
+      }
+    },
+    "%@ asks for %@ in %@, and the most the store sells for there is %@." : {
+      "comment" : "Problem message in the problem list, about a price. The first value is a product id, and the second is a price. The third is a country code. The fourth is the highest price the store sells in that country.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ asks for %2$@ in %3$@, and the most the store sells for there is %4$@."
+          }
+        }
+      }
+    },
+    "%@ asks for a price curve called %@." : {
+      "comment" : "Problem message in the problem list. The first value is a product id. The second is the name of a price curve that ASCKit does not know. A price curve is a set of rules that sets a price in each country.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ asks for a price curve called %2$@."
+          }
+        }
+      }
+    },
+    "%@ builds nothing the App Store lists." : {
+      "comment" : "Error sentence when a person makes a new project from an Xcode project. The value is the Xcode project name. Do not translate App Store."
+    },
+    "%@ builds version %@, but there is no version %@ on App Store Connect." : {
+      "comment" : "Problem message in the problem list. The first value is the Xcode project file name. The second and third values are the same version number. Do not translate App Store Connect.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ builds version %2$@, but there is no version %3$@ on App Store Connect."
+          }
+        }
+      }
+    },
+    "%@ cannot be %@ in %@: no instalment there works out between a twelfth and an eighth of it." : {
+      "comment" : "Problem message in the problem list, about a yearly price paid in 12 monthly instalments. The first value is a product id. The second is a price, and the third is a country code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ cannot be %2$@ in %3$@: no instalment there works out between a twelfth and an eighth of it."
+          }
+        }
+      }
+    },
+    "%@ cannot be a product id. %@" : {
+      "comment" : "Error sentence when a person names a new in-app purchase. The first value is the product id that the person typed. The second value is a full sentence that gives the reason.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ cannot be a product id. %2$@"
+          }
+        }
+      }
+    },
+    "%@ cannot be a subscription group name. %@" : {
+      "comment" : "Error when a subscription group file cannot be written. The first value is the group name. The second value is the reason, as a full sentence.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ cannot be a subscription group name. %2$@"
+          }
+        }
+      }
+    },
+    "%@ cannot copy its own screenshots." : {
+      "comment" : "Error sentence when a person copies screenshots between languages. The value is a language code. The language cannot copy screenshots to itself."
+    },
+    "%@ could not be drawn again without its alpha channel." : {
+      "comment" : "Error sentence when the app removes the transparency layer from an image. The value is a file name. Alpha channel is the transparency layer of an image."
+    },
+    "%@ could not be read as a movie." : {
+      "comment" : "Problem in a check. The value is a video file name."
+    },
+    "%@ could not be read as an image." : {
+      "comment" : "Error sentence and problem message in the problem list. The value is a file name. The file is a screenshot that the app cannot open."
+    },
+    "%@ could not be read." : {
+      "comment" : "Problem in a check. The value is a file name."
+    },
+    "%@ could not be written again without its alpha channel." : {
+      "comment" : "Error sentence when the app removes the transparency layer from an image. The value is a file name. Alpha channel is the transparency layer of an image."
+    },
+    "%@ did not upload." : {
+      "comment" : "Push failure. The value is a screenshot file name."
+    },
+    "%@ did not upload. %@" : {
+      "comment" : "Push failure. The first value is a screenshot file name. The second is the reason, in a sentence of its own.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ did not upload. %2$@"
+          }
+        }
+      }
+    },
+    "%@ does not look like a private key. Apple's file is named AuthKey_<KEY_ID>.p8 and starts with BEGIN PRIVATE KEY." : {
+      "comment" : "Error message when a person chooses a private key file. The value is the name of the chosen file. Do not translate AuthKey_<KEY_ID>.p8 or BEGIN PRIVATE KEY."
+    },
+    "%@ does not say which device it is for. Name it like %@. This project lists %@." : {
+      "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is an example file name. The third is a list of device class ids.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ does not say which device it is for. Name it like %2$@. This project lists %3$@."
+          }
+        }
+      }
+    },
+    "%@ does not start with a number." : {
+      "comment" : "Problem message in the problem list. The value is a screenshot file name. The number at the start of the name sets the order of the screenshots."
+    },
+    "%@ ends with \"%@\", which is not a language. Name it like %@." : {
+      "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is the last part of that name. The third is an example file name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ends with \"%2$@\", which is not a language. Name it like %3$@."
+          }
+        }
+      }
+    },
+    "%@ has %@ frames a second." : {
+      "comment" : "Problem in a check. The first value is a video file name. The second is its frame rate, such as 60.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has %2$@ frames a second."
+          }
+        }
+      }
+    },
+    "%@ has %@." : {
+      "comment" : "Problem in a check. The first value is a folder path. The second is a list of file names.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has %2$@."
+          }
+        }
+      }
+    },
+    "%@ has %lld %@ screenshots, and the limit is %lld." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The first count is the number of screenshots. The second value is a device class name, and the second count is the limit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ has %#@arg2@ %3$@ screenshots, and the limit is %4$lld."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ has %lld screenshots, and the limit is %lld." : {
+      "comment" : "Problem message in the problem list. The first value is a folder path in the Product Page Optimization folder. The first count is the number of screenshots. The second count is the limit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ has %#@arg2@, and the limit is %3$lld."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg screenshot"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg screenshots"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ has a base price of %@." : {
+      "comment" : "Problem message in the problem list. The first value is a product id. The second is a price amount of zero or less.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has a base price of %2$@."
+          }
+        }
+      }
+    },
+    "%@ has an alpha channel." : {
+      "comment" : "Short reason in the list of screenshots that the app refuses. The value is a file name. Alpha channel is the transparency layer of an image. Do not translate App Store Connect."
+    },
+    "%@ has an alpha channel. App Store Connect refuses those. Export it again without one. Artwork that looks fully opaque still gets an alpha channel from most design tools." : {
+      "comment" : "Reason in the list of screenshots that the app refuses. The value is a file name. Alpha channel is the transparency layer of an image. Do not translate App Store Connect."
+    },
+    "%@ has more previews than App Store Connect takes. The limit is %lld." : {
+      "comment" : "Problem in a check. The value is a folder path. The count is the most app previews a set takes. Do not translate App Store Connect.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has more previews than App Store Connect takes. The limit is %2$lld."
+          }
+        }
+      }
+    },
+    "%@ has no %@ in %@." : {
+      "comment" : "Problem message in the problem list, about an in-app purchase. The first value is a product id. The second is a field name, name or description, and it stays in English. The third is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no %2$@ in %3$@."
+          }
+        }
+      }
+    },
+    "%@ has no %@ screenshots to copy." : {
+      "comment" : "Error sentence when a person copies screenshots between languages. The first value is a language code. The second is a device class id.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no %2$@ screenshots to copy."
+          }
+        }
+      }
+    },
+    "%@ has no %@ screenshots." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second is a device class name, such as iPhone 6.9 inch.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no %2$@ screenshots."
+          }
+        }
+      }
+    },
+    "%@ has no %@ screenshots. %@ has %lld screenshots, and reads the same words." : {
+      "comment" : "One line in the offer to copy screenshots from a related language. The first and the third values are language codes. The second is a device class name. The count is the number of screenshots in the other language.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ has no %2$@ screenshots. %3$@ has %#@arg4@, and reads the same words."
+          },
+          "substitutions" : {
+            "arg4" : {
+              "argNum" : 4,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg screenshot"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg screenshots"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ has no %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second is a JSON field name such as whatsNew or subtitle, and it stays in English.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no %2$@."
+          }
+        }
+      }
+    },
+    "%@ has no name, and App Store Connect needs one to make a language." : {
+      "comment" : "Error sentence when a push of in-app purchase text fails. The value is a language code. Do not translate App Store Connect."
+    },
+    "%@ has no price point %@ in %@." : {
+      "comment" : "Problem message in the problem list. The first value is a product id. The second is a price point id, which is the id of one fixed price. The third is a country code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no price point %2$@ in %3$@."
+          }
+        }
+      }
+    },
+    "%@ has no prices read from App Store Connect yet." : {
+      "comment" : "Reason in the publish plan that a price cannot be published yet. The value is a product id. Do not translate App Store Connect."
+    },
+    "%@ has no prices to choose from in %@." : {
+      "comment" : "Problem message in the problem list. The first value is a product id. The second is a country code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no prices to choose from in %2$@."
+          }
+        }
+      }
+    },
+    "%@ has no sound track." : {
+      "comment" : "Warning in a check. The value is a video file name."
+    },
+    "%@ has no whatsNew." : {
+      "comment" : "Problem message in the problem list. The value is a language code. Do not translate whatsNew. It is a JSON key for the What's New text."
+    },
+    "%@ has one. Write the %@ words, or leave the field out on purpose." : {
+      "comment" : "Fix in the problem list. The first value is the language code of the source language. The second is the language code that has no text. The word one refers to the field in the problem message.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has one. Write the %2$@ words, or leave the field out on purpose."
+          }
+        }
+      }
+    },
+    "%@ holds %@, which this project does not ship." : {
+      "comment" : "Problem message in the problem list. The first value is a product id. The second is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ holds %2$@, which this project does not ship."
+          }
+        }
+      }
+    },
+    "%@ holds %lld images for a device class this project does not list." : {
+      "comment" : "Problem message in the problem list. The first value is a folder path in the Product Page Optimization folder. The count is the number of images in it.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ holds %#@arg2@ for a device class this project does not list."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg image"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg images"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ holds previews for a device class this project does not list." : {
+      "comment" : "Warning in a check. The value is a folder path."
+    },
+    "%@ holds the key %@. This project uses %@. Choose %@, or change the Key ID in the project settings." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ holds the key %2$@. This project uses %3$@. Choose %4$@, or change the Key ID in the project settings."
+          }
+        }
+      },
+      "comment" : "Error message when the chosen key file holds a different key. The first value is the file name. The second and third values are the Key IDs in the file and in the project. The fourth is the file name that the project needs."
+    },
+    "%@ in %@ starts or ends with a space." : {
+      "comment" : "Problem message in the problem list, about an in-app purchase. The first value is a field name, name or description, and it stays in English. The second is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ in %2$@ starts or ends with a space."
+          }
+        }
+      }
+    },
+    "%@ is %@ pixels." : {
+      "comment" : "Problem in a check. The first value is a file name. The second is its size in pixels, such as 3840x1646. Keep the size as it is.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is %2$@ pixels."
+          }
+        }
+      }
+    },
+    "%@ is %@, so App Store Connect refuses a change to it." : {
+      "comment" : "Reason in the publish plan that an in-app purchase cannot change. The first value is a product id. The second is the state of the product from App Store Connect, in English, such as removed from sale.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is %2$@, so App Store Connect refuses a change to it."
+          }
+        }
+      }
+    },
+    "%@ is %@, which %@ does not accept." : {
+      "comment" : "Problem message in the problem list. The first value is a screenshot file name. The second is its size in pixels, such as 1290x2796, or the word unreadable. The third is a device class name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is %2$@, which %3$@ does not accept."
+          }
+        }
+      }
+    },
+    "%@ is %@." : {
+      "comment" : "Problem in a check. The first value is a screenshot file name. The second is its file size, such as 12 MB.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is %2$@."
+          }
+        }
+      }
+    },
+    "%@ is %@. %@ takes %@, or the same sizes on their side." : {
+      "comment" : "Reason in the list of screenshots that the app refuses. The first value is a file name. The second is its size in pixels. The third is a device class name, and the fourth is a list of sizes in pixels.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is %2$@. %3$@ takes %4$@, or the same sizes on their side."
+          }
+        }
+      }
+    },
+    "%@ is %lld characters in %@, and the limit is %lld." : {
+      "comment" : "Problem message in the problem list, about an in-app purchase. The first value is a field name that stays in English. The first count is the number of characters. The second value is a language code, and the second count is the limit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is %#@arg2@ in %3$@, and the limit is %4$lld."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg character"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg characters"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ is %lld characters, and the limit is %lld." : {
+      "comment" : "Problem message in the problem list. The value is a JSON field name such as subtitle, and it stays in English. The first count is the number of characters. The second count is the limit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is %#@arg2@, and the limit is %3$lld."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg character"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg characters"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ is %lld characters, and the minimum is %lld." : {
+      "comment" : "Problem message in the problem list. The value is a JSON field name, and it stays in English. The first count is the number of characters. The second count is the lowest number that is permitted.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is %#@arg2@, and the minimum is %3$lld."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg character"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg characters"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ is a fragmented movie, so ASCKit cannot read its frame rate." : {
+      "comment" : "Warning in a check. The value is a video file name. Do not translate ASCKit."
+    },
+    "%@ is a subscription and does not say how long a period is." : {
+      "comment" : "Problem message in the problem list. The value is a product id. The period is the time between two payments, such as one month."
+    },
+    "%@ is a subscription with no group." : {
+      "comment" : "Problem message in the problem list. The value is a product id. The group is a subscription group in App Store Connect."
+    },
+    "%@ is empty in %@." : {
+      "comment" : "Problem message in the problem list, about an in-app purchase. The first value is a field name, name or description, and it stays in English. The second is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is empty in %2$@."
+          }
+        }
+      }
+    },
+    "%@ is empty." : {
+      "comment" : "Problem message in the problem list. The value is a JSON field name such as subtitle, and it stays in English."
+    },
+    "%@ is encoded as %@." : {
+      "comment" : "Problem in a check. The first value is a video file name. The second is a four-letter codec code, such as hvc1.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is encoded as %2$@."
+          }
+        }
+      }
+    },
+    "%@ is for %@, and this is the %@ set. Name it like %@." : {
+      "comment" : "Error sentence about a screenshot file that a person adds to one set. The first value is a file name. The second and the third are both language codes or both device class names. The fourth is an example file name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is for %2$@, and this is the %3$@ set. Name it like %4$@."
+          }
+        }
+      }
+    },
+    "%@ is for %@, which this project does not list. It lists %@." : {
+      "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is a device class name. The third is a list of device class ids.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is for %2$@, which this project does not list. It lists %3$@."
+          }
+        }
+      }
+    },
+    "%@ is for %@, which this project does not ship. It ships %@." : {
+      "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is a language code. The third is a list of language codes.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is for %2$@, which this project does not ship. It ships %3$@."
+          }
+        }
+      }
+    },
+    "%@ is for %@. This project ships no languages yet." : {
+      "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is for %2$@. This project ships no languages yet."
+          }
+        }
+      }
+    },
+    "%@ is listed but has no app information file." : {
+      "comment" : "Problem message in the problem list. The value is a language code. The app information file holds the text of the listing for one language."
+    },
+    "%@ is listed more than once." : {
+      "comment" : "Problem message in the problem list. The value is a language code that is in the list of languages two times or more."
+    },
+    "%@ is marked %@, so it will not be published." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second is a status that stays in English, such as draft or needs_human.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is marked %2$@, so it will not be published."
+          }
+        }
+      }
+    },
+    "%@ is missing %@ %@, which %@ has." : {
+      "comment" : "Problem message in the problem list. The first value is a language code, and the second is a device class name. The third is a list of screenshot names. The fourth is the language code of the source language.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is missing %2$@ %3$@, which %4$@ has."
+          }
+        }
+      }
+    },
+    "%@ is not a .mov, .mp4 or .m4v file." : {
+      "comment" : "Refusal when a file added as an app preview is not a video. The value is a file name. Keep the file types as they are."
+    },
+    "%@ is not a country the App Store sells in." : {
+      "comment" : "Problem message in the problem list. The value is a three-letter country code. Do not translate App Store."
+    },
+    "%@ is not a date this price can start on." : {
+      "comment" : "Problem message in the problem list. The value is the start date text from the file, which the app cannot read as a date."
+    },
+    "%@ is not a device class ASCKit knows." : {
+      "comment" : "Problem message in the problem list. The value is a device class id from the configuration file. Do not translate ASCKit."
+    },
+    "%@ is not a device class this project lists. It lists %@." : {
+      "comment" : "Error sentence when a person copies screenshots between languages. The first value is a device class id. The second is a list of device class ids.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is not a device class this project lists. It lists %2$@."
+          }
+        }
+      }
+    },
+    "%@ is not a kind of in-app purchase ASCKit knows." : {
+      "comment" : "Problem message in the problem list. The value is the kind text from the product file. Do not translate ASCKit."
+    },
+    "%@ is not a language this project ships. It ships %@." : {
+      "comment" : "Error sentence when a person copies screenshots between languages. The first value is a language code. The second is a list of language codes.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is not a language this project ships. It ships %2$@."
+          }
+        }
+      }
+    },
+    "%@ is not a locale App Store Connect accepts." : {
+      "comment" : "Problem message in the problem list. The value is a language code from the configuration file. Do not translate App Store Connect."
+    },
+    "%@ is not a platform ASCKit knows." : {
+      "comment" : "Problem message in the problem list. The value is the platform named in the configuration file, such as macos. Do not translate ASCKit."
+    },
+    "%@ is not a png, jpg, mov, mp4 or m4v file." : {
+      "comment" : "Refusal when a file added as header or search results art is of another kind. The value is a file name. Keep the file types as they are."
+    },
+    "%@ is not a price curve ASCKit knows." : {
+      "comment" : "Problem message in the problem list. The value is the name of a price curve. A price curve is a set of rules that sets a price in each country. Do not translate ASCKit."
+    },
+    "%@ is not a time code inside the video. Write it as hours, minutes, seconds and frames, such as 00:00:05:00." : {
+      "comment" : "Refusal of a poster frame. The value is what was given. Keep the example as it is."
+    },
+    "%@ is not an Xcode project this can read." : {
+      "comment" : "Error sentence when the app opens an Xcode project. The value is a file name. Do not translate Xcode."
+    },
+    "%@ is not an https address." : {
+      "comment" : "Problem message in the problem list. The value is a JSON field name such as supportUrl, and it stays in English. Do not translate https."
+    },
+    "%@ is not in a treatment folder. Put it in %@/<test>/<treatment>/." : {
+      "comment" : "Refusal for a waiting image. The first value is a file name. The second value is a folder name that stays in English.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is not in a treatment folder. Put it in %2$@/<test>/<treatment>/."
+          }
+        }
+      }
+    },
+    "%@ is not valid: %@" : {
+      "comment" : "Error sentence when the app reads the configuration file. The first value is a file name. The second is the error text from the JSON reader, in English.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is not valid: %2$@"
+          }
+        }
+      }
+    },
+    "%@ is priced from %@, which is not a country the App Store sells in." : {
+      "comment" : "Problem message in the problem list. The first value is a product id. The second is a country code for the base price. Do not translate App Store.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is priced from %2$@, which is not a country the App Store sells in."
+          }
+        }
+      }
+    },
+    "%@ is set to show the %@ %@ screenshots, and has %lld of its own." : {
+      "comment" : "Problem message in the problem list. The first value is a language code, and the second is the source language code. The third is a device class name. The count is the screenshots that the language has.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is set to show the %2$@ %3$@ screenshots, and has %#@arg4@ of its own."
+          },
+          "substitutions" : {
+            "arg4" : {
+              "argNum" : 4,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ is the source language, so it cannot show the source language's screenshots." : {
+      "comment" : "Problem message in the problem list. The value is a language code."
+    },
+    "%@ is the source language. Every other language falls back to it, and it has nothing to fall back to." : {
+      "comment" : "Error sentence when a person sets a language to show the screenshots of the source language. The value is a language code."
+    },
+    "%@ is the source language. Every other language is translated from it, and a listing with no source language has nothing to say." : {
+      "comment" : "Error when somebody tries to ignore the source language. The value is a language code such as en-US."
+    },
+    "%@ names %@, and %@ has no such file." : {
+      "comment" : "Warning in a check. The first value is the file poster-frames.json, the second a file name, the third a folder path.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ names %2$@, and %3$@ has no such file."
+          }
+        }
+      }
+    },
+    "%@ names a subscription group." : {
+      "comment" : "Problem message in the problem list. The value is a product id. The product is not an auto-renewable subscription."
+    },
+    "%@ needs screenshots of its own. Take it out of usesSourceScreenshots." : {
+      "comment" : "Fix in the problem list. The value is a language code. Do not translate usesSourceScreenshots. It is a JSON key."
+    },
+    "%@ runs for %@." : {
+      "comment" : "Problem in a check. The first value is a video file name. The second is its length, such as 12.5 seconds.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ runs for %2$@."
+          }
+        }
+      }
+    },
+    "%@ says %@, and this project ships %@. Say which one, such as %@." : {
+      "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is a language. The third is a list of language codes, and the fourth is one of them.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ says %2$@, and this project ships %3$@. Say which one, such as %4$@."
+          }
+        }
+      }
+    },
+    "%@ says nothing about what the screenshot shows. Name it like %@." : {
+      "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is an example file name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ says nothing about what the screenshot shows. Name it like %2$@."
+          }
+        }
+      }
+    },
+    "%@ sets a price for %@, which is not a country the App Store sells in." : {
+      "comment" : "Problem message in the problem list. The first value is a product id. The second is a country code. Do not translate App Store.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ sets a price for %2$@, which is not a country the App Store sells in."
+          }
+        }
+      }
+    },
+    "%@ sets preserveCurrentPrice." : {
+      "comment" : "Problem message in the problem list. The value is a product id. Do not translate preserveCurrentPrice, which is a key in the product file."
+    },
+    "%@ starts or ends with a space." : {
+      "comment" : "Problem message in the problem list. The value is a JSON field name such as subtitle, and it stays in English."
+    },
+    "%@, %@, from %@" : {
+      "comment" : "Line in the report after the app makes a folder for a new version, shown as fixed-width text. The first value is the language code that took the screenshots. The second is a device class name. The third is the language code they come from.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, from %3$@"
+          }
+        }
+      }
+    },
+    "%@, %@. The rest of %@ went." : {
+      "comment" : "Line in the report of what a push did, for text that App Store Connect refused. The first and the third values are the same language code. The second is a JSON field name that stays in English. The other fields of that language went to the store.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@. The rest of %3$@ went."
+          }
+        }
+      }
+    },
+    "%@, new draft" : {
+      "comment" : "Progress line while a push makes a new draft of a product's words. The value is an in-app purchase product id or a subscription group name, and it stays as it is."
+    },
+    "%@.json could not be read." : {
+      "comment" : "Problem message in the problem list. The value is a language code, which is also the file name."
+    },
+    "%@.json could not be read. %@" : {
+      "comment" : "Problem message in the problem list. The first value is a product id, which is also the file name. The second is the error text from the JSON reader, in English.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@.json could not be read. %2$@"
+          }
+        }
+      }
+    },
+    "%@.json is there but %@ is not in the locale list." : {
+      "comment" : "Problem message in the problem list. Both values are the same language code. The file name is the language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@.json is there but %2$@ is not in the locale list."
+          }
+        }
+      }
+    },
+    "%@.json is where silenced warnings go, so no product can be called that." : {
+      "comment" : "Error sentence when a person names a new in-app purchase. The value is the file name silenced, which stays in English. A silenced warning is a warning that a person chose to hide."
+    },
+    "%@.json says its locale is %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code, which is also the file name. The second is the language code that the file holds.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@.json says its locale is %2$@."
+          }
+        }
+      }
+    },
+    "%@.json says its product is %@. The file name is what ASCKit uses." : {
+      "comment" : "Problem message in the problem list. The first value is the file name without .json. The second is the product id in the file. Do not translate ASCKit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@.json says its product is %2$@. The file name is what ASCKit uses."
+          }
+        }
+      }
+    },
+    "%@/%@ is not a treatment of a draft test. Read App Store Connect to make the folders. Known: %@." : {
+      "comment" : "Refusal for a waiting image. The first value is a test folder name. The second value is a treatment folder name. The third value is a list of the folders that exist.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@/%2$@ is not a treatment of a draft test. Read App Store Connect to make the folders. Known: %3$@."
+          }
+        }
+      }
+    },
+    "%lld app preview sets" : {
+      "comment" : "Part of the summary of the publish plan. The count is the number of app preview sets that change. An app preview set holds the videos of one device class in one language.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld app preview set"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld app preview sets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld changes" : {
+      "comment" : "Short text in the publish plan that names what a blocked change stops. The count is the number of changes to the app information.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld change"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld changes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld countries: %@." : {
+      "comment" : "Price line in the publish plan, shown as fixed-width text in a terminal. Keep it short. The count is the number of countries. The value is a list such as 3 up, 2 down.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld country: %@."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld countries: %@."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld down" : {
+      "comment" : "Part of a price line in the publish plan, shown as fixed-width text. Keep it short. The count is the number of prices that go down.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld down"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld down"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld errors" : {
+      "comment" : "Part of the summary of the problem list. The count is the number of errors.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld error"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld errors"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fields" : {
+      "comment" : "Part of the one-line summary of the publish plan. The count is the number of text fields that change.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld field"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fields"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fields, %lld groups" : {
+      "comment" : "Count beside In-App Purchases in the publish sheet. Keep it short. The first count is the text fields that change. The second count is the subscription groups.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg field"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg fields"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg group"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg groups"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fields, %lld languages" : {
+      "comment" : "Count beside App Information in the publish sheet. Keep it short. The first count is the text fields that change. The second count is the languages.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg field"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg fields"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg language"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg languages"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fields, %lld purchases" : {
+      "comment" : "Count beside In-App Purchases in the publish sheet. Keep it short. The first count is the text fields that change. The second count is the in-app purchases.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg field"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg fields"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg purchase"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg purchases"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fields, %lld purchases, %lld groups" : {
+      "comment" : "Count beside In-App Purchases in the publish sheet. Keep it short. The first count is the text fields that change. The second count is the in-app purchases. The third count is the subscription groups.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@, %#@arg3@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg field"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg fields"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg purchase"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg purchases"
+                    }
+                  }
+                }
+              }
+            },
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg group"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg groups"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld header and search results assets" : {
+      "comment" : "Part of the summary of the publish plan. The count is the number of product page header and search results assets that change.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld header or search results asset"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld header and search results assets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld in-app purchase fields" : {
+      "comment" : "Part of the one-line summary of the publish plan. The count is the number of in-app purchase text fields that change.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld in-app purchase field"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld in-app purchase fields"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld new" : {
+      "comment" : "Part of a price line in the publish plan, shown as fixed-width text. Keep it short. The count is the number of new prices.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld new"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld new"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld are the same file, byte for byte. Put %@ screenshots in %@." : {
+      "comment" : "Fix in the problem list. The first count is the screenshots that are copies. The second count is all the screenshots. The first value is a language code, and the second is a folder path.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg of %2$lld is the same file, byte for byte. Put %3$@ screenshots in %4$@."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg of %2$lld are the same file, byte for byte. Put %3$@ screenshots in %4$@."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of the %@ %@ screenshots are not named the way ASCKit names them: %@." : {
+      "comment" : "Problem message in the problem list. The count is the screenshots with a wrong name. The first value is a language code, and the second is a device class name. The third is a list of file names.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg of the %2$@ %3$@ screenshots is not named the way ASCKit names them: %4$@."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg of the %2$@ %3$@ screenshots are not named the way ASCKit names them: %4$@."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld preview sets" : {
+      "comment" : "Part of the line beside Screenshots in the publish sheet. The number is how many app preview sets a push changes.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld preview set"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld preview sets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld prices go up, and a rise cannot be taken back." : {
+      "comment" : "Warning in the publish sheet before a push. The count is the number of prices that go up. A rise is a price that goes up.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld price goes up, and a rise cannot be taken back."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld prices go up, and a rise cannot be taken back."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld prices in %lld products" : {
+      "comment" : "Part of the one-line summary of the publish plan. The first count is the number of prices. The second count is the number of in-app purchases.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@ in %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg price"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg prices"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg product"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg products"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld prices went down. A cut takes effect now, so look for those in the subscription's own price list." : {
+      "comment" : "Line in the report of what a push did. The count is the number of subscription prices that went down. A cut is a price that goes down.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld price went down. A cut takes effect now, so look for it in the subscription's own price list."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld prices went down. A cut takes effect now, so look for those in the subscription's own price list."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld prices went up. A rise becomes a scheduled price change dated today, and that page holds nothing else. People who already subscribe stay on the old price." : {
+      "comment" : "Line in the report of what a push did. The count is the number of subscription prices that went up. A rise is a price that goes up.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld price went up. A rise becomes a scheduled price change dated today, and that page holds nothing else. People who already subscribe stay on the old price."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld prices went up. A rise becomes a scheduled price change dated today, and that page holds nothing else. People who already subscribe stay on the old price."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld prices would go up. Read them and tick the box." : {
+      "comment" : "Reason in the publish sheet that prices cannot be published yet. The count is the number of prices that go up. The box is a checkbox in the publish sheet.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld price would go up. Read it and tick the box."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld prices would go up. Read them and tick the box."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld prices, %lld products" : {
+      "comment" : "Count beside Prices in the publish sheet. Keep it short. The first count is the prices that change. The second count is the in-app purchases.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg price"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg prices"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg product"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg products"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld screenshot sets" : {
+      "comment" : "Part of the summary of the publish plan. The count is the number of screenshot sets that change. A screenshot set holds the screenshots of one device class in one language.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld screenshot set"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld screenshot sets"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sets in a new order" : {
+      "comment" : "Line beside Screenshots in the publish sheet when a push only changes the order of screenshots. The number is how many sets.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld set in a new order"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sets in a new order"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sets, %lld images" : {
+      "comment" : "Count beside Screenshots in the publish sheet. Keep it short. The first count is the screenshot sets that change. The second count is the images to upload.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg set"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg sets"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg image"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg images"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sets, removing %lld images" : {
+      "comment" : "Count beside Screenshots in the publish sheet. Keep it short. The first count is the screenshot sets that change. The second count is the images to remove.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, removing %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg set"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg sets"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg image"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg images"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld silenced." : {
+      "comment" : "Part of the summary of the problem list. The count is the number of warnings that a person chose to hide.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld silenced."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld silenced."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld subscription group fields" : {
+      "comment" : "Part of the one-line summary of the publish plan. The count is the number of subscription group text fields that change.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld subscription group field"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld subscription group fields"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld text changes" : {
+      "comment" : "Short text in the publish plan that names what a blocked change stops. The count is the number of text changes for the version.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld text change"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld text changes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld things cannot be done in this state." : {
+      "comment" : "Line in the publish plan. The count is the number of changes that the current state of the version or the products stops.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld thing cannot be done in this state."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld things cannot be done in this state."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld unchanged" : {
+      "comment" : "Part of a price line in the publish plan, shown as fixed-width text. Keep it short. The count is the number of prices that stay the same.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unchanged"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unchanged"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld up" : {
+      "comment" : "Part of a price line in the publish plan, shown as fixed-width text. Keep it short. The count is the number of prices that go up.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld up"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld up"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld warnings" : {
+      "comment" : "Part of the summary of the problem list. The count is the number of warnings.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warning"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warnings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld warnings show again in %@." : {
+      "comment" : "asckit silence --clear prints this in the terminal. The count is the number of warnings that show again. The value is a version, such as 1.0.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg warning shows again in %2$@."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg warnings show again in %2$@."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld warnings show again in every version." : {
+      "comment" : "asckit silence --clear prints this in the terminal. The count is the number of warnings about in-app purchases that show again.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warning shows again in every version."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warnings show again in every version."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "...and %lld more. asckit diff --prices shows every line." : {
+      "comment" : "Last line of a price list in the publish plan, shown as fixed-width text. The count is the number of hidden price lines. Do not translate asckit diff --prices. It is a command.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "...and %lld more. asckit diff --prices shows every line."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "...and %lld more. asckit diff --prices shows every line."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "1 month" : {
+      "comment" : "Name of a subscription period, which is the time between two payments."
+    },
+    "1 week" : {
+      "comment" : "Name of a subscription period, which is the time between two payments."
+    },
+    "1 year" : {
+      "comment" : "Name of a subscription period, which is the time between two payments."
+    },
+    "2 months" : {
+      "comment" : "Name of a subscription period, which is the time between two payments."
+    },
+    "3 months" : {
+      "comment" : "Name of a subscription period, which is the time between two payments."
+    },
+    "6 months" : {
+      "comment" : "Name of a subscription period, which is the time between two payments."
+    },
+    "A header or search results video runs 5 to 30 seconds." : {
+      "comment" : "How to fix a header or search results video of the wrong length."
+    },
+    "A price point belongs to one product in one country. Take this one out, or set an amount instead and let ASCKit find the point." : {
+      "comment" : "Fix in the problem list. A price point is one fixed price on the list of prices of the App Store. Do not translate ASCKit."
+    },
+    "A product id cannot be empty." : {
+      "comment" : "Error sentence when a person names a new in-app purchase."
+    },
+    "A product id cannot hold a slash or a colon, because it is the file name." : {
+      "comment" : "Error sentence when a person names a new in-app purchase. The product id is also the name of its file."
+    },
+    "A product id cannot start with a dot, because the file would be hidden." : {
+      "comment" : "Error sentence when a person names a new in-app purchase. A file name that starts with a dot is hidden."
+    },
+    "A screenshot taken off a set stays in the app's asset library." : {
+      "comment" : "Note in the publish sheet. Removing a screenshot from a set does not delete the file from App Store Connect."
+    },
+    "A set takes at most %lld app previews. Nothing was added." : {
+      "comment" : "Refusal when a set would hold too many app previews. The count is the most a set takes.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "A set takes at most %lld app preview. Nothing was added."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "A set takes at most %lld app previews. Nothing was added."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A subscription group name cannot be empty." : {
+      "comment" : "Reason a subscription group file cannot be written."
+    },
+    "A subscription group name cannot hold a slash or a colon, because it is the file name." : {
+      "comment" : "Reason a subscription group file cannot be written."
+    },
+    "A subscription group name cannot start with a dot, because the file would be hidden." : {
+      "comment" : "Reason a subscription group file cannot be written."
+    },
+    "ASCKit cannot read %@. It records what this project uploaded to App Store Connect. Fix the file, or take it back from git. ASCKit does not write over it." : {
+      "comment" : "Error when the record of uploads is damaged. The value is a file path. Do not translate ASCKit, App Store Connect or git."
+    },
+    "ASCKit cannot read %@/%@." : {
+      "comment" : "Problem in a check. The values are a folder path and the file poster-frames.json. Do not translate ASCKit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "ASCKit cannot read %1$@/%2$@."
+          }
+        }
+      }
+    },
+    "ASCKit could not read %@, so it did not upload it." : {
+      "comment" : "Push failure. The value is a screenshot file name. Do not translate ASCKit."
+    },
+    "ASCKit does not know what %@ is for." : {
+      "comment" : "Warning in a check. The value is a file name. Do not translate ASCKit."
+    },
+    "Accepted sizes are %@, or the same pair swapped for landscape." : {
+      "comment" : "Fix in the problem list. The value is a list of screenshot sizes in pixels, such as 1290x2796. Landscape is the wide orientation of the screen."
+    },
+    "Add %@ to deviceClasses, or delete the folder. It will not be published." : {
+      "comment" : "Fix in the problem list. The value is a device class id. Do not translate deviceClasses. It is a JSON key."
+    },
+    "Add %@ to locales, or take %@ out of the Xcode project." : {
+      "comment" : "Fix in the problem list. The first value is a language code. The second is a language code from the Xcode project, such as de. Do not translate locales, which is a JSON key.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add %1$@ to locales, or take %2$@ out of the Xcode project."
+          }
+        }
+      }
+    },
+    "Add %@ to locales, or take it out of ignoredLocales. A language is ignored by staying in the list and being named here." : {
+      "comment" : "How to fix a warning about the configuration file. The value is a language code. Do not translate locales and ignoredLocales, which are keys in the file."
+    },
+    "Add %@ to locales, or take it out of the group." : {
+      "comment" : "Fix in the problem list. The value is a locale code, such as de-DE. Do not translate locales. It is a JSON key."
+    },
+    "Add %@ to locales, or take it out of the product." : {
+      "comment" : "Fix in the problem list. The value is a language code. Do not translate locales, which is a JSON key. The word it refers to the language."
+    },
+    "Add %@ to the device classes, then add its screenshots." : {
+      "comment" : "How to fix a missing device class. The value is a device class id, such as iphone-duo. Keep it as it is."
+    },
+    "Add %@ to the list, or delete the file. It will not be published." : {
+      "comment" : "Fix in the problem list. The value is a language code. The list is the list of languages in the configuration file."
+    },
+    "Add %@ to the list, or delete the folder. It will not be published." : {
+      "comment" : "Fix in the problem list. The value is a language code. The list is the list of languages in the configuration file."
+    },
+    "Add a \"why\" to the override. A price nobody can explain a year later is the one that goes wrong." : {
+      "comment" : "Fix in the problem list. The override is a price that a person set by hand for one country. The word why is the name of a JSON key, and it stays in English."
+    },
+    "Add it to locales, or point sourceLocale at one that is there." : {
+      "comment" : "Fix in the problem list. Do not translate locales or sourceLocale. They are JSON keys. The word it refers to the source language."
+    },
+    "Add it to locales, or take it out of usesSourceScreenshots." : {
+      "comment" : "Fix in the problem list. Do not translate locales or usesSourceScreenshots. They are JSON keys. The word it refers to a language."
+    },
+    "Add subscriptionGroup. Every auto-renewable subscription belongs to one." : {
+      "comment" : "Fix in the problem list. Do not translate subscriptionGroup. It is a JSON key."
+    },
+    "Add subscriptionPeriod, such as ONE_MONTH. ASCKit never writes it, and recording it lets a pull say when the store and the file disagree." : {
+      "comment" : "Fix in the problem list. Do not translate subscriptionPeriod, ONE_MONTH or ASCKit. A pull is the action that reads App Store Connect."
+    },
+    "Add whichever of those the app is written for." : {
+      "comment" : "Fix in the problem list. The word those refers to the language codes in the problem message."
+    },
+    "Added:" : {
+      "comment" : "Heading in the report of what a push did. A list of added items comes after it."
+    },
+    "An app preview runs from %@ to %@." : {
+      "comment" : "How to fix a video of the wrong length. The values are lengths, such as 15 seconds.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "An app preview runs from %1$@ to %2$@."
+          }
+        }
+      }
+    },
+    "An empty value blanks the field on the store. Remove the field to leave it alone." : {
+      "comment" : "Fix in the problem list. To blank a field is to make the field empty on the App Store."
+    },
+    "App Information" : {
+      "comment" : "Noun. The name of one part of a publish, on its checkbox in the publish sheet and on its report. It is the text of the listing."
+    },
+    "App Information has no %@" : {
+      "comment" : "Reason one language is left out of the publish plan. The value is a language code. App Information is the name of a tab in App Store Connect."
+    },
+    "App Review is done with the words of %@. The push makes a new draft of them, with a copy of the words there now, and changes the copy. Send the draft to review in App Store Connect." : {
+      "comment" : "Paragraph in the publish plan. The value is a list of in-app purchase product ids or subscription group names, and they stay as they are. A draft is a new version of the words that App Review reads."
+    },
+    "App Store Connect did not make a new draft of this product's words. %@ Nothing was written in %@." : {
+      "comment" : "Reason a push wrote nothing for one in-app purchase. The first value is what App Store Connect said, in English. The second is a list of language codes such as de-DE, en-US.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect did not make a new draft of this product's words. %1$@ Nothing was written in %2$@."
+          }
+        }
+      }
+    },
+    "App Store Connect does not take %@ as a screenshot." : {
+      "comment" : "Problem in a check. The value is a file name. Do not translate App Store Connect."
+    },
+    "App Store Connect does not take %@ as an app preview." : {
+      "comment" : "Problem in a check. The value is a file name. Do not translate App Store Connect."
+    },
+    "App Store Connect does not take %@." : {
+      "comment" : "Problem in a check. The value is a file name. Do not translate App Store Connect."
+    },
+    "App Store Connect does not take changes to %@ in its current state. Nothing in this slot changed after the refusal." : {
+      "comment" : "Push failure. The value names a language and a device, such as en-US iphone-6.9. Do not translate App Store Connect."
+    },
+    "App Store Connect does not take these images in %@. Check that their size fits %@." : {
+      "comment" : "Push failure. The first value is an App Store Connect group id, such as IPHONE_DUO_PROFILE. The second is a device class id, such as iphone-6.9. Do not translate App Store Connect.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect does not take these images in %1$@. Check that their size fits %2$@."
+          }
+        }
+      }
+    },
+    "App Store Connect gave no equivalent price here" : {
+      "comment" : "Reason in the publish plan that a country is not priced. There is no equivalent price from App Store Connect for this country. Do not translate App Store Connect."
+    },
+    "App Store Connect has no %@ page, and ASCKit never makes one. Add %@ in App Store Connect and read again, or ignore it in this project." : {
+      "comment" : "Error when a push reaches a language App Store Connect has no page for. Both values are the same language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect has no %1$@ page, and ASCKit never makes one. Add %2$@ in App Store Connect and read again, or ignore it in this project."
+          }
+        }
+      }
+    },
+    "App Store Connect has no asset library for this app, so ASCKit cannot read or write its screenshots. Open the app in App Store Connect once, then read again." : {
+      "comment" : "Error when App Store Connect returns no asset library for the app."
+    },
+    "App Store Connect has no in-app purchase called %@, and ASCKit never makes one." : {
+      "comment" : "Reason in the publish plan that an in-app purchase cannot be published. The value is a product id. Do not translate App Store Connect or ASCKit."
+    },
+    "App Store Connect has no page in %@, so nothing is written in those. Make the language there and read again, or ignore it with asckit ignore." : {
+      "comment" : "Line in the publish plan, shown as fixed-width text. The value is a list of language codes. Do not translate asckit ignore, which is a command somebody types."
+    },
+    "App Store Connect has no subscription group called %@, and ASCKit never makes one." : {
+      "comment" : "Reason in the publish plan that a subscription group cannot be written. The value is the reference name of the group."
+    },
+    "App Store Connect has not finished with %lld images. Read it again in a moment." : {
+      "comment" : "Reason in the publish sheet that screenshots cannot be published yet. The count is the number of images that App Store Connect still processes.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "App Store Connect has not finished with %lld image. Read it again in a moment."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "App Store Connect has not finished with %lld images. Read it again in a moment."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "App Store Connect holds no draft of this product's words. Make one there, then push again. Nothing was written in %@." : {
+      "comment" : "Reason a push wrote nothing for one in-app purchase. The value is a list of language codes such as de-DE, en-US."
+    },
+    "App Store Connect holds no words for %@ yet. Write the first ones there." : {
+      "comment" : "Reason in the publish plan for words that cannot go. The value is an in-app purchase product id or a subscription group name, and it stays as it is."
+    },
+    "App Store Connect is on version %@, and there is no folder for it here." : {
+      "comment" : "Reason in the publish sheet that a part cannot be published yet. The value is a version number. The folder is a version folder in the project on this Mac."
+    },
+    "App Store Connect is on version %@, and there is no folder for it. Make %@/%@ first." : {
+      "comment" : "Error sentence when a person adds the languages from App Store Connect to the project. The first and the third values are the same version number. The second is the path of the versions folder.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect is on version %1$@, and there is no folder for it. Make %2$@/%3$@ first."
+          }
+        }
+      }
+    },
+    "App Store Connect is on version %@, and there is no folder for it. The newest folder here is %@." : {
+      "comment" : "Problem message in the problem list. The first value is the version number on App Store Connect. The second is the newest version number that has a folder in the project.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect is on version %1$@, and there is no folder for it. The newest folder here is %2$@."
+          }
+        }
+      }
+    },
+    "App Store Connect is on version %@, and there is no folder for it. There are no version folders here yet." : {
+      "comment" : "Problem message in the problem list. The value is the version number on App Store Connect. The folder is a version folder in the project."
+    },
+    "App Store Connect needs at least one. Put them in %@, or say this language shows the %@ ones." : {
+      "comment" : "Fix in the problem list about a language with no screenshots. The first value is a folder path. The second is the language code of the source language. The word ones refers to screenshots.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect needs at least one. Put them in %1$@, or say this language shows the %2$@ ones."
+          }
+        }
+      }
+    },
+    "App Store Connect needs at least one. Put them in %@. Every other language falls back to this one." : {
+      "comment" : "Fix in the problem list about the source language with no screenshots. The value is a folder path. Do not translate App Store Connect."
+    },
+    "App Store Connect needs both a name and a description in every language." : {
+      "comment" : "Fix in the problem list about an in-app purchase. The name and the description are the two text fields of an in-app purchase."
+    },
+    "App Store Connect needs both fields. Write something, or take the language out of the file." : {
+      "comment" : "Fix in the problem list about an in-app purchase. The two fields are the name and the description. The file is the product file of the in-app purchase."
+    },
+    "App Store Connect needs iPhone Duo screenshots for every submission from April 2027." : {
+      "comment" : "Warning in a check. Do not translate App Store Connect or iPhone Duo."
+    },
+    "App Store Connect refuses a submission without it." : {
+      "comment" : "Fix in the problem list about a missing text field. The word it refers to the field. A submission is a version that a person sends to App Review."
+    },
+    "App Store Connect refuses it. Export it again without one. Artwork that looks fully opaque still gets an alpha channel from most design tools." : {
+      "comment" : "Fix in the problem list about a screenshot with an alpha channel. Alpha channel is the transparency layer of an image. The words it and one refer to the alpha channel."
+    },
+    "App Store Connect sells in %@, and ASCKit's table does not list it. It gets Apple's own price." : {
+      "comment" : "Problem message in the problem list. The value is a three-letter country code. The table is the list of countries that ASCKit knows. Do not translate App Store Connect, ASCKit or Apple."
+    },
+    "App Store Connect shows the %@ ones instead. Put %@ screenshots in %@." : {
+      "comment" : "Fix in the problem list. The first value is the language code of the source language. The second is a language code, and the third is a folder path. The word ones refers to screenshots.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect shows the %1$@ ones instead. Put %2$@ screenshots in %3$@."
+          }
+        }
+      }
+    },
+    "App Store Connect takes %lld to %lld frames a second." : {
+      "comment" : "How to fix a video with the wrong frame rate. The two counts are the lowest and the highest frame rate. Do not translate App Store Connect.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect takes %1$lld to %#@arg2@ a second."
+          },
+          "substitutions" : {
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg frame"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg frames"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "App Store Connect takes a file of at most %@." : {
+      "comment" : "How to fix a video that is too big. The value is a file size, such as 500 MB. Do not translate App Store Connect."
+    },
+    "App Store Connect takes a file of at most %@. Export it smaller." : {
+      "comment" : "How to fix a screenshot file that is too big. The value is a file size, such as 500 MB. Do not translate App Store Connect."
+    },
+    "App Store Connect takes no app preview for %@." : {
+      "comment" : "Problem in a check. The value is a device name, such as Apple Watch Ultra. Do not translate App Store Connect."
+    },
+    "App Store Connect uses the three-letter code, USA and DEU, not the two-letter one." : {
+      "comment" : "Fix in the problem list about a country code. Do not translate USA or DEU. They are country codes."
+    },
+    "App Store Connect wants one, even a silent one." : {
+      "comment" : "How to fix a video with no sound track. Do not translate App Store Connect."
+    },
+    "App information file written for:" : {
+      "comment" : "Heading in the report of the action that adds languages to the project. A list of language codes comes after it."
+    },
+    "App previews here are %@, or the same pair swapped." : {
+      "comment" : "How to fix a video of the wrong size. The value is a list of sizes in pixels."
+    },
+    "App previews:" : {
+      "comment" : "Heading in the publish plan, over the app preview sets that change."
+    },
+    "Apple equalized" : {
+      "comment" : "Noun. The name of a price curve. A price curve is a set of rules that sets a price in each country. This curve uses the prices that Apple sets."
+    },
+    "Apple needs it for every version except the app's first. Leave it out only if this is the first." : {
+      "comment" : "Fix in the problem list about the What's New text. The word it refers to the What's New text. The first refers to the first version of the app."
+    },
+    "Apple's own price everywhere. This is what App Store Connect does when you pick a price and save. Every other curve is measured against it." : {
+      "comment" : "Description of the Apple equalized price curve, shown under its name. A curve is a set of rules that sets a price in each country. Do not translate App Store Connect."
+    },
+    "Auto-renewable subscription" : {
+      "comment" : "Noun. The name of a kind of in-app purchase, as App Store Connect names it. It renews each period until the person stops it."
+    },
+    "Both have to be languages this project ships, and the same language, such as es-ES and es-MX. %@ has to be a device class it lists. Correct the entry, or take it out of copiesScreenshotsFrom." : {
+      "comment" : "Fix in the problem list. Do not translate copiesScreenshotsFrom. It is a JSON key. The value is a device class identifier, such as ipad-13."
+    },
+    "Cannot be done now:" : {
+      "comment" : "Heading in the publish plan, shown as fixed-width text. A list of changes that cannot be done now comes after it."
+    },
+    "Change bundleId, or open the folder holding the right Xcode project." : {
+      "comment" : "Fix in the problem list. Do not translate bundleId. It is a JSON key. Do not translate Xcode."
+    },
+    "Check the locale against what asckit pull reports for this app." : {
+      "comment" : "Fix in the problem list about a language code. Do not translate asckit pull. It is a command."
+    },
+    "Consumable" : {
+      "comment" : "Noun. The name of a kind of in-app purchase, as App Store Connect names it. A person can buy it many times, and uses it up."
+    },
+    "Could not read %@: %@" : {
+      "comment" : "Error sentence when the app cannot read a file. The first value is a file path. The second is the error text from the system.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Could not read %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "Could not read project.xcproj or project.pbxproj in %@." : {
+      "comment" : "Error sentence when the app opens an Xcode project. The value is the name of the Xcode project folder. Do not translate project.xcproj and project.pbxproj. They are file names."
+    },
+    "Could not write %@." : {
+      "comment" : "Error when the app or the command line tool cannot write the private key file. The value is the file path."
+    },
+    "Create version %@ on App Store Connect, then pull the updates from there." : {
+      "comment" : "Fix in the problem list. The value is a version number. Do not translate App Store Connect."
+    },
+    "Custom app name" : {
+      "comment" : "Noun. The name of a text field on a subscription group. It holds a name the App Store shows instead of the app's own name."
+    },
+    "Cut %lld characters." : {
+      "comment" : "Fix in the problem list for text that is too long. The count is the number of characters to remove.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cut %lld character."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Cut %lld characters."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Description" : {
+      "comment" : "Noun. The name of a text field in the listing and in an in-app purchase. It holds the long description."
+    },
+    "Display name" : {
+      "comment" : "Noun. The name of a text field on a subscription group. It holds the name of the group that a customer reads."
+    },
+    "Emerging market push" : {
+      "comment" : "Noun. The name of a price curve. A price curve is a set of rules that sets a price in each country. This curve sets much lower prices in countries with low income."
+    },
+    "Equal proceeds" : {
+      "comment" : "Noun. The name of a price curve. A price curve is a set of rules that sets a price in each country. This curve makes the money that Apple pays you the same in each country."
+    },
+    "Every country goes in one request. A subscription has no price schedule. It takes an update that carries every country instead. ASCKit sends them all, whether or not they change. Apple does not say whether an update replaces the set or adds to it." : {
+      "comment" : "Paragraph in the publish plan under the prices of a subscription, shown as fixed-width text. A price schedule is a list of prices with start dates. Do not translate ASCKit or Apple."
+    },
+    "Every language App Store Connect holds is already in this project." : {
+      "comment" : "Message when a person adds the languages from App Store Connect to the project. No language is new."
+    },
+    "Every space costs a character of the 100. Separate with commas alone." : {
+      "comment" : "Fix in the problem list about the keywords. The keywords field has a limit of 100 characters."
+    },
+    "Everything in this folder is uploaded. Remove the file or replace it." : {
+      "comment" : "Fix in the problem list about a screenshot that the app cannot open. The push uploads all files in the screenshot folder."
+    },
+    "Export it again as one movie." : {
+      "comment" : "How to fix a fragmented video."
+    },
+    "Export it again without one." : {
+      "comment" : "How to fix an image with an alpha channel."
+    },
+    "Export it as %@." : {
+      "comment" : "How to fix a screenshot of the wrong file type. The value is a list of file types, such as .png or .jpg."
+    },
+    "Export it as H.264, or as ProRes 422 HQ in a .mov file." : {
+      "comment" : "How to fix a video with a codec App Store Connect does not take. Do not translate H.264 or ProRes 422 HQ."
+    },
+    "Export it as png, jpg, mov, mp4 or m4v." : {
+      "comment" : "How to fix a file of the wrong type. Keep the file types as they are."
+    },
+    "Export it at 30 or 60 frames a second." : {
+      "comment" : "How to fix a video with the wrong frame rate."
+    },
+    "Failed:" : {
+      "comment" : "Heading in the report of what a push did. A list of items that failed comes after it."
+    },
+    "Filled from App Store Connect:" : {
+      "comment" : "Heading in the report after a read fills empty fields. One line per language follows, with the names of the fields that changed."
+    },
+    "Fix the JSON, or take the file out." : {
+      "comment" : "Fix in the problem list about a product file that the app cannot read. Do not translate JSON."
+    },
+    "Four steps by income, from the base price converted down to a third of it. The shape a consumer subscription uses when it wants volume in large lower-income markets." : {
+      "comment" : "Description of the Purchasing power price curve, shown under its name. The four steps are four groups of countries by income."
+    },
+    "Give it an amount, a price point, or skip. Otherwise take it out and let the curve decide." : {
+      "comment" : "Fix in the problem list about a price set by hand for one country. Do not translate skip. It is a JSON key. The curve is the price curve of the product."
+    },
+    "Header and search results:" : {
+      "comment" : "Heading in the publish plan, over the product page header and search results art that changes."
+    },
+    "Here App Store Connect takes %@, in the file types each size allows." : {
+      "comment" : "How to fix art of the wrong size. The value is a list of sizes in pixels. Do not translate App Store Connect."
+    },
+    "In-App Purchases" : {
+      "comment" : "Noun. The name of one part of a publish, on its checkbox in the publish sheet and on its report. It is the text of the in-app purchases."
+    },
+    "In-app purchases:" : {
+      "comment" : "Heading in the publish plan, shown as fixed-width text. A list of in-app purchase text changes comes after it."
+    },
+    "It has to map each file name to a time code, such as {\"01-a.mov\": \"00:00:05:00\"}." : {
+      "comment" : "How to fix a damaged poster-frames.json. Keep the example as it is."
+    },
+    "Keep one. An amount is rounded up to a real point, and a point is taken as it is." : {
+      "comment" : "Fix in the problem list about a price set by hand. A point is a price point, which is one fixed price on the list of prices of the App Store."
+    },
+    "Keep one. App Store Connect shows one." : {
+      "comment" : "How to fix two files for the header, or two for search results. Do not translate App Store Connect."
+    },
+    "Keywords" : {
+      "comment" : "Noun. The name of the keywords field of the listing."
+    },
+    "Left alone, already listed:" : {
+      "comment" : "Heading in a report. A list of device classes that the project already lists comes after it. The app did not change them."
+    },
+    "Left alone, already there:" : {
+      "comment" : "Heading in a report. A list of items that were already in the project comes after it. The app did not change them."
+    },
+    "Left as they were:" : {
+      "comment" : "Heading in the report of the action that removes the alpha channel from screenshots. A list of files that the app could not change comes after it."
+    },
+    "Left out:" : {
+      "comment" : "Heading in the publish plan, shown as fixed-width text. A list of languages or in-app purchases that the push does not publish comes after it."
+    },
+    "Left out: %@" : {
+      "comment" : "Line in the publish plan under the prices of one product, shown as fixed-width text. The value is a list of country codes that the push does not price."
+    },
+    "Made %@/%@ from App Store Connect." : {
+      "comment" : "First line of the report after the app makes a folder for a new version, shown as fixed-width text. The first value is the versions folder name. The second is the version number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Made %1$@/%2$@ from App Store Connect."
+          }
+        }
+      }
+    },
+    "Make %@/%@ and write the app information for that version." : {
+      "comment" : "Fix in the problem list. The first value is the path of the versions folder. The second is a version number. The result is a folder path.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Make %1$@/%2$@ and write the app information for that version."
+          }
+        }
+      }
+    },
+    "Make %@/<version>/%@ and put an app information file in it." : {
+      "comment" : "Fix in the problem list. The first value is the path of the versions folder, and the second is a folder name. Do not translate <version>, which holds the place of a version number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Make %1$@/<version>/%2$@ and put an app information file in it."
+          }
+        }
+      }
+    },
+    "Marketing URL" : {
+      "comment" : "Noun. The name of the marketing URL field of the listing. URL is a web address."
+    },
+    "Moved to the Trash, because App Store Connect has no such group:" : {
+      "comment" : "Heading in a report. A list of subscription group files comes after it. App Store Connect holds no group with the name of each file, so the app moved the file to the Trash."
+    },
+    "Moved to the Trash, because App Store Connect never released these versions:" : {
+      "comment" : "Heading in a report. A list of version folders comes after it, such as versions/1.16. App Store Connect never released those versions, so the app moved the folders to the Trash."
+    },
+    "Name" : {
+      "comment" : "Noun. The name of a text field in the listing and in an in-app purchase. It holds the name of the app or of the in-app purchase."
+    },
+    "Name it header or search-results, with its extension. Nothing uploads it." : {
+      "comment" : "How to fix a file in the creative folder with an unknown name. Keep header and search-results as they are: they are file names."
+    },
+    "No change." : {
+      "comment" : "Short line under the name of a part in the publish sheet. The part has nothing to publish."
+    },
+    "No changes." : {
+      "comment" : "Summary of the publish plan when there is nothing to publish."
+    },
+    "No configuration file at %@. A project needs an %@." : {
+      "comment" : "Error sentence when the app opens a project. The first value is a folder path. The second is the configuration file name, which stays in English.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No configuration file at %1$@. A project needs an %2$@."
+          }
+        }
+      }
+    },
+    "No device classes are listed, so no screenshots will be published." : {
+      "comment" : "Problem message in the problem list. A device class is a group of devices with the same screenshot size, such as iPhone 6.9 inch."
+    },
+    "No languages are listed, so there is nothing to publish." : {
+      "comment" : "Problem message in the problem list about the configuration file."
+    },
+    "No private key for %@. Looked in:\n%@\n\nMake a key in App Store Connect, under Users and Access, Integrations, with the App Manager role. Then:\n\n  mkdir -p %@\n  mv ~/Downloads/%@ %@/\n  chmod 600 %@/%@\n\nOr point %@ at the file." : {
+      "comment" : "Error text from the command line tool when it finds no App Store Connect API key. Keep every line break. The values are a key id, folder paths, a file name and an environment variable name. Do not translate the command lines, or Users and Access, Integrations and App Manager.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No private key for %1$@. Looked in:\n%2$@\n\nMake a key in App Store Connect, under Users and Access, Integrations, with the App Manager role. Then:\n\n  mkdir -p %3$@\n  mv ~/Downloads/%4$@ %5$@/\n  chmod 600 %6$@/%7$@\n\nOr point %8$@ at the file."
+          }
+        }
+      }
+    },
+    "Non-consumable" : {
+      "comment" : "Noun. The name of a kind of in-app purchase, as App Store Connect names it. A person buys it one time and keeps it."
+    },
+    "Non-renewing subscription" : {
+      "comment" : "Noun. The name of a kind of in-app purchase, as App Store Connect names it. It gives access for a fixed time and does not renew."
+    },
+    "Not ready to publish." : {
+      "comment" : "Last part of the summary of the problem list. It shows when there is one error or more."
+    },
+    "Nothing has been read yet. Read App Store Connect first." : {
+      "comment" : "Reason in the publish sheet that a part cannot be published yet. Do not translate App Store Connect."
+    },
+    "Nothing here. ASCKit needs the territory added to its own table." : {
+      "comment" : "Fix in the problem list about a country that ASCKit does not know. There is nothing that a person can do. The table is the list of countries in ASCKit."
+    },
+    "Nothing to add." : {
+      "comment" : "Report of an action that adds languages or device classes, when it added nothing."
+    },
+    "Nothing to change." : {
+      "comment" : "Error sentence when a push of text has nothing to change."
+    },
+    "Nothing to change. App Store Connect already matches these files." : {
+      "comment" : "Line in the publish plan when there is nothing to publish. Do not translate App Store Connect."
+    },
+    "Nothing to clear." : {
+      "comment" : "Report of the action that removes the alpha channel from screenshots, when it changed nothing."
+    },
+    "Nothing to fill." : {
+      "comment" : "Report after a read when no language has an empty field that App Store Connect can fill."
+    },
+    "Nothing to upload." : {
+      "comment" : "Report of a push of screenshots, when it uploaded nothing."
+    },
+    "Nothing to write." : {
+      "comment" : "Report of a push or of a read into files, when it wrote nothing."
+    },
+    "Nothing uploads them." : {
+      "comment" : "Second sentence of a warning about previews in a folder no device class matches."
+    },
+    "Nothing uploads them. List the device class in asckit.json, or remove the folder." : {
+      "comment" : "Fix text for a problem in the problem list. Keep asckit.json as it is, because it is a file name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing uploads them. List the device class in asckit.json, or remove the folder."
+          }
+        }
+      }
+    },
+    "Nothing wrong." : {
+      "comment" : "Summary of the problem list when there is no error and no warning."
+    },
+    "Overwritten:" : {
+      "comment" : "Heading in the report of a push of screenshots. A list of languages and screenshot names that the push uploaded comes after it."
+    },
+    "People who already subscribe keep what they pay." : {
+      "comment" : "Paragraph in the publish plan under a subscription price, shown as fixed-width text. It says that the price change does not change the price for current subscribers."
+    },
+    "People who already subscribe move to the new price. On a rise Apple asks them, and cancels the ones who do not answer." : {
+      "comment" : "Paragraph in the publish plan under a subscription price, shown as fixed-width text. A rise is a price that goes up. Do not translate Apple."
+    },
+    "Prices" : {
+      "comment" : "Noun. The name of one part of a publish, on its checkbox in the publish sheet and on its report. It is the prices of the in-app purchases."
+    },
+    "Prices:" : {
+      "comment" : "Heading in the publish plan, shown as fixed-width text. A list of price changes comes after it."
+    },
+    "Privacy Policy URL" : {
+      "comment" : "Noun. The name of the privacy policy URL field of the listing. URL is a web address."
+    },
+    "Promotional Text" : {
+      "comment" : "Noun. The name of the promotional text field of the listing."
+    },
+    "Purchasing power" : {
+      "comment" : "Noun. The name of a price curve. A price curve is a set of rules that sets a price in each country. This curve sets lower prices in countries with lower income."
+    },
+    "Push writes over what App Store Connect holds now." : {
+      "comment" : "Warning in the publish sheet above the publish button. Push is the action that sends the files to App Store Connect."
+    },
+    "Raises the price where the tax is high, so that what Apple pays you is about the same everywhere. For per-seat and business pricing." : {
+      "comment" : "Description of the Equal proceeds price curve, shown under its name. Per-seat pricing is a price for each user in a company."
+    },
+    "Read App Store Connect again. A product only has a price ladder once the store knows about it." : {
+      "comment" : "Fix in the problem list. A price ladder is the list of fixed prices that the App Store sells in one country. Do not translate App Store Connect."
+    },
+    "Read App Store Connect first." : {
+      "comment" : "Error sentence when a person adds the languages from App Store Connect to the project. The app needs to read App Store Connect before this action."
+    },
+    "Read App Store Connect with the images, then push them." : {
+      "comment" : "Error when a push of images starts from a read that left the images out."
+    },
+    "Read it, then set status to approved, or ai_approved if a machine wrote it." : {
+      "comment" : "Fix in the problem list about a language that is not ready to publish. Do not translate status, approved or ai_approved. They are a JSON key and its values."
+    },
+    "Read the prices again and write once more. Only what is still wrong goes out." : {
+      "comment" : "Line in the report of a push of prices, after a list of prices that App Store Connect refused. Write is the action that sends the prices."
+    },
+    "Read the resolved prices before pushing. %@" : {
+      "comment" : "Fix in the problem list about old price curve data. The value is an English sentence that names the source of the data."
+    },
+    "Recorded in %@" : {
+      "comment" : "Last line in the report of what a push did. The value is the file name of the record of the push."
+    },
+    "Refused in this state:" : {
+      "comment" : "Heading in the report of a push of text. A list of language codes and field names that App Store Connect refused comes after it. The state is the state of the version."
+    },
+    "Refused:" : {
+      "comment" : "Heading in the report of a push of in-app purchases or prices. A list of items that App Store Connect refused comes after it."
+    },
+    "Remove the folder %@." : {
+      "comment" : "How to fix a folder that holds files nothing uses. The value is a folder path."
+    },
+    "Rename the entry or remove it." : {
+      "comment" : "How to fix an entry in poster-frames.json that names a missing file."
+    },
+    "Rename the file to %@.json, or change productId to %@." : {
+      "comment" : "Fix in the problem list. The first value is a product id, used as a file name. The second is the file name without .json. Do not translate productId, which is a JSON key.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rename the file to %1$@.json, or change productId to %2$@."
+          }
+        }
+      }
+    },
+    "Renamed to the name App Store Connect uses:" : {
+      "comment" : "Heading in a report. A list of subscription group files comes after it. App Store Connect changed the name of each group, and the app gave the file the new name."
+    },
+    "Screenshots" : {
+      "comment" : "Noun. The name of one part of a publish, on its checkbox in the publish sheet and on its report."
+    },
+    "Screenshots copied from an older version folder:" : {
+      "comment" : "Heading in the report after the app makes a folder for a new version, shown as fixed-width text. A list of languages and device sizes comes after it."
+    },
+    "Screenshots copied from another language, as copiesScreenshotsFrom says:" : {
+      "comment" : "Heading in the report after the app makes a folder for a new version, shown as fixed-width text. Do not translate copiesScreenshotsFrom. It is a JSON key. A list of languages and device sizes comes after it."
+    },
+    "Screenshots with no file here. Put the files in these sets before you publish, or App Store Connect loses them:" : {
+      "comment" : "Heading in the report after the app makes a folder for a new version, shown as fixed-width text. A list of languages and device sizes comes after it."
+    },
+    "Screenshots:" : {
+      "comment" : "Heading in the publish plan, shown as fixed-width text. A list of screenshot set changes comes after it."
+    },
+    "Set that country by hand, or leave it out with skip. A year sold with a 12-month commitment needs both prices, and this country's ladder has no instalment Apple would take." : {
+      "comment" : "Fix in the problem list about a yearly subscription price paid in 12 monthly instalments. Do not translate skip. It is a JSON key. The ladder is the list of fixed prices in one country."
+    },
+    "Silenced %lld warnings in %@. They are in %@." : {
+      "comment" : "asckit silence --all prints this in the terminal. The count is the number of warnings. The first value is a version, such as 1.0. The second value is a file path, such as versions/1.0/silenced.json.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Silenced %arg warning in %2$@. It is in %3$@."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Silenced %arg warnings in %2$@. They are in %3$@."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Silenced %lld warnings in every version. They are in %@." : {
+      "comment" : "asckit silence --all prints this in the terminal. The count is the number of warnings about in-app purchases. The value is a file path, such as products/silenced.json.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Silenced %arg warning in every version. It is in %2$@."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Silenced %arg warnings in every version. They are in %2$@."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Skipped %@. %@" : {
+      "comment" : "Line in the report of the action that reads in-app purchases from App Store Connect into files. The first value is a product id. The second is a full sentence that gives the reason.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Skipped %1$@. %2$@"
+          }
+        }
+      }
+    },
+    "Subscription groups:" : {
+      "comment" : "Heading in the publish plan, shown as fixed-width text. A list of subscription group text changes comes after it."
+    },
+    "Subtitle" : {
+      "comment" : "Noun. The name of the subtitle field of the listing."
+    },
+    "Support URL" : {
+      "comment" : "Noun. The name of the support URL field of the listing. URL is a web address."
+    },
+    "Take %@ out of ignoredLocales. Every other language is translated from it." : {
+      "comment" : "How to fix an error about the configuration file. The value is a language code. Do not translate ignoredLocales, which is a key in the file."
+    },
+    "Take it out of usesSourceScreenshots. Every other language falls back to this one." : {
+      "comment" : "Fix in the problem list about the source language. Do not translate usesSourceScreenshots. It is a JSON key. The word it refers to the source language."
+    },
+    "Take it out. Only a subscription has customers who already pay." : {
+      "comment" : "Fix in the problem list. The word it refers to preserveCurrentPrice, which is a JSON key. Customers who already pay are current subscribers."
+    },
+    "Take subscriptionGroup out. Only an auto-renewable subscription has one." : {
+      "comment" : "Fix in the problem list. Do not translate subscriptionGroup. It is a JSON key. The word one refers to a subscription group."
+    },
+    "Text:" : {
+      "comment" : "Heading in the publish plan, shown as fixed-width text. A list of changes to the text of the listing comes after it."
+    },
+    "The %@ %@ screenshots are newer than the %@ ones. Copying brings %lld screenshots across." : {
+      "comment" : "One line in the offer to copy screenshots from a related language. The first and the third values are language codes. The second is a device class name. The count is the number of screenshots to copy.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg4@"
+          },
+          "substitutions" : {
+            "arg4" : {
+              "argNum" : 4,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "The %1$@ %2$@ screenshots are newer than the %3$@ ones. Copying brings %arg screenshot across."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "The %1$@ %2$@ screenshots are newer than the %3$@ ones. Copying brings %arg screenshots across."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The %@ numbers were taken on %@, which is over a year ago." : {
+      "comment" : "Problem message in the problem list. The first value is a price curve id, such as purchasing-power. The second is a date, such as 2025-01-15. The numbers are the income data that the curve uses.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The %1$@ numbers were taken on %2$@, which is over a year ago."
+          }
+        }
+      }
+    },
+    "The %@ screenshots are not translated into %@." : {
+      "comment" : "Problem message in the problem list. The first value is a device class name. The second is a language code. This language has no screenshots of its own.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The %1$@ screenshots are not translated into %2$@."
+          }
+        }
+      }
+    },
+    "The %@ screenshots in %@ are the %@ files." : {
+      "comment" : "Problem message in the problem list. The first value is a device class name. The second is a language code. The third is the language code of the source language.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The %1$@ screenshots in %2$@ are the %3$@ files."
+          }
+        }
+      }
+    },
+    "The app information is not editable. The name and the subtitle are fixed until a new version is in Prepare for Submission." : {
+      "comment" : "Reason in the publish plan that app information cannot change. Do not translate Prepare for Submission. It is a state name in App Store Connect."
+    },
+    "The app is built in %@, and the listing has no %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code from the Xcode project. The second is a language code for the App Store listing.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The app is built in %1$@, and the listing has no %2$@."
+          }
+        }
+      }
+    },
+    "The app is built in %@, and the listing has none of %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code from the Xcode project. The second is a list of language codes for the App Store listing.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The app is built in %1$@, and the listing has none of %2$@."
+          }
+        }
+      }
+    },
+    "The base price, converted, in the higher-income countries, and 60 percent of that everywhere else. The simplest thing that is not the default." : {
+      "comment" : "Description of the Two prices price curve, shown under its name. The default is the Apple equalized price curve."
+    },
+    "The file name decides. Make the locale field say %@, or rename the file." : {
+      "comment" : "Fix in the problem list. The value is a language code. Do not translate locale. It is a JSON key."
+    },
+    "The file name sets the order Apple shows, so name them 01, 02 and so on." : {
+      "comment" : "Fix in the problem list about screenshot file names. Keep 01 and 02 as they are. Do not translate Apple."
+    },
+    "The files as they arrived are in the Trash." : {
+      "comment" : "Line in the report of the action that removes the alpha channel from screenshots. The original files are in the macOS Trash."
+    },
+    "The files that were there are in the Trash." : {
+      "comment" : "Line in the report after screenshots are filed, shown as fixed-width text. It comes after a list of languages that copied the new screenshots of a related language. The files are the screenshots those languages held before."
+    },
+    "The files win: they are uploaded and this language shows them. Remove them, or take %@ out of usesSourceScreenshots." : {
+      "comment" : "Fix in the problem list. The value is a language code. Do not translate usesSourceScreenshots, which is a JSON key. The files are the screenshots in the folder of the language."
+    },
+    "The in-app purchases were not read, so there is nothing to write. Read App Store Connect first." : {
+      "comment" : "Error sentence when a push of in-app purchases starts before the app reads App Store Connect. Do not translate App Store Connect."
+    },
+    "The name goes to App Store Connect with the image, and the next push looks for it there. Run asckit fix-names, or add or remove one image in this set, which names the whole set again." : {
+      "comment" : "Fix in the problem list about screenshot names. Do not translate asckit fix-names. It is a command. Do not translate App Store Connect."
+    },
+    "The name, the subtitle and the privacy policy cannot be changed until a version is in Prepare for Submission." : {
+      "comment" : "Error sentence when a push of text fails. Do not translate Prepare for Submission. It is a state name in App Store Connect."
+    },
+    "The name, the subtitle, the description, the keywords and what is new." : {
+      "comment" : "Help text for the App Information checkbox in the publish sheet. It names the text fields that a push sends."
+    },
+    "The names and descriptions of the in-app purchases." : {
+      "comment" : "Help text for the In-App Purchases checkbox in the publish sheet."
+    },
+    "The order has to name every file in the set, once each." : {
+      "comment" : "Refusal of a new order of app previews."
+    },
+    "The order left out %@. Name every screenshot in the set." : {
+      "comment" : "Error sentence when a person sets the order of screenshots. The value is a list of screenshot names."
+    },
+    "The override for %@ says nothing about what to charge." : {
+      "comment" : "Problem message in the problem list. The value is a country code. The override is a price that a person set by hand for one country."
+    },
+    "The poster frame of %@ is %@." : {
+      "comment" : "Problem in a check. The first value is a video file name. The second is the time code the project gives it.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The poster frame of %1$@ is %2$@."
+          }
+        }
+      }
+    },
+    "The price for %@ is %@." : {
+      "comment" : "Problem message in the problem list. The first value is a country code. The second is a price amount of zero or less.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The price for %1$@ is %2$@."
+          }
+        }
+      }
+    },
+    "The price for %@ is set by hand with no reason written beside it." : {
+      "comment" : "Problem message in the problem list. The value is a country code."
+    },
+    "The price for %@ names both an amount and a price point." : {
+      "comment" : "Problem message in the problem list. The value is a country code. A price point is one fixed price on the list of prices of the App Store."
+    },
+    "The price is the top of that country's ladder. Lower the base price, or leave the country out." : {
+      "comment" : "Fix in the problem list. The ladder is the list of fixed prices that the App Store sells in one country."
+    },
+    "The push went. The record of it could not be written: %@" : {
+      "comment" : "Last line in the report of what a push did. The value is the error text from the system. The record is a file that the app writes after each push."
+    },
+    "The review note is %lld characters, and the limit is 4000." : {
+      "comment" : "Problem message in the problem list about an in-app purchase. The count is the number of characters in the note for App Review. Keep 4000 as it is.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The review note is %lld character, and the limit is 4000."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The review note is %lld characters, and the limit is 4000."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The same four steps, cut much harder, down to a fifth. For a product that costs near nothing per extra customer. It wants installs and chart position more than revenue per customer." : {
+      "comment" : "Description of the Emerging market push price curve, shown under its name. The four steps are four groups of countries by income. Chart position is the rank of the app on the App Store charts."
+    },
+    "The screenshots, previews and header art. Each file goes up once, then is placed." : {
+      "comment" : "Description of the Screenshots part in the publish sheet."
+    },
+    "The set already has a file called %@. Nothing was added." : {
+      "comment" : "Refusal when an app preview with that name is there. The value is a file name."
+    },
+    "The set has no file called %@." : {
+      "comment" : "Refusal when a named app preview is not there. The value is a file name."
+    },
+    "The source language %@ is ignored, so nothing would be written." : {
+      "comment" : "Error about the configuration file. The value is a language code such as en-US."
+    },
+    "The source language %@ is not in the locale list." : {
+      "comment" : "Problem message in the problem list. The value is a language code."
+    },
+    "The space is published as written, and it counts against the limit." : {
+      "comment" : "Fix in the problem list about a text field that starts or ends with a space."
+    },
+    "The subscription group %@ has no display name in %@." : {
+      "comment" : "Warning in the problem list. The first value is the reference name of the group. The second value is a locale code, such as de-DE.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The subscription group %1$@ has no display name in %2$@."
+          }
+        }
+      }
+    },
+    "The subscription group %@ has no display name in any language." : {
+      "comment" : "Warning in the problem list. The value is the reference name of the group."
+    },
+    "The subscription group %@ holds %@, which this project does not ship." : {
+      "comment" : "Warning in the problem list. The first value is the reference name of the group. The second value is a locale code, such as de-DE.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The subscription group %1$@ holds %2$@, which this project does not ship."
+          }
+        }
+      }
+    },
+    "The words of %@ are in a version that is %@, so App Store Connect refuses a change to them now." : {
+      "comment" : "Reason in the publish plan for words that cannot go. The first value is an in-app purchase product id or a subscription group name, and it stays as it is. The second is a state such as in review.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The words of %1$@ are in a version that is %2$@, so App Store Connect refuses a change to them now."
+          }
+        }
+      }
+    },
+    "The words of this product are in a version that is %@, and App Store Connect takes no change to it now. Nothing was written in %@." : {
+      "comment" : "Reason a push wrote nothing for one in-app purchase. The first value is a state such as in review. The second is a list of language codes such as de-DE, en-US.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The words of this product are in a version that is %1$@, and App Store Connect takes no change to it now. Nothing was written in %2$@."
+          }
+        }
+      }
+    },
+    "There are screenshots for %@, which is not in the locale list." : {
+      "comment" : "Problem message in the problem list. The value is a language code."
+    },
+    "There are screenshots in a %@ folder, which the project does not list." : {
+      "comment" : "Problem message in the problem list. The value is a device class id, which is also the folder name."
+    },
+    "There is already a folder for version %@." : {
+      "comment" : "Error sentence when a person adds a version. The value is a version number."
+    },
+    "There is already a project at %@. Open it instead." : {
+      "comment" : "Error sentence when a person makes a new project. The value is a folder path."
+    },
+    "There is no app target called %@. There is: %@." : {
+      "comment" : "Error sentence when a person makes a new project from an Xcode project. The first value is the target name that the person typed. The second is a list of app target names.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "There is no app target called %1$@. There is: %2$@."
+          }
+        }
+      }
+    },
+    "There is no file at %@." : {
+      "comment" : "Error sentence. The value is a file path."
+    },
+    "There is no folder for version %@." : {
+      "comment" : "Error sentence. The value is a version number."
+    },
+    "There is no icon.json in %@." : {
+      "comment" : "Error sentence when the app reads an Icon Composer document. The value is a folder path. Do not translate icon.json. It is a file name."
+    },
+    "There is no screenshot called %@ in %@/%@." : {
+      "comment" : "Error sentence about screenshots. The first value is a screenshot name. The second is a language code, and the third is a device class id. The last two values make a folder path.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "There is no screenshot called %1$@ in %2$@/%3$@."
+          }
+        }
+      }
+    },
+    "There is no single .xcodeproj in %@. ASCKit reads the app out of the Xcode project, so use the folder that holds one." : {
+      "comment" : "Error sentence when the app opens a project. The value is a folder name. Do not translate .xcodeproj, ASCKit or Xcode."
+    },
+    "This Xcode project builds more than one app: %@. ASCKit has to be told which one the listing is for." : {
+      "comment" : "Error sentence when a person makes a new project from an Xcode project. The value is a list of app target names. Do not translate Xcode or ASCKit."
+    },
+    "This project has no %@. It lists %@." : {
+      "comment" : "Error when somebody names a language the project does not list. The first value is that language code. The second is the list of codes the project holds.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This project has no %1$@. It lists %2$@."
+          }
+        }
+      }
+    },
+    "This project has no versions yet." : {
+      "comment" : "Problem message in the problem list. A version is a version folder in the project."
+    },
+    "This replaces the whole price schedule. A country not listed here goes back to Apple's equalized price from %@." : {
+      "comment" : "Paragraph in the publish plan under the prices of an in-app purchase, shown as fixed-width text. The value is a country code for the base price. A price schedule is a list of prices with start dates."
+    },
+    "This version refuses some of these changes:\n%@" : {
+      "comment" : "Error sentence when a push of text fails. Keep the line break. The value is a list of reasons, one on each line."
+    },
+    "Translate %@, or silence this warning if the same words in both languages are meant." : {
+      "comment" : "Fix in the problem list about an in-app purchase. The value is a field name, such as Name or Description."
+    },
+    "Translate %@, or silence this warning if the shared text is intentional." : {
+      "comment" : "Fix in the problem list about the listing. The value is a field name, such as Subtitle or Keywords."
+    },
+    "Trim it. App Store Connect keeps the space and counts it." : {
+      "comment" : "Fix in the problem list about a text field that starts or ends with a space. The word it refers to the text. Do not translate App Store Connect."
+    },
+    "Two prices" : {
+      "comment" : "Noun. The name of a price curve. A price curve is a set of rules that sets a price in each country. This curve has one price level for richer countries and one for other countries."
+    },
+    "Two prices per country: the year, and one month of it on a 12-month commitment. Both move by the same factor. Twelve instalments have to come to the price of the year or more. They also have to come to one and a half times it or less." : {
+      "comment" : "Paragraph in the publish plan under the prices of a yearly subscription, shown as fixed-width text. Instalments are monthly payments. A factor is a number that the app multiplies the prices by."
+    },
+    "Use %@ instead." : {
+      "comment" : "Fix in the problem list. The value is a language code that App Store Connect accepts."
+    },
+    "Use %@ instead. App Store Connect uses the three-letter code." : {
+      "comment" : "Fix in the problem list. The value is a three-letter country code. Do not translate App Store Connect."
+    },
+    "Use a 5244x2950 png, or add a search-results file for this language." : {
+      "comment" : "How to fix a header that cannot show in search results. Keep search-results as it is: it is a file name."
+    },
+    "Use one of: %@." : {
+      "comment" : "Fix in the problem list. The value is a list of ids, such as device class ids or price curve ids."
+    },
+    "Use one of: %@. A company name such as netflix finds one too." : {
+      "comment" : "Fix in the problem list. The value is a list of price curve ids. Do not translate netflix. It is a name that the app reads."
+    },
+    "Use one of: %@. Leave it out for an app on one platform." : {
+      "comment" : "Fix in the problem list. The value is a list of platform names, such as ios, macos."
+    },
+    "Version %@ is %@ and does not accept screenshots." : {
+      "comment" : "Reason in the publish plan that screenshots cannot change. The first value is a version number. The second is a state name from App Store Connect, such as IN_REVIEW, or the text an unknown state.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ is %2$@ and does not accept screenshots."
+          }
+        }
+      }
+    },
+    "Version %@ is %@ and does not accept text changes." : {
+      "comment" : "Reason in the publish plan that text cannot change. The first value is a version number. The second is a state name from App Store Connect, such as IN_REVIEW, or the text an unknown state.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ is %2$@ and does not accept text changes."
+          }
+        }
+      }
+    },
+    "Version status does not allow any more updates." : {
+      "comment" : "Line in the publish plan summary. The state of the version on App Store Connect stops all the changes."
+    },
+    "What every in-app purchase costs in every country." : {
+      "comment" : "Help text for the Prices checkbox in the publish sheet."
+    },
+    "What's New" : {
+      "comment" : "Noun. The name of the What's New field of the listing. It holds the text about the changes in this version."
+    },
+    "Would change %@." : {
+      "comment" : "Summary of the publish plan. The value is a list of counts, such as 3 fields and 2 screenshot sets. Would change is a verb in the conditional."
+    },
+    "Write %@, or take %@ out of the locale list." : {
+      "comment" : "Fix in the problem list. The first value is the file path of an app information file. The second is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Write %1$@, or take %2$@ out of the locale list."
+          }
+        }
+      }
+    },
+    "Write a display name in at least one language. App Store Connect does not take a subscription for review without it." : {
+      "comment" : "Fix in the problem list about a subscription group with no display name."
+    },
+    "Write a display name, or take the language out of the group file." : {
+      "comment" : "Fix in the problem list about an empty display name on a subscription group."
+    },
+    "Write a price above zero, or skip the country." : {
+      "comment" : "Fix in the problem list about a price set by hand for one country. Skip is a verb."
+    },
+    "Write a price above zero. A free product has no price plan at all." : {
+      "comment" : "Fix in the problem list about the base price of an in-app purchase."
+    },
+    "Write it as 2026-09-01, or leave it out to start as soon as the write lands." : {
+      "comment" : "Fix in the problem list about a price start date. Keep 2026-09-01 as it is. The word it refers to the date."
+    },
+    "Write it as hours, minutes, seconds and frames, such as 00:00:05:00, and keep it inside the video." : {
+      "comment" : "How to fix a poster frame time code. Keep the example as it is."
+    },
+    "Write one, or the store shows this language the group's name from another language." : {
+      "comment" : "Fix in the problem list about a subscription group with no display name in one language."
+    },
+    "Written again with no alpha channel:" : {
+      "comment" : "Heading in the report of the action that removes the alpha channel from screenshots. A list of file names comes after it."
+    },
+    "Written:" : {
+      "comment" : "Heading in a report. A list of items that the action wrote comes after it."
+    },
+    "Written: %lld prices." : {
+      "comment" : "Heading in the report of a push of prices. The count is the number of prices that the push wrote.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Written: %lld price."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Written: %lld prices."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Xcode builds %@, and this project pushes to %@." : {
+      "comment" : "Problem message in the problem list. Both values are bundle ids, such as com.example.app. Do not translate Xcode.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Xcode builds %1$@, and this project pushes to %2$@."
+          }
+        }
+      }
+    },
+    "You cannot charge any amount you like. The App Store offers a fixed ladder of prices in each country, and its steps end in .49 or .99. ASCKit rounds every price up to the next step. Where the currency has a step ending in .99, it rounds up again to that one." : {
+      "comment" : "Paragraph in the publish plan above the prices, shown as fixed-width text. Keep .49 and .99 as they are. The ladder is the list of fixed prices in one country."
+    },
+    "add %lld images" : {
+      "comment" : "Short text in the publish plan beside a screenshot set, shown as fixed-width text. The count is the number of images to add to the set. Some of them can already be in the asset library.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "add %lld image"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "add %lld images"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "add %lld videos" : {
+      "comment" : "Short text in the publish plan beside a screenshot set, shown as fixed-width text. The count is the number of videos to add to the set. Some of them can already be in the asset library.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "add %lld video"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "add %lld videos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "an unknown state" : {
+      "comment" : "Short text that replaces a version state name when App Store Connect sends none. It goes into a sentence such as Version 2.0 is an unknown state."
+    },
+    "change the order" : {
+      "comment" : "Short text in the publish plan beside a set whose files stay and whose order changes."
+    },
+    "change the poster frame" : {
+      "comment" : "Short text in the publish plan beside an app preview set where only the frame shown before the video plays changes."
+    },
+    "copiesScreenshotsFrom says %@ takes the %@ screenshots of %@, and that copy cannot be made." : {
+      "comment" : "Problem message in the problem list. Do not translate copiesScreenshotsFrom. It is a JSON key. The first value is the language code that takes the screenshots. The second is a device class identifier, such as ipad-13. The third is the language code they come from.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "copiesScreenshotsFrom says %1$@ takes the %2$@ screenshots of %3$@, and that copy cannot be made."
+          }
+        }
+      }
+    },
+    "groups/%@ is now groups/%@" : {
+      "comment" : "Line in the report of renamed subscription group files. The first value is the old reference name of the group. The second is the name App Store Connect uses now. Keep groups/ as it is, because it is a folder name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "groups/%1$@ is now groups/%2$@"
+          }
+        }
+      }
+    },
+    "header" : {
+      "comment" : "Short text in the publish plan: the product page header art of one language."
+    },
+    "header and search results art" : {
+      "comment" : "Part of the line beside Screenshots in the publish sheet. It says that a push changes the product page header or the search results art."
+    },
+    "ignoredLocales names %@, which is not in the locale list." : {
+      "comment" : "Warning about the configuration file. The value is a language code. Do not translate ignoredLocales, which is a key in the file."
+    },
+    "keywords has a space after a comma." : {
+      "comment" : "Problem message in the problem list. Do not translate keywords. It is a JSON key."
+    },
+    "marked %@" : {
+      "comment" : "Reason in the publish plan that a language or an in-app purchase is left out. The value is a status that stays in English, such as draft or needs_human."
+    },
+    "no app information file" : {
+      "comment" : "Reason in the publish plan that a language is left out. The language has no app information file."
+    },
+    "no change" : {
+      "comment" : "Short text in the publish plan beside a screenshot set, shown as fixed-width text. The set does not change."
+    },
+    "none" : {
+      "comment" : "Short text in a price line of the publish plan, shown as fixed-width text. It replaces the old price when there was no price before."
+    },
+    "one month" : {
+      "comment" : "Short text in a price line of the publish plan, shown as fixed-width text. It is one monthly payment of a yearly subscription."
+    },
+    "put up %@" : {
+      "comment" : "Short text in the publish plan. The value is a file name that goes to App Store Connect."
+    },
+    "remove %lld images, then add %lld images" : {
+      "comment" : "Short text in the publish plan beside a screenshot set, shown as fixed-width text. The first count is the images to remove. The second count is the images to add to the set. Some of them can already be in the asset library.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "remove %#@arg1@, then add %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg image"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg images"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg image"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg images"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "remove %lld videos, then add %lld videos" : {
+      "comment" : "Short text in the publish plan beside a screenshot set, shown as fixed-width text. The first count is the videos to remove. The second count is the videos to add to the set. Some of them can already be in the asset library.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "remove %#@arg1@, then add %#@arg2@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg video"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg videos"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg video"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg videos"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "remove all %lld images" : {
+      "comment" : "Short text in the publish plan beside a screenshot set, shown as fixed-width text. The count is the number of images to remove.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "remove %lld image"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "remove all %lld images"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "remove all %lld videos" : {
+      "comment" : "Short text in the publish plan beside a screenshot set, shown as fixed-width text. The count is the number of videos to remove.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "remove %lld video"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "remove all %lld videos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rounded up" : {
+      "comment" : "Short label at the end of a price line in the publish plan, shown as fixed-width text. The app changed the price to the next higher fixed price."
+    },
+    "search results" : {
+      "comment" : "Short text in the publish plan: the App Store search results art of one language."
+    },
+    "set by hand" : {
+      "comment" : "Short label at the end of a price line in the publish plan, shown as fixed-width text. A person set this price in the product file."
+    },
+    "show the header, %@" : {
+      "comment" : "Short text in the publish plan: search results show the header art. The value is its file name."
+    },
+    "take it off" : {
+      "comment" : "Short text in the publish plan: App Store Connect stops showing this art."
+    },
+    "the base price" : {
+      "comment" : "Short label at the end of a price line in the publish plan, shown as fixed-width text. This country uses the base price of the product."
+    },
+    "the file says to leave it out" : {
+      "comment" : "Reason that one country is left out of a price plan. The product file tells the app to leave out this country."
+    },
+    "the price of %@" : {
+      "comment" : "Short text in the publish plan that names what a blocked change stops. The value is a product id."
+    },
+    "the year" : {
+      "comment" : "Short text in a price line of the publish plan, shown as fixed-width text. It is the price for one full year, paid one time."
+    },
+    "this version has no %@" : {
+      "comment" : "Reason one language is left out of the publish plan. The value is a language code."
+    },
+    "unreadable" : {
+      "comment" : "Adjective. It replaces the size of a screenshot in pixels when the app cannot read the image."
+    },
+    "usesSourceScreenshots names %@, which reads different words from %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second is the language code of the source language. Do not translate usesSourceScreenshots, which is a JSON key.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "usesSourceScreenshots names %1$@, which reads different words from %2$@."
+          }
+        }
+      }
+    },
+    "usesSourceScreenshots names %@, which this project does not ship." : {
+      "comment" : "Problem message in the problem list. Do not translate usesSourceScreenshots. It is a JSON key. The value is a language code."
+    },
+    "usesSourceScreenshots says %@ shows the source language's %@ screenshots, and this project does not list %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second and the third are the same device class id. Do not translate usesSourceScreenshots, which is a JSON key.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "usesSourceScreenshots says %1$@ shows the source language's %2$@ screenshots, and this project does not list %3$@."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+*.o
+xcuserdata/
+
+# Never let a key near the repository.
+*.p8

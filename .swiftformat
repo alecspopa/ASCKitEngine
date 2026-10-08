@@ -1,0 +1,30 @@
+# SwiftFormat 0.62.x. Syntax is CLI arguments, one per line, not YAML.
+
+--swift-version 6.0
+--language-mode 6
+
+# SwiftLint's `trailing_comma` forbids trailing commas; SwiftFormat's `trailingCommas`
+# defaults to `always` and adds them. Without this the two tools fight forever.
+--trailing-commas never
+
+# SwiftFormat's `wrapMultilineStatementBraces` moves the opening brace of a wrapped
+# signature onto its own line; SwiftLint's `opening_brace` rejects that. Same problem
+# as the trailing comma above: without this the two tools fight forever.
+#
+# The codebase also uses compact single-line bodies deliberately. `var isTerminal: Bool
+# { self == .complete }` reads as one fact, and expanding it to three lines buries that.
+--disable wrapMultilineStatementBraces,wrapPropertyBodies,wrapIfStatementBodies
+
+# @testable imports stay last, where they read as test-only. The default sorts them
+# by module name, burying them among the real imports.
+--import-grouping testable-last
+
+# Leave numeric literals as written. The default only groups at 6+ digits, which
+# strips the deliberate separator from things like 1_700_000_000.
+--decimal-grouping ignore
+
+# Only strip unused closure arguments. In a delegate method the parameter names say
+# which protocol requirement is being satisfied, so `_:` costs more than it gains.
+--strip-unused-args closure-only
+
+--exclude .build

@@ -1,0 +1,302 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ App Store Connect said: %@": {
+      "comment": "Error message with the details App Store Connect sent. The first value is a whole error sentence. The second value is App Store Connect's own words, in English. Do not translate the second value.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ App Store Connect said: %2$@"
+          }
+        }
+      }
+    },
+    "%@ has no version in App Store Connect yet. ASCKit reads and writes the listing of one version, so there is nothing there to read. This can wait until the app has its first version. Everything written here stays on disk.": {
+      "comment": "Error message shown when an app on App Store Connect has no version to read. The value is the bundle ID of the app. Do not translate App Store Connect or ASCKit."
+    },
+    "%@ is not a version of %@.": {
+      "comment": "Error message shown when App Store Connect has no app version with this number. The first value is the version number, such as 1.2. The second value is the bundle ID of the app.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ is not a version of %2$@."
+          }
+        }
+      }
+    },
+    "%lld hours": {
+      "comment": "A length of time that goes inside a longer sentence, such as \"try again in 2 hours\". The value is the number of hours.",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hour"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld minutes": {
+      "comment": "A length of time that goes inside a longer sentence, such as \"try again in 10 minutes\". The value is the number of minutes.",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld minute"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld minutes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld seconds": {
+      "comment": "A length of time that goes inside a longer sentence, such as \"try again in 30 seconds\". The value is the number of seconds.",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld second"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld seconds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A token may last %lld seconds, and this one asks for %lld.": {
+      "comment": "Error message shown when the app makes a sign-in token for App Store Connect that lasts too long. The first value is the maximum number of seconds. The second value is the number of seconds that the token asks for.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A token may last %#@arg1@, and this one asks for %2$lld."
+          },
+          "substitutions": {
+            "arg1": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg second"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg seconds"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ASCKit cannot reach App Store Connect. %@": {
+      "comment": "Error message shown when a request to App Store Connect fails. The value is a sentence from macOS about the network fault. Do not translate ASCKit."
+    },
+    "ASCKit cannot read the answer from App Store Connect. Check for a newer version of ASCKit.": {
+      "comment": "Error message shown when a request to App Store Connect fails. App Store Connect sent data in a form this version of the app does not know."
+    },
+    "ASCKit cannot read the answer from App Store Connect. The field %@ is not what ASCKit expects. Check for a newer version of ASCKit.": {
+      "comment": "Error message shown when a request to App Store Connect fails. The value is a path to a field in the data, such as data.attributes.name. Do not translate it."
+    },
+    "ASCKit cannot read the private key. %@": {
+      "comment": "Error message shown when the app cannot use the App Store Connect API key file. The value is a sentence that says why."
+    },
+    "App Store Connect answered with error %lld. Try again in a moment.": {
+      "comment": "Error message shown when a request to App Store Connect fails. The value is an HTTP status code from 500 to 599."
+    },
+    "App Store Connect answered with status %lld, which ASCKit does not expect.": {
+      "comment": "Error message shown when a request to App Store Connect fails. The value is an HTTP status code."
+    },
+    "App Store Connect asked for a part of %@ that is past the end of it.": {
+      "comment": "Error message shown when an upload to App Store Connect fails. The value is a file name. Do not translate App Store Connect or the file name."
+    },
+    "App Store Connect cannot find what ASCKit asked for. Somebody may have deleted it there. Read App Store Connect again.": {
+      "comment": "Error message shown when a request to App Store Connect fails. Read App Store Connect is the name of a menu command."
+    },
+    "App Store Connect gave an address for %@ that is not a URL: %@": {
+      "comment": "Error message shown when an upload to App Store Connect fails. The first value is a file name. The second value is the address that App Store Connect sent, and it stays as it is.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "App Store Connect gave an address for %1$@ that is not a URL: %2$@"
+          }
+        }
+      }
+    },
+    "App Store Connect has no app with the bundle id %@. Check the id, and check that the key's team owns the app.": {
+      "comment": "Error message shown when App Store Connect has no app with this bundle ID. The value is the bundle ID, such as com.example.app. In this sentence, key means the API key."
+    },
+    "App Store Connect is still working on %@ after %lld checks. It may yet finish. Read it back with asckit diff before uploading it again.": {
+      "comment": "Error message shown when App Store Connect does not finish processing an uploaded file. The first value is a file name. The second value is the number of checks. Do not translate asckit diff, because it is a command.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store Connect is still working on %1$@ after %#@arg2@. It may yet finish. Read it back with asckit diff before uploading it again."
+          },
+          "substitutions": {
+            "arg2": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg check"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg checks"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "App Store Connect refused %@ and did not say why.": {
+      "comment": "Error message shown when App Store Connect rejects an uploaded screenshot. The value is a file name."
+    },
+    "App Store Connect refused %@. App Store Connect said: %@": {
+      "comment": "Error message shown when App Store Connect rejects an uploaded screenshot. The first value is a file name. The second value is App Store Connect's own words, in English. Do not translate it.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "App Store Connect refused %1$@. App Store Connect said: %2$@"
+          }
+        }
+      }
+    },
+    "App Store Connect refused a value.": {
+      "comment": "Error message shown when a request to App Store Connect fails. A value in the listing is not one App Store Connect accepts."
+    },
+    "App Store Connect refused the change. The item is in a state that does not allow it.": {
+      "comment": "Error message shown when a request to App Store Connect fails. The version or product is in an App Store Connect state that stops edits."
+    },
+    "App Store Connect refused the request. Writing metadata needs a key with the App Manager role or higher.": {
+      "comment": "Error message shown when a request to App Store Connect fails. Do not translate App Manager. It is the name of a role in App Store Connect."
+    },
+    "App Store Connect refused the token. Check the Key ID, and check that the clock on this Mac is right.": {
+      "comment": "Error message shown when a request to App Store Connect fails. The token is the signed value the app sends to sign in. A wrong Key ID or a wrong clock makes App Store Connect refuse it."
+    },
+    "App Store Connect refused the token. This project names no Issuer ID, so the token went out the way an individual key signs. A team key needs its Issuer ID. Copy it from Users and Access, Integrations, and put it in the project settings.": {
+      "comment": "Error message shown when a request to App Store Connect fails. Do not translate Users and Access or Integrations. They are page names in App Store Connect."
+    },
+    "App Store Connect reserved %@ but said nothing about where to send it.": {
+      "comment": "Error message shown when an upload to App Store Connect fails before it starts. The value is a file name. Do not translate App Store Connect."
+    },
+    "App Store Connect took too long to answer. Try again.": {
+      "comment": "Error message shown when a request to App Store Connect times out. Do not translate App Store Connect."
+    },
+    "No internet connection, so ASCKit cannot reach App Store Connect.": {
+      "comment": "Error message shown when this Mac has no network connection. Do not translate ASCKit."
+    },
+    "The answer did not come from App Store Connect. Try again.": {
+      "comment": "Error message shown when a request to App Store Connect fails. The network returned something that is not a web response."
+    },
+    "The connection to App Store Connect dropped. Try again.": {
+      "comment": "Error message shown when the network connection to App Store Connect stops during a request. Do not translate App Store Connect."
+    },
+    "The field is %@.": {
+      "comment": "Second sentence after App Store Connect's own error words. The value is a path to a field, such as /data/attributes/name. Do not translate it."
+    },
+    "The request stopped before it finished. Try again.": {
+      "comment": "Error message shown when the app stops a request to App Store Connect before the request finishes."
+    },
+    "The secure connection to App Store Connect failed.": {
+      "comment": "Error message shown when the encrypted connection to App Store Connect fails, for example because of a bad certificate."
+    },
+    "The token would already have expired.": {
+      "comment": "Error message shown when a new sign-in token for App Store Connect has an end time in the past."
+    },
+    "Too many requests to App Store Connect.": {
+      "comment": "Error message shown when App Store Connect limits how many requests the app sends."
+    },
+    "Too many requests to App Store Connect. %lld requests left this hour.": {
+      "comment": "Error message shown when App Store Connect limits how many requests the app sends. The value is how many requests are left this hour.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests to App Store Connect. %#@arg1@ left this hour."
+          },
+          "substitutions": {
+            "arg1": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg request"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg requests"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Too many requests to App Store Connect. It says to try again in %@.": {
+      "comment": "Error message shown when App Store Connect limits how many requests the app sends. The value is a length of time, such as 30 seconds."
+    },
+    "a moment": {
+      "comment": "A very short length of time that goes inside a longer sentence, such as \"try again in a moment\"."
+    }
+  },
+  "version": "1.0"
+}
