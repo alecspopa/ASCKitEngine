@@ -2734,6 +2734,9 @@
     "Apple's own price everywhere. This is what App Store Connect does when you pick a price and save. Every other curve is measured against it." : {
       "comment" : "Description of the Apple equalized price curve, shown under its name. A curve is a set of rules that sets a price in each country. Do not translate App Store Connect."
     },
+    "Archived in the library, because nothing shows them any more:" : {
+      "comment" : "Heading in the push report. The lines under it name the old images and videos that a push took off the store and archived in the app's asset library."
+    },
     "Auto-renewable subscription" : {
       "comment" : "Noun. The name of a kind of in-app purchase, as App Store Connect names it. It renews each period until the person stops it."
     },

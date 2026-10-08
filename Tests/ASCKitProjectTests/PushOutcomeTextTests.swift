@@ -79,6 +79,24 @@ struct PushOutcomeTextTests {
         #expect(locales == ["es-ES: iphone-6.9", "de-DE: iphone-6.9", "en-US: iphone-6.9"])
     }
 
+    @Test func archivedAssetsGetTheirOwnSection() {
+        var result = ScreenshotPusher.Result()
+        result.uploaded = ["de-DE|iphone-6.9"]
+        result.archived = [
+            RemoteLibraryAsset(id: "a1", media: .image, fileName: "01.png", referenceName: "de-DE 01.png"),
+            RemoteLibraryAsset(id: "a2", media: .image, fileName: "02.png")
+        ]
+
+        #expect(PushOutcomeText.describe(result) == """
+        Overwritten:
+          de-DE: iphone-6.9
+
+        Archived in the library, because nothing shows them any more:
+          de-DE 01.png
+          02.png
+        """)
+    }
+
     @Test func failedScreenshotsGetTheirOwnSection() {
         var result = ScreenshotPusher.Result()
         result.uploaded = ["de-DE|iphone-6.9"]

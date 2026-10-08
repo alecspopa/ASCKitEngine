@@ -26,6 +26,9 @@ public enum PushOutcomeText {
         static let refused = LocalizedStringResource("Refused:", bundle: .here)
         static let refusedInThisState = LocalizedStringResource("Refused in this state:", bundle: .here)
         static let failed = LocalizedStringResource("Failed:", bundle: .here)
+        static let archived = LocalizedStringResource(
+            "Archived in the library, because nothing shows them any more:", bundle: .here
+        )
         static let overwritten = LocalizedStringResource("Overwritten:", bundle: .here)
         static let filled = LocalizedStringResource("Filled from App Store Connect:", bundle: .here)
 
@@ -344,8 +347,11 @@ public enum PushOutcomeText {
         let uploaded = byLocale(result.uploaded).map { "\($0.locale): \($0.rest.joined(separator: ", "))" }
         let failures = result.failed.map { "\($0.locale), \($0.deviceClassID): \($0.message)" }
 
+        let archived = result.archived.map { $0.referenceName ?? $0.fileName ?? $0.id }
+
         let text = join([
             section(Words.overwritten, uploaded),
+            section(Words.archived, archived),
             section(Words.failed, failures)
         ])
         return text.isEmpty ? String(localized: Words.nothingToUpload) : text

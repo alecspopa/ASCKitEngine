@@ -11,6 +11,10 @@ public enum ScreenshotPusher {
         /// The ids each written slot holds afterwards, in its order.
         public var slots: [SlotWritten] = []
 
+        /// The approved assets that came off a slot and were archived, because
+        /// nothing places them any more.
+        public var archived: [RemoteLibraryAsset] = []
+
         public var isCompleteSuccess: Bool { failed.isEmpty }
     }
 

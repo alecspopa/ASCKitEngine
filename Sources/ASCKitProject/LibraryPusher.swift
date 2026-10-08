@@ -10,9 +10,12 @@ import Foundation
 /// 2. Wait until App Store Connect has processed the new assets.
 /// 3. In each slot, delete the placements that are not wanted, make the ones
 ///    that are missing, and set the order.
+/// 4. Archive the approved assets that came off a slot and that nothing
+///    places any more.
 ///
-/// Removing a placement leaves its asset in the library, so nothing a push
-/// does here loses an image.
+/// An asset file never changes after its upload, so a changed file is a new
+/// asset. It takes the name of the asset it replaces, which is renamed first.
+/// Nothing a push does here deletes an image.
 public struct LibraryPusher: Sendable {
     /// One slot to fill, with the parent its placements go on.
     public struct Target: Sendable {
@@ -67,15 +70,22 @@ public struct LibraryPusher: Sendable {
         var result = ScreenshotPusher.Result()
 
         let uploads = Self.uploads(in: targets)
+        await freeNames(Set(Self.referenceNames(for: uploads).values), in: targets)
         let failedUploads = await upload(uploads, libraryID: libraryID, box: box, saveRecord: saveRecord,
                                          progress: progress)
 
         let processed = await waitForProcessing(box: box, libraryID: libraryID, md5s: Array(uploads.keys))
 
+        var replaced: [String: RemoteLibraryAsset] = [:]
+        var stillWanted: Set<String> = []
         for target in targets {
             do {
                 let ids = try await resolve(target, box: box, failedUploads: failedUploads, processed: processed)
                 let placed = try await place(ids, in: target, progress: progress)
+                stillWanted.formUnion(ids)
+                for placement in target.slot.current where placed.removed.contains(placement.id) {
+                    if let asset = placement.asset { replaced[asset.id] = asset }
+                }
                 result.uploaded.append(target.id)
                 result.slots.append(ScreenshotPusher.SlotWritten(
                     slot: target.id,
@@ -92,6 +102,10 @@ public struct LibraryPusher: Sendable {
                 ))
             }
         }
+
+        result.archived = await archiveUnplaced(
+            replaced.values.filter { stillWanted.contains($0.id) == false }, libraryID: libraryID
+        )
         return await (result, box.record)
     }
 
@@ -120,6 +134,7 @@ public struct LibraryPusher: Sendable {
     ) async -> [String: String] {
         guard uploads.isEmpty == false else { return [:] }
 
+        let names = Self.referenceNames(for: uploads)
         var byURL: [URL: (md5: String, size: Int)] = [:]
         var byName: [String: Target] = [:]
         var items: [LibraryUploader.Item] = []
@@ -130,7 +145,7 @@ public struct LibraryPusher: Sendable {
                 fileURL: upload.file.url,
                 media: upload.file.media,
                 category: upload.file.category,
-                referenceName: Self.referenceName(of: upload.file, label: upload.target.label, md5: md5),
+                referenceName: names[md5],
                 previewFrameTimeCode: upload.file.posterFrame
             ))
         }
@@ -169,11 +184,74 @@ public struct LibraryPusher: Sendable {
         return failed
     }
 
+    /// The name of each upload, by MD5.
+    ///
     /// The library takes each reference name once. The language tells apart
-    /// one file name in two languages. The checksum tells apart a changed
-    /// file from the asset it replaces.
-    static func referenceName(of file: LibraryFile, label: String, md5: String) -> String {
-        "\(label) \(file.fileName) \(md5.prefix(8))"
+    /// one file name in two languages. Two uploads that would still share a
+    /// name, such as one file name in two device classes, are told apart by
+    /// the checksum.
+    static func referenceNames(for uploads: [String: (file: LibraryFile, target: Target)]) -> [String: String] {
+        var names: [String: String] = [:]
+        var used: Set<String> = []
+        for (md5, upload) in uploads.sorted(by: { ($0.value.target.id, $0.key) < ($1.value.target.id, $1.key) }) {
+            var name = "\(upload.target.label) \(upload.file.fileName)"
+            if used.contains(name) { name += " \(md5.prefix(8))" }
+            used.insert(name)
+            names[md5] = name
+        }
+        return names
+    }
+
+    /// Renames the assets that a slot shows now under a name an upload takes.
+    /// That is the asset a changed file replaces.
+    ///
+    /// A rename that fails leaves the name taken, and the upload then says so.
+    private func freeNames(_ names: Set<String>, in targets: [Target]) async {
+        var holders: [String: RemoteLibraryAsset] = [:]
+        for placement in targets.flatMap(\.slot.current) {
+            guard let asset = placement.asset, let name = asset.referenceName, names.contains(name) else { continue }
+            holders[asset.id] = asset
+        }
+        for asset in holders.values.sorted(by: { $0.id < $1.id }) {
+            let name = asset.referenceName ?? ""
+            _ = try? await client.renameLibraryAsset(
+                media: asset.media, id: asset.id, referenceName: "\(name) (replaced \(asset.id.prefix(8)))"
+            )
+        }
+    }
+
+    /// Archives the assets that came off a slot, once nothing places them.
+    ///
+    /// Only an approved asset can be archived. A placement in another version
+    /// or in a test keeps an asset, and so does a read that fails. Gives the
+    /// assets it archived.
+    private func archiveUnplaced(_ assets: [RemoteLibraryAsset], libraryID: String) async -> [RemoteLibraryAsset] {
+        let approved = assets.filter { $0.state == .approved }
+        guard approved.isEmpty == false else { return [] }
+
+        let byID = Dictionary(approved.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var archived: [RemoteLibraryAsset] = []
+        for (media, group) in Dictionary(grouping: approved, by: \.media).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
+            guard let read = try? await client.libraryAssets(
+                libraryID: libraryID, media: media, ids: group.map(\.id).sorted()
+            ) else { continue }
+
+            for resource in read.sorted(by: { $0.id < $1.id }) {
+                // A reply with no placements list says nothing, so the asset stays.
+                guard case let .many(placements)? = resource.relationships?["placements"]?.data,
+                      placements.isEmpty,
+                      resource.attributes?.state == .approved
+                else { continue }
+                do {
+                    _ = try await client.archiveLibraryAsset(media: media, id: resource.id)
+                    if let asset = byID[resource.id] { archived.append(asset) }
+                } catch {
+                    // The asset stays as it is. The push itself worked.
+                    continue
+                }
+            }
+        }
+        return archived
     }
 
     /// The state of every asset this push uploaded, after the wait.
