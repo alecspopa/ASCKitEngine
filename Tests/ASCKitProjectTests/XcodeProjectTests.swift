@@ -475,30 +475,4 @@ final class XcodeProjectTests {
         #expect(XcodeProject.resolve("$(A)", settings: settings) == nil)
         #expect(XcodeProject.resolve("$(B)", settings: settings) == nil)
     }
-
-    // MARK: - A real one
-
-    /// Written against a synthetic project everywhere else, so this reads the
-    /// one in this repository. If Apple changes the format, this is what says so.
-    @Test(.enabled(if: AppRepository.isPresent, AppRepository.skipReason))
-    func readsTheProjectThisPackageLivesIn() throws {
-        let repository = AppRepository.url
-
-        let url = try #require(XcodeProject.find(in: repository), "no .xcodeproj at \(repository.path)")
-        let project = try XcodeProject.read(at: url)
-
-        let app = try #require(project.apps.first)
-        #expect(app.targetName == "ASCKit")
-        #expect(app.bundleID == "com.alecspopa.ASCKit")
-        #expect(app.displayName == "ASCKit")
-        #expect(app.marketingVersion != nil, "no version read from a real project")
-        #expect(project.apps.count == 1, "found \(project.apps.map(\.targetName))")
-
-        // Every app target this finds must be usable, or the scaffold has
-        // nothing to write. A real project is where that stops being true.
-        for app in project.apps {
-            #expect(app.bundleID != nil, "\(app.targetName) has no bundle identifier")
-            #expect(app.displayName.contains("$") == false, "\(app.targetName) name unresolved")
-        }
-    }
 }

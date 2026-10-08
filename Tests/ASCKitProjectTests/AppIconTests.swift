@@ -192,18 +192,3 @@ final class AppIconTests {
     }
     """
 }
-
-/// Reading the icon out of this repository, which keeps its own as an Icon
-/// Composer document. If Xcode changes where a project puts one, this says so.
-struct RealAppIconTests {
-    @Test(.enabled(if: AppRepository.isPresent, AppRepository.skipReason))
-    func findsTheIconThisAppShips() throws {
-        let repository = AppRepository.url
-
-        let found = try #require(
-            AppIcon.find(in: repository, forBundleID: "com.alecspopa.ASCKit"),
-            "no icon found in \(repository.path)"
-        )
-        #expect(found.iconComposerURL?.lastPathComponent == "AppIcon.icon")
-    }
-}

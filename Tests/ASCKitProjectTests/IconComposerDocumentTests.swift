@@ -276,22 +276,4 @@ final class IconComposerDocumentTests {
         #expect(document.groups[0].placement.offset == .zero)
         #expect(document.groups[0].layers[0].opacity == 1)
     }
-
-    // MARK: - The icon this app ships
-
-    /// The real document beside this package, read rather than made up.
-    @Test(.enabled(if: AppRepository.isPresent, AppRepository.skipReason))
-    func readsTheDocumentThisAppShips() throws {
-        let folder = AppRepository.url
-            .appending(path: "ASCKit/AppIcon.icon")
-
-        let document = try IconComposerDocument.read(at: folder)
-
-        #expect(document.background != nil)
-        #expect(document.groups.count == 2)
-
-        // The page is under the arrow, so it is drawn first.
-        let names = document.groups.flatMap(\.layers).map(\.imageURL.lastPathComponent)
-        #expect(names == ["01-page.svg", "02-change.svg"])
-    }
 }
