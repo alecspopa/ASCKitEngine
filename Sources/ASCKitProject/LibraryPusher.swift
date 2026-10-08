@@ -130,7 +130,7 @@ public struct LibraryPusher: Sendable {
                 fileURL: upload.file.url,
                 media: upload.file.media,
                 category: upload.file.category,
-                referenceName: upload.file.fileName,
+                referenceName: Self.referenceName(of: upload.file, label: upload.target.label, md5: md5),
                 previewFrameTimeCode: upload.file.posterFrame
             ))
         }
@@ -167,6 +167,13 @@ public struct LibraryPusher: Sendable {
             }
         }
         return failed
+    }
+
+    /// The library takes each reference name once. The language tells apart
+    /// one file name in two languages. The checksum tells apart a changed
+    /// file from the asset it replaces.
+    static func referenceName(of file: LibraryFile, label: String, md5: String) -> String {
+        "\(label) \(file.fileName) \(md5.prefix(8))"
     }
 
     /// The state of every asset this push uploaded, after the wait.

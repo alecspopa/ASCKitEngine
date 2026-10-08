@@ -207,6 +207,31 @@ struct LibraryPusherTests {
         #expect(calls.filter { $0 == "POST /v1/appAssetLibraryPlacements" }.count == 3)
     }
 
+    @Test func namesEachUploadByLanguageAndChecksum() async throws {
+        defer { files.remove() }
+        let english = try files.file("01.png", contents: "en")
+        let german = try files.file("02.png", contents: "de")
+        let transport = StubTransport(routes: [
+            ("/v1/appAssetLibraryImages/new1", LibraryReply.committed),
+            ("/v1/appAssetLibraryImages", LibraryReply.reserved("new1")),
+            ("/new1", .ok("")),
+            ("/appAssetLibraries/lib1/images", LibraryReply.states([("new1", "PREPARE_FOR_SUBMISSION")])),
+            ("/appAssetLibraryPlacements", LibraryReply.placement("p"))
+        ])
+
+        _ = try await push([target("en-US", local: [english]), target("de-DE", local: [german])],
+                           transport: transport)
+
+        let bodies = await transport.requests
+            .filter { $0.httpMethod == "POST" && $0.url?.path == "/v1/appAssetLibraryImages" }
+            .compactMap { $0.httpBody.flatMap { String(data: $0, encoding: .utf8) } }
+        #expect(bodies.count == 2)
+        for name in try ["en-US 01.png \(LibraryFiles.md5(english).prefix(8))",
+                         "de-DE 02.png \(LibraryFiles.md5(german).prefix(8))"] {
+            #expect(bodies.contains { $0.contains(#""referenceName":"\#(name)""#) })
+        }
+    }
+
     // MARK: - Failing partway
 
     @Test func placesNothingInASlotWhoseUploadFailed() async throws {
