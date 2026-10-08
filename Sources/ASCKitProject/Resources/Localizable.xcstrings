@@ -3050,6 +3050,9 @@
     "Privacy Policy URL" : {
       "comment" : "Noun. The name of the privacy policy URL field of the listing. URL is a web address."
     },
+    "Product Page Optimization" : {
+      "comment" : "Noun. The name of one part of a publish, on its checkbox in the publish sheet and on its report. It is Apple's name for product page tests in App Store Connect."
+    },
     "Promotional Text" : {
       "comment" : "Noun. The name of the promotional text field of the listing."
     },
@@ -3325,6 +3328,9 @@
     "The base price, converted, in the higher-income countries, and 60 percent of that everywhere else. The simplest thing that is not the default." : {
       "comment" : "Description of the Two prices price curve, shown under its name. The default is the Apple equalized price curve."
     },
+    "The draft tests have not been read yet." : {
+      "comment" : "Reason in the publish sheet that the Product Page Optimization part cannot be published yet."
+    },
     "The file name decides. Make the locale field say %@, or rename the file." : {
       "comment" : "Fix in the problem list. The value is a language code. Do not translate locale. It is a JSON key."
     },
@@ -3342,6 +3348,9 @@
     },
     "The files win: this language shows them. Remove them, or take %@ out of usesSourceCreative." : {
       "comment" : "How to fix a problem in the problem list. Do not translate usesSourceCreative. It is a JSON key. The value is a language code."
+    },
+    "The images of the treatments in the draft tests." : {
+      "comment" : "Description of the Product Page Optimization part in the publish sheet. A treatment is one version of the product page in a test."
     },
     "The in-app purchases were not read, so there is nothing to write. Read App Store Connect first." : {
       "comment" : "Error sentence when a push of in-app purchases starts before the app reads App Store Connect. Do not translate App Store Connect."

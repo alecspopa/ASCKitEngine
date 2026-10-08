@@ -103,7 +103,7 @@ struct PublishReadinessTests {
     // MARK: - Nothing read
 
     @Test func saysNothingHasBeenReadYet() {
-        for part in PublishPart.pushOrder {
+        for part in PublishPart.pushOrder where part.readsListing {
             #expect(state(part, nil) == .blocked(
                 "Nothing has been read yet. Read App Store Connect first."
             ))
@@ -254,7 +254,32 @@ struct PublishReadinessTests {
 
     @Test func everyPartIsAsked() {
         let states = PublishReadiness.availability(given: .init(plan: plan()))
-        #expect(states.count == 4)
+        #expect(states.count == 5)
+    }
+
+    // MARK: - The test images
+
+    /// The test images have a reading of their own, so a listing nobody read
+    /// does not hold them up.
+    @Test func theTestImagesWaitForTheirOwnReading() {
+        #expect(state(.productPageOptimization, plan()) == .blocked("The draft tests have not been read yet."))
+
+        let read = PublishReadiness.availability(of: .productPageOptimization, given: .init(
+            plan: nil, experimentPlan: ExperimentPlan(sets: [], unplaced: [])
+        ))
+        #expect(read == .nothingToDo)
+    }
+
+    @Test func aMissingVersionFolderDoesNotBlockTheTestImages() {
+        let state = PublishReadiness.availability(of: .productPageOptimization, given: .init(
+            plan: plan(), versionToCreate: "1.1", experimentPlan: ExperimentPlan(sets: [], unplaced: [])
+        ))
+        #expect(state == .nothingToDo)
+    }
+
+    @Test func theTestImagesGoLast() {
+        #expect(PublishPart.pushOrder.last == .productPageOptimization)
+        #expect(PublishPart.productPageOptimization.readsListing == false)
     }
 
     @Test func countsFieldsAndPurchases() {
@@ -348,6 +373,14 @@ struct PublishReadinessTests {
             for: [.appInformation], given: .init(plan: plan(textChanges: [text()]))
         )
         #expect(notice == "Push writes over what App Store Connect holds now.")
+    }
+
+    @Test func theNoticeSaysWhereATestImageGoes() {
+        let notice = PublishReadiness.notice(for: [.productPageOptimization], given: .init(plan: nil))
+        #expect(notice == """
+        Push writes over what App Store Connect holds now. \
+        A screenshot taken off a set stays in the app's asset library.
+        """)
     }
 
     @Test func theNoticeNamesWhatCannotBeTakenBack() {

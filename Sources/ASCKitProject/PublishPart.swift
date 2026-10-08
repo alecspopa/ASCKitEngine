@@ -12,6 +12,9 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
     case purchases
     case prices
     case screenshots
+    /// The images of the treatments in the draft Product Page Optimization
+    /// tests. They take a reading of their own, apart from the listing.
+    case productPageOptimization
 
     public var id: String { rawValue }
 
@@ -25,6 +28,7 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
         case .purchases: LocalizedStringResource("In-App Purchases", bundle: .here)
         case .prices: LocalizedStringResource("Prices", bundle: .here)
         case .screenshots: LocalizedStringResource("Screenshots", bundle: .here)
+        case .productPageOptimization: LocalizedStringResource("Product Page Optimization", bundle: .here)
         }
     }
 
@@ -43,6 +47,8 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
             LocalizedStringResource(
                 "The screenshots, previews and header art. Each file goes up once, then is placed.", bundle: .here
             )
+        case .productPageOptimization:
+            LocalizedStringResource("The images of the treatments in the draft tests.", bundle: .here)
         }
     }
 
@@ -50,10 +56,15 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
     ///
     /// Words first, because they are the cheapest to put back. Money next. The
     /// images last, because they take the longest, and a failure there is
-    /// worth reading a finished report about.
+    /// worth reading a finished report about. The test images go after the
+    /// listing, because the listing is what every visitor sees.
     public static let pushOrder: [PublishPart] = [
-        .appInformation, .purchases, .prices, .screenshots
+        .appInformation, .purchases, .prices, .screenshots, .productPageOptimization
     ]
+
+    /// Whether this part writes off a reading of the listing. The test images
+    /// write off a reading of the draft tests.
+    public var readsListing: Bool { self != .productPageOptimization }
 }
 
 /// The parts one press writes.

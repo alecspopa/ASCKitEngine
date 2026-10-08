@@ -23,16 +23,21 @@ public enum PublishReadiness {
 
         public var agreedToRises: Bool
 
+        /// The draft tests, from a reading of their own. Nil until one is read.
+        public var experimentPlan: ExperimentPlan?
+
         public init(
             plan: ChangePlan?,
             versionToCreate: String? = nil,
             stillArrivingImages: Int = 0,
-            agreedToRises: Bool = false
+            agreedToRises: Bool = false,
+            experimentPlan: ExperimentPlan? = nil
         ) {
             self.plan = plan
             self.versionToCreate = versionToCreate
             self.stillArrivingImages = stillArrivingImages
             self.agreedToRises = agreedToRises
+            self.experimentPlan = experimentPlan
         }
     }
 
@@ -49,6 +54,10 @@ public enum PublishReadiness {
         of part: PublishPart,
         given inputs: Inputs
     ) -> PublishAvailability {
+        if part == .productPageOptimization {
+            return experimentAvailability(inputs.experimentPlan)
+        }
+
         guard let plan = inputs.plan else {
             return .blocked(String(
                 localized: "Nothing has been read yet. Read App Store Connect first.", bundle: .module
@@ -101,6 +110,15 @@ public enum PublishReadiness {
         return .ready(ChangePlanFormatter.count(of: part, in: plan) ?? "")
     }
 
+    /// The test images wait for no version folder and no listing read.
+    private static func experimentAvailability(_ plan: ExperimentPlan?) -> PublishAvailability {
+        guard let plan else {
+            return .blocked(String(localized: "The draft tests have not been read yet.", bundle: .module))
+        }
+        guard let count = ChangePlanFormatter.count(of: plan) else { return .nothingToDo }
+        return .ready(count)
+    }
+
     /// What to say above the button, or nil when nothing is ticked.
     ///
     /// A push is not an edit that can be taken back, so the first sentence says
@@ -112,7 +130,7 @@ public enum PublishReadiness {
             localized: "Push writes over what App Store Connect holds now.", bundle: .module
         )]
 
-        if parts.contains(.screenshots) {
+        if parts.contains(.screenshots) || parts.contains(.productPageOptimization) {
             sentences.append(String(
                 localized: "A screenshot taken off a set stays in the app's asset library.",
                 bundle: .module

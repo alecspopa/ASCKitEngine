@@ -144,6 +144,8 @@ public struct ChangePlan: Sendable {
         case .purchases: hasProductTextChanges
         case .prices: hasPriceChanges
         case .screenshots: hasScreenshotChanges
+        // An `ExperimentPlan` holds these.
+        case .productPageOptimization: false
         }
     }
 

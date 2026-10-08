@@ -28,10 +28,15 @@ public struct PushProgress: Sendable, Equatable {
 
     public var total: Int { expected.values.reduce(0, +) }
 
-    public init(_ parts: PublishParts, in plan: ChangePlan) {
-        expected = Dictionary(
-            uniqueKeysWithValues: parts.map { ($0, Self.steps(for: $0, in: plan)) }
-        )
+    /// The listing plan is nil when only the test images go, because they
+    /// need no reading of the listing.
+    public init(_ parts: PublishParts, in plan: ChangePlan?, experiments: ExperimentPlan? = nil) {
+        expected = Dictionary(uniqueKeysWithValues: parts.map { part in
+            if part == .productPageOptimization {
+                return (part, experiments.map(Self.steps(in:)) ?? 0)
+            }
+            return (part, plan.map { Self.steps(for: part, in: $0) } ?? 0)
+        })
     }
 
     /// Counts a step, and says what it is.
@@ -63,6 +68,18 @@ public struct PushProgress: Sendable, Equatable {
         case .purchases: productTextSteps(in: plan)
         case .prices: plan.changedPricedProducts
         case .screenshots: screenshotSteps(in: plan)
+        // An `ExperimentPlan` holds these. See `steps(in:)`.
+        case .productPageOptimization: 0
+        }
+    }
+
+    /// The steps a push of the test images reports: one to empty a set that
+    /// holds images, one for each image, and one to set the order.
+    public static func steps(in plan: ExperimentPlan) -> Int {
+        plan.changingSets.reduce(0) { total, item in
+            let removing = item.remoteCount > 0 ? 1 : 0
+            let ordering = item.localFiles.count > 1 ? 1 : 0
+            return total + removing + item.localFiles.count + ordering
         }
     }
 
