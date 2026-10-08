@@ -73,6 +73,14 @@ struct ValidatorCreativeTests {
         #expect(kinds(folder) == [.creativeTwoFiles])
     }
 
+    @Test func reportsASourceCreativeNameThePushCannotUse() {
+        let config = ProjectConfig(bundleID: "b", keyID: "K", issuerID: "I", locales: ["en-US", "en-GB", "de-DE"],
+                                   usesSourceCreative: ["de-DE", "en-GB", "en-US", "fr-FR"])
+        let kinds = Validator(config: config).validateSourceCreative().map(\.kind)
+        #expect(kinds == [.sourceCreativeLocaleReadsDifferently, .sourceCreativeLocaleNotUsable,
+                          .sourceCreativeLocaleNotUsable])
+    }
+
     @Test func warnsAboutAFileWithNoRole() {
         #expect(kinds(Art.folder([:], strays: ["banner.png"])) == [.creativeFileNotKnown])
     }
@@ -173,6 +181,38 @@ struct CreativePlanTests {
                                  slot: $0.library)
         }
         #expect(LibraryPusher.uploads(in: targets).count == 1, "one upload, two placements")
+    }
+
+    @Test func placesTheSourceArtOnALanguageThatShowsIt() throws {
+        defer { files.remove() }
+        var folder = CreativeFolder()
+        folder.files["en-US"] = try [.header: [art("header.png")], .searchResults: [art("search-results.png")]]
+
+        let plans = CreativePlanner.plans(folder: folder, locales: ["en-GB", "en-US"], placements: [],
+                                          record: AssetRecord(), sources: ["en-GB": "en-US"])
+
+        #expect(plans.map(\.id) == ["en-GB|header", "en-GB|search-results", "en-US|header", "en-US|search-results"])
+        #expect(plans.map(\.shownFrom) == ["en-US", "en-US", nil, nil])
+        #expect(plans[0].file?.url == plans[2].file?.url)
+        let targets = plans.map {
+            LibraryPusher.Target(id: $0.id, label: $0.locale, deviceClassID: $0.role.rawValue,
+                                 parent: .versionLocalization(id: "l"), files: $0.file.map { [$0.libraryFile] } ?? [],
+                                 slot: $0.library)
+        }
+        #expect(LibraryPusher.uploads(in: targets).count == 2, "one upload for each file, four placements")
+    }
+
+    @Test func keepsTheOwnArtOfALanguageThatShowsTheSource() throws {
+        defer { files.remove() }
+        var folder = CreativeFolder()
+        folder.files["en-US"] = try [.header: [art("header.png")]]
+        folder.files["en-GB"] = try [.header: [art("gb-header.png")]]
+
+        let plans = CreativePlanner.plans(folder: folder, locales: ["en-GB"], placements: [],
+                                          record: AssetRecord(), sources: ["en-GB": "en-US"])
+
+        #expect(plans.map(\.shownFrom) == [nil, nil])
+        #expect(plans.first?.file?.fileName == "gb-header.png")
     }
 
     @Test func takesOffAPlacementWhoseFileIsGone() {

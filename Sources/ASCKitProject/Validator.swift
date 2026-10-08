@@ -180,6 +180,7 @@ public struct Validator: Sendable {
         problems += validateIgnoredLocales()
         problems += validateSourceScreenshots()
         problems += validateSiblingScreenshots()
+        problems += validateSourceCreative()
         return problems
     }
 

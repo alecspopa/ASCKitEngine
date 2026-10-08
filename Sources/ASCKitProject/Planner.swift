@@ -64,7 +64,8 @@ public enum Planner {
                 local.appInformation[$0]?.status.canPublish == true && remote.versionLocalizations[$0] != nil
             },
             placements: remote.placements,
-            record: record
+            record: record,
+            sources: config.creativeSources
         )
 
         return ChangePlan(

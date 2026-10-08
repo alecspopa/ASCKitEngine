@@ -68,6 +68,13 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
     /// land in `es-ES` too.
     public var copiesScreenshotsFrom: [String: [String: String]]
 
+    /// Languages that show the source language's header and search results
+    /// art: `["en-GB"]`.
+    ///
+    /// The push places the source language's assets on them, so nothing goes
+    /// up twice. A language with files of its own shows its own.
+    public var usesSourceCreative: [String]
+
     /// The country a price is written in before a curve spreads it out, as a
     /// three-letter code.
     ///
@@ -94,7 +101,7 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
         case keyID = "keyId"
         case issuerID = "issuerId"
         case sourceLocale, locales, ignoredLocales, deviceClasses, platform
-        case usesSourceScreenshots, copiesScreenshotsFrom
+        case usesSourceScreenshots, copiesScreenshotsFrom, usesSourceCreative
         case baseTerritory, defaultPriceCurve
         case versionsPath, historyPath, productsPath
     }
@@ -110,6 +117,7 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
         platform: String? = nil,
         usesSourceScreenshots: [String: [String]] = [:],
         copiesScreenshotsFrom: [String: [String: String]] = [:],
+        usesSourceCreative: [String] = [],
         baseTerritory: String = "USA",
         defaultPriceCurve: String = PriceCurve.appleEqualized.id,
         versionsPath: String = "versions",
@@ -126,6 +134,7 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
         self.platform = platform
         self.usesSourceScreenshots = usesSourceScreenshots
         self.copiesScreenshotsFrom = copiesScreenshotsFrom
+        self.usesSourceCreative = usesSourceCreative
         self.baseTerritory = baseTerritory
         self.defaultPriceCurve = defaultPriceCurve
         self.versionsPath = versionsPath
@@ -150,6 +159,7 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
         copiesScreenshotsFrom = try container.decodeIfPresent(
             [String: [String: String]].self, forKey: .copiesScreenshotsFrom
         ) ?? [:]
+        usesSourceCreative = try container.decodeIfPresent([String].self, forKey: .usesSourceCreative) ?? []
         baseTerritory = try container.decodeIfPresent(String.self, forKey: .baseTerritory) ?? "USA"
         defaultPriceCurve = try container.decodeIfPresent(String.self, forKey: .defaultPriceCurve)
             ?? PriceCurve.appleEqualized.id
@@ -171,6 +181,21 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
     /// or nil when nobody made that copy.
     public func screenshotDonor(locale: String, deviceClassID: String) -> String? {
         copiesScreenshotsFrom[locale]?[deviceClassID]
+    }
+
+    /// The language whose header and search results art this one shows, or
+    /// nil when it shows its own.
+    public func creativeSource(locale: String) -> String? {
+        locale != sourceLocale && usesSourceCreative.contains(locale) ? sourceLocale : nil
+    }
+
+    /// `creativeSource(locale:)` for every language that has one.
+    public var creativeSources: [String: String] {
+        var sources: [String: String] = [:]
+        for locale in usesSourceCreative {
+            sources[locale] = creativeSource(locale: locale)
+        }
+        return sources
     }
 
     /// Whether this language is a variant of the source language, such as

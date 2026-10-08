@@ -1047,6 +1047,17 @@
         }
       }
     },
+    "%@ is set to show the %@ header and search results, and has files of its own." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second is the language code of the source language.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is set to show the %2$@ header and search results, and has files of its own."
+          }
+        }
+      }
+    },
     "%@ is the source language, so it cannot show the source language's screenshots." : {
       "comment" : "Problem message in the problem list. The value is a language code."
     },
@@ -1069,6 +1080,9 @@
     },
     "%@ names a subscription group." : {
       "comment" : "Problem message in the problem list. The value is a product id. The product is not an auto-renewable subscription."
+    },
+    "%@ needs a header of its own. Take it out of usesSourceCreative." : {
+      "comment" : "How to fix a problem in the problem list. The value is a language code. Do not translate usesSourceCreative. It is a JSON key."
     },
     "%@ needs screenshots of its own. Take it out of usesSourceScreenshots." : {
       "comment" : "Fix in the problem list. The value is a language code. Do not translate usesSourceScreenshots. It is a JSON key."
@@ -3199,6 +3213,9 @@
     "Take %@ out of ignoredLocales. Every other language is translated from it." : {
       "comment" : "How to fix an error about the configuration file. The value is a language code. Do not translate ignoredLocales, which is a key in the file."
     },
+    "Take it out of usesSourceCreative." : {
+      "comment" : "How to fix a problem in the problem list. Do not translate usesSourceCreative. It is a JSON key."
+    },
     "Take it out of usesSourceScreenshots. Every other language falls back to this one." : {
       "comment" : "Fix in the problem list about the source language. Do not translate usesSourceScreenshots. It is a JSON key. The word it refers to the source language."
     },
@@ -3319,6 +3336,9 @@
     },
     "The files win: they are uploaded and this language shows them. Remove them, or take %@ out of usesSourceScreenshots." : {
       "comment" : "Fix in the problem list. The value is a language code. Do not translate usesSourceScreenshots, which is a JSON key. The files are the screenshots in the folder of the language."
+    },
+    "The files win: this language shows them. Remove them, or take %@ out of usesSourceCreative." : {
+      "comment" : "How to fix a problem in the problem list. Do not translate usesSourceCreative. It is a JSON key. The value is a language code."
     },
     "The in-app purchases were not read, so there is nothing to write. Read App Store Connect first." : {
       "comment" : "Error sentence when a push of in-app purchases starts before the app reads App Store Connect. Do not translate App Store Connect."
@@ -3971,6 +3991,20 @@
     },
     "unreadable" : {
       "comment" : "Adjective. It replaces the size of a screenshot in pixels when the app cannot read the image."
+    },
+    "usesSourceCreative names %@, which is the source language or a language this project does not ship." : {
+      "comment" : "Problem message in the problem list. Do not translate usesSourceCreative. It is a JSON key. The value is a language code."
+    },
+    "usesSourceCreative names %@, which reads different words from %@." : {
+      "comment" : "Problem message in the problem list. The first value is a language code. The second is the language code of the source language. Do not translate usesSourceCreative, which is a JSON key.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "usesSourceCreative names %1$@, which reads different words from %2$@."
+          }
+        }
+      }
     },
     "usesSourceScreenshots names %@, which reads different words from %@." : {
       "comment" : "Problem message in the problem list. The first value is a language code. The second is the language code of the source language. Do not translate usesSourceScreenshots, which is a JSON key.",

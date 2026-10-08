@@ -110,6 +110,9 @@ public struct CreativePlan: Sendable, Identifiable {
 
     /// True when the search results show the header's asset.
     public let usesHeader: Bool
+
+    /// The language whose file this one shows, or nil when it shows its own.
+    public let shownFrom: String?
     public let library: LibrarySlot
 
     public var id: String { "\(locale)|\(role.rawValue)" }
@@ -124,19 +127,27 @@ public enum CreativePlanner {
     /// A placement with no file is removed, the way a screenshot is. A
     /// language with a header and no search results file shows the header
     /// in search results too.
+    ///
+    /// `sources` names the language whose files a language shows, for a
+    /// language with no files of its own.
     public static func plans(
         folder: CreativeFolder,
         locales: [String],
         placements: [RemotePlacement],
-        record: AssetRecord
+        record: AssetRecord,
+        sources: [String: String] = [:]
     ) -> [CreativePlan] {
         var plans: [CreativePlan] = []
         for locale in locales.sorted() {
+            let hasOwn = folder.files[locale]?.isEmpty == false
+            let shownFrom = hasOwn ? nil : sources[locale]
+            let shown = shownFrom ?? locale
+
             for role in CreativeRole.allCases {
-                var file = folder.file(locale: locale, role: role)
+                var file = folder.file(locale: shown, role: role)
                 var usesHeader = false
                 if role == .searchResults, file == nil {
-                    file = folder.file(locale: locale, role: .header)
+                    file = folder.file(locale: shown, role: .header)
                     usesHeader = file != nil
                 }
 
@@ -150,6 +161,7 @@ public enum CreativePlanner {
                     role: role,
                     file: file,
                     usesHeader: usesHeader,
+                    shownFrom: file == nil ? nil : shownFrom,
                     library: LibraryPlanner.slot(
                         files: file.map { [$0.libraryFile] } ?? [], current: current, record: record,
                         group: CreativeRole.group, type: role.placementType

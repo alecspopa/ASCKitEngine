@@ -191,6 +191,17 @@ enum ProjectReadme {
     with its own words in them, so an empty folder is a warning, and so is a
     folder holding the source language's files byte for byte.
 
+    The header and search results art works the same way. A language listed
+    here shows the source language's files, and the push places the assets
+    already in the library, so nothing goes up twice:
+
+    ```json
+    "usesSourceCreative": ["en-AU", "en-CA", "en-GB"]
+    ```
+
+    In the app it is a checkbox on a language's Header and Search Results
+    section. Files in the language's own folder win.
+
     ### inbox
 
     Put a new screenshot in `inbox/` first, then ask ASCKit to add it. ASCKit

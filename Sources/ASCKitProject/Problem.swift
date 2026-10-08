@@ -67,6 +67,12 @@ public struct Problem: Sendable, Hashable, Identifiable {
         case sourceScreenshotsDeviceClassNotListed
         /// `copiesScreenshotsFrom` names a copy that cannot be made.
         case screenshotCopyCannotBeMade
+        /// `usesSourceCreative` names the source language, or a language the
+        /// project does not ship.
+        case sourceCreativeLocaleNotUsable
+        /// `usesSourceCreative` names a language that reads different words
+        /// from the source language.
+        case sourceCreativeLocaleReadsDifferently
         /// Xcode builds a different bundle id from the one this project pushes
         /// to.
         case bundleIDMismatch
@@ -248,6 +254,8 @@ public struct Problem: Sendable, Hashable, Identifiable {
         /// A header with no search results file beside it, in a size that
         /// does not fit search results.
         case creativeHeaderNotUniversal
+        /// A language set to show the source language's art has files of its own.
+        case creativeBesideSourceCopy
 
         // MARK: Pricing
 

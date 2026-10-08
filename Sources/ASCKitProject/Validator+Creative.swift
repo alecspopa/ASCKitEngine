@@ -116,7 +116,60 @@ public struct CreativeRules: Sendable {
 
 extension Validator {
     func validateCreative(_ content: VersionContent) -> [Problem] {
-        validateCreativeFolder(content.creativeFolder, root: "versions/\(content.versionString)/\(CreativeFolder.folderName)")
+        let root = "versions/\(content.versionString)/\(CreativeFolder.folderName)"
+        var problems = validateCreativeFolder(content.creativeFolder, root: root)
+
+        // The push places the files a language has, so its own win.
+        for locale in config.creativeSources.keys.sorted() where content.creativeFolder.files[locale]?.isEmpty == false {
+            problems.append(creativeProblem(.warning, .creativeBesideSourceCopy, locale: locale, path: "\(root)/\(locale)",
+                                            LocalizedStringResource("""
+                                            \(locale) is set to show the \(config.sourceLocale) header and \
+                                            search results, and has files of its own.
+                                            """, bundle: .here),
+                                            LocalizedStringResource("""
+                                            The files win: this language shows them. Remove them, or take \
+                                            \(locale) out of usesSourceCreative.
+                                            """, bundle: .here)))
+        }
+        return problems
+    }
+
+    /// The languages that show the source language's art. A name that the
+    /// push cannot use reads as silence, so it is reported.
+    func validateSourceCreative() -> [Problem] {
+        var problems: [Problem] = []
+        for locale in Set(config.usesSourceCreative).sorted() {
+            if locale == config.sourceLocale || config.locales.contains(locale) == false {
+                problems.append(Problem(
+                    severity: .error,
+                    area: .configuration,
+                    message: LocalizedStringResource("""
+                    usesSourceCreative names \(locale), which is the source language \
+                    or a language this project does not ship.
+                    """, bundle: .here),
+                    fix: LocalizedStringResource("Take it out of usesSourceCreative.", bundle: .here),
+                    locale: locale,
+                    path: Project.defaultConfigName,
+                    kind: .sourceCreativeLocaleNotUsable
+                ))
+            } else if config.sharesSourceLanguage(locale) == false {
+                problems.append(Problem(
+                    severity: .warning,
+                    area: .configuration,
+                    message: LocalizedStringResource("""
+                    usesSourceCreative names \(locale), which reads different words \
+                    from \(config.sourceLocale).
+                    """, bundle: .here),
+                    fix: LocalizedStringResource(
+                        "\(locale) needs a header of its own. Take it out of usesSourceCreative.", bundle: .here
+                    ),
+                    locale: locale,
+                    path: Project.defaultConfigName,
+                    kind: .sourceCreativeLocaleReadsDifferently
+                ))
+            }
+        }
+        return problems
     }
 
     func validateExperimentCreative(_ experiments: ExperimentContent) -> [Problem] {
