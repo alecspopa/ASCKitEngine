@@ -139,6 +139,38 @@ struct ScreenshotNamingTests {
         #expect(refusal.description.contains("does not list"))
     }
 
+    /// The size says which display of the fold it is, so the word is dropped.
+    @Test(arguments: ["inner", "outer", "Inner"])
+    func readsTheDisplayOfIPhoneDuo(display: String) throws {
+        let duo = ProjectConfig(
+            bundleID: "com.example.Demo",
+            keyID: "ABC123",
+            sourceLocale: "en-US",
+            locales: ["en-US"],
+            deviceClasses: [DeviceClass.iPhoneDuo.id]
+        )
+        let parts = try read("01-overview-iPhone-Duo-\(display)-en_US.png", config: duo).get()
+
+        #expect(parts.deviceClass == .iPhoneDuo)
+        #expect(parts.imageName == "overview")
+    }
+
+    /// Only iPhone Duo has two displays. On another device the word is part
+    /// of what the screenshot shows.
+    @Test func refusesADisplayWordAfterAnotherDevice() throws {
+        let refusal = try #require(read("01-hero-iPhone-6.9-inner-en_US.png").failure)
+
+        #expect(refusal.description.contains("does not say which device"))
+    }
+
+    /// An unlisted iPhone Duo is offered to the project, rather than refused
+    /// as a name with no device.
+    @Test func readsAnUnlistedIPhoneDuoWithItsDisplay() throws {
+        let refusal = try #require(read("01-overview-iPhone-Duo-inner-en_US.png").failure)
+
+        #expect(refusal.unlistedDeviceClass == .iPhoneDuo)
+    }
+
     /// Everything the name says is where the file goes, and nothing is left to
     /// say what is in the picture.
     @Test func refusesANameThatSaysNothingAboutTheScreenshot() throws {

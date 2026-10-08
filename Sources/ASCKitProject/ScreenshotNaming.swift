@@ -322,6 +322,16 @@ public enum ScreenshotNaming {
     /// run is tried first. One and three are tried as well, because the ids
     /// live in one table and this should not have to change with it.
     private static func readDevice(_ parts: inout [String]) -> DeviceClass? {
+        // iPhone Duo has an inner and an outer display, and people name them.
+        // The pixel size already says which one it is, so the word goes.
+        if let last = parts.last, foldDisplays.contains(last.lowercased()) {
+            var withoutDisplay = Array(parts.dropLast())
+            if readDevice(&withoutDisplay) == .iPhoneDuo {
+                parts = withoutDisplay
+                return .iPhoneDuo
+            }
+        }
+
         for count in stride(from: min(3, parts.count), through: 1, by: -1) {
             let token = parts.suffix(count).joined(separator: "-").lowercased()
             guard let deviceClass = DeviceClass.named(token) else { continue }
@@ -330,6 +340,8 @@ public enum ScreenshotNaming {
         }
         return nil
     }
+
+    private static let foldDisplays: Set = ["inner", "outer"]
 }
 
 extension ScreenshotNaming.Refusal: CustomStringConvertible {
