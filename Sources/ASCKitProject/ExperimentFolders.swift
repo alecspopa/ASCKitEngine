@@ -126,6 +126,14 @@ public struct ExperimentSlot: Sendable, Hashable {
         self.locale = locale
         self.deviceClassID = deviceClassID
     }
+
+    /// The key of `ExperimentContent.creative`.
+    public var treatmentKey: String {
+        ExperimentContent.creativeKey(experiment: experiment, treatment: treatment)
+    }
+
+    /// The folder of this slot, below the experiments folder.
+    public var path: String { "\(treatmentKey)/\(locale)/\(deviceClassID)" }
 }
 
 /// Everything the `product-page-optimization` folder holds, read and not yet
@@ -138,6 +146,11 @@ public struct ExperimentContent: Sendable {
 
     /// From `<test>/<treatment>/creative/<locale>/`, by `<test>/<treatment>`.
     public let creative: [String: CreativeFolder]
+
+    /// The key of `creative` for one treatment.
+    public static func creativeKey(experiment: String, treatment: String) -> String {
+        "\(experiment)/\(treatment)"
+    }
 
     public init(
         screenshots: [ExperimentSlot: [ScreenshotFile]] = [:],
@@ -190,7 +203,10 @@ public enum ExperimentContentStore {
 
                 let art = CreativeFolder.load(from: treatment.appending(path: CreativeFolder.folderName))
                 if art.isEmpty == false {
-                    creative["\(experiment.lastPathComponent)/\(treatment.lastPathComponent)"] = art
+                    creative[ExperimentContent.creativeKey(
+                        experiment: experiment.lastPathComponent,
+                        treatment: treatment.lastPathComponent
+                    )] = art
                 }
 
                 // No language code is `previews` or `creative`, so the names are free.
@@ -381,7 +397,9 @@ public enum ExperimentPlanner {
                 for localization in treatment.localizations.sorted(by: { $0.locale < $1.locale }) {
                     do {
                         creativeSets += creativePlans(
-                            in: local.creative["\(experimentFolder)/\(treatmentFolder)"] ?? CreativeFolder(),
+                            in: local.creative[ExperimentContent.creativeKey(
+                                experiment: experimentFolder, treatment: treatmentFolder
+                            )] ?? CreativeFolder(),
                             label: "\(experiment.name) / \(treatment.name) / \(localization.locale)",
                             treatmentID: treatment.id, localization: localization,
                             config: config, record: record

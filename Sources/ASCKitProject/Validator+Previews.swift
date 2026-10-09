@@ -293,7 +293,7 @@ extension Validator {
 extension Validator {
     /// The previews of every treatment, one treatment folder at a time.
     func validateExperimentPreviews(_ experiments: ExperimentContent) -> [Problem] {
-        let byTreatment = Dictionary(grouping: experiments.previews.keys) { "\($0.experiment)/\($0.treatment)" }
+        let byTreatment = Dictionary(grouping: experiments.previews.keys, by: \.treatmentKey)
         return byTreatment.keys.sorted().flatMap { treatment in
             var folder = PreviewFolder()
             for slot in byTreatment[treatment] ?? [] {

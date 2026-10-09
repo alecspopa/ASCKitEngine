@@ -53,8 +53,7 @@ public struct Validator: Sendable {
         let deviceClasses = Dictionary(uniqueKeysWithValues: config.resolvedDeviceClasses.map { ($0.id, $0) })
 
         for (slot, files) in experiments.screenshots where files.isEmpty == false {
-            let folder = "\(ExperimentFolders.folderName)/\(slot.experiment)/\(slot.treatment)"
-                + "/\(slot.locale)/\(slot.deviceClassID)"
+            let folder = "\(ExperimentFolders.folderName)/\(slot.path)"
 
             guard let deviceClass = deviceClasses[slot.deviceClassID] else {
                 problems.append(Problem(
