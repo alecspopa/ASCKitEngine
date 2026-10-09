@@ -86,7 +86,7 @@ public struct VideoRules: Sendable, Equatable {
 extension Validator {
     /// The app previews of a version.
     func validatePreviews(_ content: VersionContent) -> [Problem] {
-        validatePreviewFolder(content.previewFolder, root: "versions/\(content.versionString)/previews")
+        validatePreviewFolder(content.previewFolder, root: previewsPath(content))
     }
 
     /// The previews of one folder of `<locale>/<device class>/` folders.

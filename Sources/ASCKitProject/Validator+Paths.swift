@@ -10,4 +10,12 @@ extension Validator {
     func screenshotsPath(_ content: VersionContent) -> String {
         "\(config.versionsPath)/\(content.versionString)/screenshots"
     }
+
+    func previewsPath(_ content: VersionContent) -> String {
+        "\(config.versionsPath)/\(content.versionString)/previews"
+    }
+
+    func creativePath(_ content: VersionContent) -> String {
+        "\(config.versionsPath)/\(content.versionString)/\(CreativeFolder.folderName)"
+    }
 }

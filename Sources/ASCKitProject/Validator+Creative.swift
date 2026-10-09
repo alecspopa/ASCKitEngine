@@ -116,7 +116,7 @@ public struct CreativeRules: Sendable {
 
 extension Validator {
     func validateCreative(_ content: VersionContent) -> [Problem] {
-        let root = "versions/\(content.versionString)/\(CreativeFolder.folderName)"
+        let root = creativePath(content)
         var problems = validateCreativeFolder(content.creativeFolder, root: root)
 
         // The push places the files a language has, so its own win.
