@@ -124,18 +124,28 @@ public enum Inbox {
     /// What is waiting, split into what can be filed and what cannot.
     public struct Plan: Sendable, Hashable {
         public var arrivals: [Arrival]
+
+        /// Header and search results images, which go to a language and to no
+        /// device class.
+        public var creative: [CreativeArrival]
         public var refusals: [Refusal]
 
-        public init(arrivals: [Arrival] = [], refusals: [Refusal] = []) {
+        public init(arrivals: [Arrival] = [], creative: [CreativeArrival] = [], refusals: [Refusal] = []) {
             self.arrivals = arrivals
+            self.creative = creative
             self.refusals = refusals
         }
 
-        public var isEmpty: Bool { arrivals.isEmpty && refusals.isEmpty }
-        public var count: Int { arrivals.count + refusals.count }
+        public var isEmpty: Bool { hasArrivals == false && refusals.isEmpty }
+        public var count: Int { arrivals.count + creative.count + refusals.count }
+
+        /// Whether anything waiting can be filed.
+        public var hasArrivals: Bool { arrivals.isEmpty == false || creative.isEmpty == false }
 
         /// Every waiting image, whatever is going to happen to it.
-        public var files: [ScreenshotFile] { arrivals.map(\.file) + refusals.map(\.file) }
+        public var files: [ScreenshotFile] {
+            arrivals.map(\.file) + creative.map(\.file) + refusals.map(\.file)
+        }
 
         /// Whether a waiting file must be renamed before it can be filed.
         public var hasInvalidNames: Bool {
@@ -190,6 +200,11 @@ public enum Inbox {
     ) -> Plan {
         var plan = Plan()
         for file in files {
+            if let creative = ScreenshotNaming.readCreative(file.fileName, config: config) {
+                plan.addCreative(file, named: creative, config: config, refData: refData)
+                continue
+            }
+
             switch ScreenshotNaming.read(file.fileName, config: config) {
             case let .success(parts):
                 let clearable = ContentWriter.onlyTheAlphaChannelRefuses(
@@ -243,6 +258,9 @@ public enum Inbox {
         /// Languages that took the new pictures of the language beside them,
         /// because `copiesScreenshotsFrom` says they do.
         public var copied: [SiblingScreenshots.Remembered] = []
+
+        /// The header and search results images that went in.
+        public var creative: [CreativeArrival] = []
     }
 
     /// Puts every image the plan accepts into the language its name names, and
@@ -308,7 +326,9 @@ public enum Inbox {
             }
         }
 
-        removeEmptiedFolders(plan.arrivals.map(\.file.url), in: project)
+        try fileCreative(plan.creative, version: version, in: project, into: &outcome)
+
+        removeEmptiedFolders(plan.arrivals.map(\.file.url) + plan.creative.map(\.file.url), in: project)
 
         let changed = Set(plan.groups.map {
             ScreenshotSlot(locale: $0.locale, deviceClassID: $0.deviceClass.id)

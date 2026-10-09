@@ -169,14 +169,20 @@ public enum LibraryContentWriter {
     }
 
     /// Moves every file of one role to the Trash. Nothing there is no error.
+    /// Returns where the files went in the Trash.
+    @discardableResult
     public static func removeCreative(
         role: CreativeRole, locale: String, at place: LibraryContentPlace, in project: Project
-    ) throws {
+    ) throws -> [URL] {
         let folder = project.creativeURL(place, locale: locale)
         let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+        var trashed: [URL] = []
         for name in names where (name as NSString).deletingPathExtension == role.rawValue {
-            try FileManager.default.trashItem(at: folder.appending(path: name), resultingItemURL: nil)
+            var landed: NSURL?
+            try FileManager.default.trashItem(at: folder.appending(path: name), resultingItemURL: &landed)
+            if let landed = landed as URL? { trashed.append(landed) }
         }
+        return trashed
     }
 }
 

@@ -353,6 +353,17 @@
         }
       }
     },
+    "%@ does not say which language it is for. Name it like %@." : {
+      "comment" : "Reason in the list of inbox images that the app refuses. The first value is a file name. The second value is an example file name for a header image. Keep the example as it is.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ does not say which language it is for. Name it like %2$@."
+          }
+        }
+      }
+    },
     "%@ does not start with a number." : {
       "comment" : "Problem message in the problem list. The value is a screenshot file name. The number at the start of the name sets the order of the screenshots."
     },
@@ -836,6 +847,28 @@
     },
     "%@ is a subscription with no group." : {
       "comment" : "Problem message in the problem list. The value is a product id. The group is a subscription group in App Store Connect."
+    },
+    "%@ is already the %@ header. Keep one of the two files." : {
+      "comment" : "Reason in the list of inbox images that the app refuses. The first value is a file name. The second value is a language code. The header is the large image at the top of the App Store product page.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is already the %2$@ header. Keep one of the two files."
+          }
+        }
+      }
+    },
+    "%@ is already the %@ search results image. Keep one of the two files." : {
+      "comment" : "Reason in the list of inbox images that the app refuses. The first value is a file name. The second value is a language code. The search results image shows for the app in App Store search.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is already the %2$@ search results image. Keep one of the two files."
+          }
+        }
+      }
     },
     "%@ is empty in %@." : {
       "comment" : "Problem message in the problem list, about an in-app purchase. The first value is a field name, name or description, and it stays in English. The second is a language code.",

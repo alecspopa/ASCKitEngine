@@ -18,6 +18,10 @@ public enum ScreenshotNaming {
     /// because a person reading one is about to rename a file.
     public static let example = "03-shopping-iPhone-6.9-en_US.png"
 
+    /// What a waiting header or search results file is called. It has no
+    /// device class, because one file shows on every device.
+    public static let creativeExample = "header-en_US.png"
+
     /// What one file name says.
     public struct Parts: Sendable, Hashable {
         /// The language, as App Store Connect writes it.
@@ -47,6 +51,7 @@ public enum ScreenshotNaming {
         case noDevice(fileName: String, listed: [String])
         case deviceNotListed(fileName: String, device: DeviceClass, listed: [String])
         case noName(fileName: String)
+        case creativeNoLanguage(fileName: String)
 
         public var localizedStringResource: LocalizedStringResource {
             switch self {
@@ -90,6 +95,11 @@ public enum ScreenshotNaming {
                 LocalizedStringResource("""
                 \(fileName) says nothing about what the screenshot shows. Name it like \(example).
                 """, bundle: .here)
+
+            case let .creativeNoLanguage(fileName):
+                LocalizedStringResource("""
+                \(fileName) does not say which language it is for. Name it like \(creativeExample).
+                """, bundle: .here)
             }
         }
 
@@ -108,7 +118,7 @@ public enum ScreenshotNaming {
         /// Whether the name does not follow the inbox pattern.
         public var hasInvalidName: Bool {
             switch self {
-            case .noLanguage, .twoLanguagesFit, .noDevice, .noName:
+            case .noLanguage, .twoLanguagesFit, .noDevice, .noName, .creativeNoLanguage:
                 true
             case .languageNotShipped, .deviceNotListed:
                 false
@@ -132,34 +142,9 @@ public enum ScreenshotNaming {
         var parts = pieces(of: fileName)
 
         let locale: String
-        switch readLanguage(&parts) {
-        case let .code(code):
-            guard config.writtenLocales.contains(code) else {
-                return .failure(.languageNotShipped(
-                    fileName: fileName, locale: code, shipped: config.writtenLocales
-                ))
-            }
-            locale = code
-
-        case let .language(language):
-            let candidates = config.writtenLocales.filter {
-                let listed = $0.lowercased()
-                return listed == language || listed.hasPrefix("\(language)-")
-            }
-            switch candidates.count {
-            case 1: locale = candidates[0]
-            case 0:
-                return .failure(.languageNotShipped(
-                    fileName: fileName, locale: language, shipped: config.writtenLocales
-                ))
-            default:
-                return .failure(.twoLanguagesFit(
-                    fileName: fileName, language: language, candidates: candidates
-                ))
-            }
-
-        case let .none(token):
-            return .failure(.noLanguage(fileName: fileName, token: token))
+        switch resolveLanguage(&parts, fileName: fileName, config: config) {
+        case let .success(code): locale = code
+        case let .failure(refusal): return .failure(refusal)
         }
 
         guard let deviceClass = readDevice(&parts) else {
@@ -175,6 +160,47 @@ public enum ScreenshotNaming {
         guard imageName.isEmpty == false else { return .failure(.noName(fileName: fileName)) }
 
         return .success(Parts(locale: locale, deviceClass: deviceClass, imageName: imageName))
+    }
+
+    // MARK: - Header and search results
+
+    /// What the name of a waiting header or search results file says.
+    public struct CreativeParts: Sendable, Hashable {
+        public let locale: String
+        public let role: CreativeRole
+
+        public init(locale: String, role: CreativeRole) {
+            self.locale = locale
+            self.role = role
+        }
+    }
+
+    /// Reads `header-en_US.png` or `search-results-de_DE.jpg`. Nil when the
+    /// name is no header or search results name, so the caller reads it as a
+    /// screenshot.
+    ///
+    /// The role comes right before the language. A number or a word before
+    /// the role says nothing and is dropped.
+    public static func readCreative(_ fileName: String, config: ProjectConfig) -> Result<CreativeParts, Refusal>? {
+        var parts = pieces(of: fileName)
+
+        var withoutLanguage = parts
+        if case .none = readLanguage(&withoutLanguage) {
+            return role(endingAt: parts) == nil ? nil : .failure(.creativeNoLanguage(fileName: fileName))
+        }
+        guard let role = role(endingAt: withoutLanguage) else { return nil }
+
+        return resolveLanguage(&parts, fileName: fileName, config: config)
+            .map { CreativeParts(locale: $0, role: role) }
+    }
+
+    /// The role these pieces end with. `search-results` is two pieces.
+    private static func role(endingAt parts: [String]) -> CreativeRole? {
+        let lowered = parts.map { $0.lowercased() }
+        return CreativeRole.allCases.first { role in
+            let wanted = role.rawValue.split(separator: "-").map(String.init)
+            return lowered.count >= wanted.count && Array(lowered.suffix(wanted.count)) == wanted
+        }
     }
 
     /// The part of a screenshot name that says what it shows.
@@ -308,6 +334,43 @@ public enum ScreenshotNaming {
             return .language(token.lowercased())
         }
         return .none(token: last)
+    }
+
+    /// Takes the language off the end, and gives the store code this project
+    /// ships for it.
+    private static func resolveLanguage(
+        _ parts: inout [String], fileName: String, config: ProjectConfig
+    ) -> Result<String, Refusal> {
+        switch readLanguage(&parts) {
+        case let .code(code):
+            guard config.writtenLocales.contains(code) else {
+                return .failure(.languageNotShipped(
+                    fileName: fileName, locale: code, shipped: config.writtenLocales
+                ))
+            }
+            return .success(code)
+
+        case let .language(language):
+            let candidates = config.writtenLocales.filter {
+                let listed = $0.lowercased()
+                return listed == language || listed.hasPrefix("\(language)-")
+            }
+            switch candidates.count {
+            case 1:
+                return .success(candidates[0])
+            case 0:
+                return .failure(.languageNotShipped(
+                    fileName: fileName, locale: language, shipped: config.writtenLocales
+                ))
+            default:
+                return .failure(.twoLanguagesFit(
+                    fileName: fileName, language: language, candidates: candidates
+                ))
+            }
+
+        case let .none(token):
+            return .failure(.noLanguage(fileName: fileName, token: token))
+        }
     }
 
     /// The store code this token names, whatever case it was typed in.

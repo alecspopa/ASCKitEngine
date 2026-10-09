@@ -27,6 +27,10 @@ struct InboxCommand: AsyncParsableCommand {
         --adopt-devices puts that device class in the list first, so screenshots for a \
         device the app has started shipping on go in without being renamed.
 
+        A header or search results image is named \(ScreenshotNaming.creativeExample) or \
+        search-results-en_US.png: the role, then the language. It takes the place of the file \
+        that role has in that language.
+
         A file with an alpha channel is refused as well, because App Store Connect refuses \
         one. --clear-alpha writes those files again without the channel, on a white ground, \
         and puts the file as it arrived in the Trash.
@@ -84,13 +88,16 @@ struct InboxCommand: AsyncParsableCommand {
             print("\(arrival.file.fileName) -> \(arrival.locale)/\(arrival.deviceClass.id), "
                 + "as \(arrival.imageName)")
         }
+        for arrival in plan.creative {
+            print("\(arrival.file.fileName) -> \(arrival.locale) \(arrival.role.rawValue)")
+        }
         for refusal in plan.refusals {
             print("refused: \(refusal.reason)")
         }
 
-        if file, plan.arrivals.isEmpty == false {
+        if file, plan.hasArrivals {
             try await fileEverything(plan, project: project)
-        } else if file == false, plan.arrivals.isEmpty == false {
+        } else if file == false, plan.hasArrivals {
             print("")
             print("Nothing has moved. Run it again with --file to move these in.")
         }
@@ -243,8 +250,14 @@ struct InboxCommand: AsyncParsableCommand {
         let locales = outcome.locales.joined(separator: ", ")
 
         print("")
-        print("Filed \(countedNoun(outcome.filed, "screenshot")) into \(locales), "
-            + "version \(version).")
+        if outcome.filed > 0 {
+            print("Filed \(countedNoun(outcome.filed, "screenshot")) into \(locales), "
+                + "version \(version).")
+        }
+        for arrival in outcome.creative {
+            print("Filed \(arrival.file.fileName) as the \(arrival.locale) \(arrival.role.rawValue), "
+                + "version \(version).")
+        }
         print("The inbox copies are in the Trash.")
 
         // copiesScreenshotsFrom made these with nothing asked, so each is named.

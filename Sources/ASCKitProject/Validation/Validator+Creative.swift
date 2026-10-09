@@ -118,7 +118,7 @@ extension Validator {
         return problems
     }
 
-    private func validateCreativeFile(_ file: CreativeFile, role: CreativeRole, locale: String, path: String) -> [Problem] {
+    func validateCreativeFile(_ file: CreativeFile, role: CreativeRole, locale: String, path: String) -> [Problem] {
         var problems: [Problem] = []
         let ext = file.url.pathExtension.lowercased()
         guard MediaExtensions.image.contains(ext) || MediaExtensions.video.contains(ext) else {
