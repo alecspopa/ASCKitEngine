@@ -232,7 +232,7 @@ struct Init: ParsableCommand {
         // this output is the only record of what was there.
         describe(plan)
         let trashed = try ProjectRebuild.rebuild(plan, config: config, version: version)
-        print("Moved \(trashed.count) item\(trashed.count == 1 ? "" : "s") to the Trash.")
+        print("Moved \(countedNoun(trashed.count, "item")) to the Trash.")
         print("Wrote \(destination.lastPathComponent).")
     }
 

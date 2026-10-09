@@ -49,7 +49,7 @@ struct PriceShow: AsyncParsableCommand {
 
     func run() async throws {
         let project = try options.loadProject()
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
+        let client = try makeClient(for: project)
 
         let remote = try await client.products(bundleID: project.config.bundleID, includeWords: false)
         guard let product = remote.byProductID[productID] else {
@@ -62,7 +62,7 @@ struct PriceShow: AsyncParsableCommand {
         let wanted = territory?.split(separator: ",").map(String.init)
             ?? Territory.allIdentifiers
 
-        print("\(productID), \(product.kind), \(product.state ?? "state unknown")")
+        print("\(productID), \(product.kind), \(product.state ?? unknownState)")
         print("Reading every price the store will sell this at. This takes a moment.")
 
         // The ladder comes first, with no base price, so what the store charges

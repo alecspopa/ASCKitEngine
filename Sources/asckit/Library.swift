@@ -31,7 +31,7 @@ struct LibraryShow: AsyncParsableCommand {
 
     func run() async throws {
         let project = try options.loadProject()
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
+        let client = try makeClient(for: project)
 
         let listing = try await client.listing(
             bundleID: project.config.bundleID,
@@ -78,7 +78,7 @@ struct LibraryPrune: AsyncParsableCommand {
 
     func run() async throws {
         let project = try options.loadProject()
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
+        let client = try makeClient(for: project)
         guard let app = try await client.app(bundleID: project.config.bundleID) else {
             throw ListingError.noSuchApp(bundleID: project.config.bundleID)
         }

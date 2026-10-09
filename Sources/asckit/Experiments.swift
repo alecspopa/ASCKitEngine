@@ -31,8 +31,7 @@ struct Experiments: AsyncParsableCommand {
 
     func run() async throws {
         let project = try options.loadProject()
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
-        let session = PushSession(project: project, client: client)
+        let session = try makeSession(for: project)
         let reading = try await session.readExperiments()
 
         guard reading.remote.experiments.isEmpty == false else {
@@ -54,7 +53,7 @@ enum ExperimentReport {
         let plan = reading.plan
 
         for experiment in reading.remote.experiments {
-            Swift.print("\(experiment.name), \(experiment.state?.rawValue ?? "state unknown")")
+            Swift.print("\(experiment.name), \(experiment.state?.rawValue ?? unknownState)")
 
             for treatment in experiment.treatments {
                 Swift.print("  \(treatment.name)")
@@ -89,15 +88,13 @@ enum ExperimentReport {
             Swift.print("These folders hold images with no place to go:")
             for item in plan.unplaced {
                 Swift.print("  \(ExperimentFolders.folderName)/\(item.slot.experiment)/\(item.slot.treatment)"
-                    + "/\(item.slot.locale)/\(item.slot.deviceClassID), \(item.imageCount) "
-                    + "\(item.imageCount == 1 ? "image" : "images"): \(reason(item.reason))")
+                    + "/\(item.slot.locale)/\(item.slot.deviceClassID), \(countedNoun(item.imageCount, "image")): \(reason(item.reason))")
             }
         }
 
         if reading.madeFolders.isEmpty == false {
             Swift.print("")
-            Swift.print("Made \(reading.madeFolders.count) empty "
-                + "\(reading.madeFolders.count == 1 ? "folder" : "folders") in "
+            Swift.print("Made \(countedNoun(reading.madeFolders.count, "empty folder")) in "
                 + "\(ExperimentFolders.folderName)/. Drop the images in them.")
         }
     }
@@ -143,8 +140,7 @@ struct PushExperimentImages: AsyncParsableCommand {
 
     func run() async throws {
         let project = try options.loadProject()
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
-        let session = PushSession(project: project, client: client)
+        let session = try makeSession(for: project)
         let reading = try await session.readExperiments()
 
         guard reading.remote.experiments.isEmpty == false else {
@@ -155,14 +151,7 @@ struct PushExperimentImages: AsyncParsableCommand {
         // Same rule as asckit check: a wrong size is refused later anyway.
         let problems = Validator(project: project).validate(reading.content)
             .filter { $0.severity == .error }
-        guard problems.isEmpty else {
-            for problem in problems {
-                print(ProblemFormatter.line(for: problem, rootURL: project.rootURL))
-            }
-            print("")
-            print("Fix these first. Nothing was written.")
-            throw ExitCode.failure
-        }
+        try stopOnErrors(problems, project: project)
 
         ExperimentReport.print(reading, project: project)
 
@@ -171,8 +160,7 @@ struct PushExperimentImages: AsyncParsableCommand {
             return
         }
 
-        guard yes || confirm("Upload these to App Store Connect?") else {
-            print("Nothing written.")
+        guard confirmed(yes: yes, "Upload these to App Store Connect?") else {
             throw ExitCode.failure
         }
 
@@ -181,16 +169,7 @@ struct PushExperimentImages: AsyncParsableCommand {
         }
         let result = outcome.result
 
-        print("")
-        if result.uploaded.isEmpty == false {
-            print("Wrote: \(result.uploaded.joined(separator: ", "))")
-        }
-        for failure in result.failed {
-            print("Failed, \(failure.locale) \(failure.deviceClassID): \(failure.message)")
-        }
-        if result.isCompleteSuccess {
-            print("Done. Run asckit experiments to read it back.")
-        }
+        reportImages(result, readBack: "Run asckit experiments to read it back.")
         reportReceipt(outcome, project: project)
 
         if result.isCompleteSuccess == false { throw ExitCode.failure }

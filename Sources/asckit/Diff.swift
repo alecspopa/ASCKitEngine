@@ -47,8 +47,7 @@ struct Diff: AsyncParsableCommand {
             }
         }
 
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
-        let session = PushSession(project: project, client: client)
+        let session = try makeSession(for: project)
         // Reading a price means reading every price the store will sell each
         // product at, which is thousands of rows per product. So it happens
         // when somebody asks to see one.
@@ -62,8 +61,7 @@ struct Diff: AsyncParsableCommand {
         let listing = reading.listing
         let plan = try VersionCheck.plan(in: reading, project: project)
 
-        print("\(listing.appName ?? listing.bundleID), version \(plan.versionString), "
-            + "\(plan.versionState?.rawValue ?? "state unknown")")
+        print(versionHeader(listing, plan))
         print("")
 
         for line in ChangePlanFormatter.lines(for: plan, showingEveryPrice: prices) {

@@ -71,14 +71,7 @@ struct Pull: AsyncParsableCommand {
 
     func run() async throws {
         let project = try options.loadProject()
-        let key = try PrivateKeyStore.apiKey(for: project.config)
-
-        if let url = PrivateKeyStore.locate(keyID: project.config.keyID),
-           PrivateKeyStore.isReadableByOthers(url: url) {
-            print("warning: \(url.path) is readable by other accounts on this Mac. chmod 600 it.")
-        }
-
-        let client = try ASCClient(key: key)
+        let client = try makeClient(for: project)
         let listing = try await client.listing(
             bundleID: project.config.bundleID,
             versionString: options.appVersion,
@@ -147,7 +140,7 @@ struct Pull: AsyncParsableCommand {
     private static func versionLine(_ version: RemoteProductVersion?) -> String {
         guard let version else { return "none, so a push needs one made first" }
 
-        let state = (version.state?.rawValue ?? "state unknown")
+        let state = (version.state?.rawValue ?? unknownState)
             .lowercased().replacingOccurrences(of: "_", with: " ")
         let number = version.number.map { "\($0)" } ?? "?"
         if version.needsNewDraft {
@@ -176,7 +169,7 @@ struct Pull: AsyncParsableCommand {
             let here = onDisk[product.productID] == nil ? "no file yet" : "in files"
             let words = product.localizations.keys.sorted().joined(separator: ", ")
             print("  \(product.productID)  \(product.kind)  \(here)")
-            print("    \(product.state ?? "state unknown"), words in: \(words.isEmpty ? "none" : words)")
+            print("    \(product.state ?? unknownState), words in: \(words.isEmpty ? "none" : words)")
             // Whether the push writes into a draft, makes one, or waits is
             // worth seeing before the push.
             print("    words version: \(Self.versionLine(product.version))")
@@ -302,7 +295,7 @@ struct Pull: AsyncParsableCommand {
 
     private func report(_ listing: RemoteListing, project: Project) {
         print("\(listing.appName ?? listing.bundleID) (\(listing.bundleID))")
-        print("Version \(listing.versionString), \(listing.versionState?.rawValue ?? "state unknown")")
+        print("Version \(listing.versionString), \(listing.versionState?.rawValue ?? unknownState)")
 
         if listing.canEditText == false {
             print("This version does not accept text changes.")
@@ -345,8 +338,8 @@ struct Pull: AsyncParsableCommand {
         if outcome.written.isEmpty == false {
             let name = project.informationURL(version: version).lastPathComponent
             let folder = "\(project.config.versionsPath)/\(version)/\(name)"
-            let noun = outcome.written.count == 1 ? "app information file" : "app information files"
-            print("Wrote \(outcome.written.count) \(noun) to \(folder): "
+            let counted = countedNoun(outcome.written.count, "app information file")
+            print("Wrote \(counted) to \(folder): "
                 + outcome.written.joined(separator: ", "))
         }
         if outcome.skipped.isEmpty == false {

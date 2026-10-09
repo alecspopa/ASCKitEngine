@@ -23,6 +23,26 @@ func confirm(_ question: String) -> Bool {
     return answer == "y" || answer == "yes"
 }
 
+/// Stops a push that has errors, naming each one. The caller picks the errors
+/// that matter for its half of the listing.
+func stopOnErrors(_ errors: [Problem], project: Project) throws {
+    guard errors.isEmpty else {
+        for problem in errors {
+            print(ProblemFormatter.line(for: problem, rootURL: project.rootURL))
+        }
+        print("")
+        print("Fix these first. Nothing was written.")
+        throw ExitCode.failure
+    }
+}
+
+/// True when the person said yes or passed `--yes`. Says so when it is no.
+func confirmed(yes: Bool, _ question: String) -> Bool {
+    if yes || confirm(question) { return true }
+    print("Nothing written.")
+    return false
+}
+
 /// Says where the record of a push went. The session files it, so nothing here
 /// can push and forget to.
 func reportReceipt(_ outcome: PushSession.Outcome<some Any>, project: Project) {
@@ -66,14 +86,12 @@ struct PushText: AsyncParsableCommand {
         let checked = try Checker.check(project: project, version: options.appVersion)
         try stopOnCopyErrors(checked, project: project)
 
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
-        let session = PushSession(project: project, client: client)
+        let session = try makeSession(for: project)
         let reading = try await session.read(version: options.appVersion, includeScreenshots: false)
         let listing = reading.listing
         let plan = try VersionCheck.plan(in: reading, project: project)
 
-        print("\(listing.appName ?? listing.bundleID), version \(plan.versionString), "
-            + "\(plan.versionState?.rawValue ?? "state unknown")")
+        print(versionHeader(listing, plan))
         print("")
         for line in ChangePlanFormatter.lines(for: plan) {
             print(line)
@@ -89,8 +107,7 @@ struct PushText: AsyncParsableCommand {
         }
 
         print(ChangePlanFormatter.summary(plan))
-        guard yes || confirm("Write this to App Store Connect?") else {
-            print("Nothing written.")
+        guard confirmed(yes: yes, "Write this to App Store Connect?") else {
             throw ExitCode.failure
         }
 
@@ -105,14 +122,7 @@ struct PushText: AsyncParsableCommand {
     /// different half of the listing. Anything wrong with the words does.
     private func stopOnCopyErrors(_ checked: CheckResult, project: Project) throws {
         let relevant = checked.errors.filter { $0.area != .screenshots }
-        guard relevant.isEmpty else {
-            for problem in relevant {
-                print(ProblemFormatter.line(for: problem, rootURL: project.rootURL))
-            }
-            print("")
-            print("Fix these first. Nothing was written.")
-            throw ExitCode.failure
-        }
+        try stopOnErrors(relevant, project: project)
     }
 
     private func report(_ result: TextPusher.Result) {

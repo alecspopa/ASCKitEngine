@@ -116,8 +116,8 @@ struct InboxCommand: ParsableCommand {
         if file, plan.arrivals.isEmpty == false {
             let outcome = try ExperimentInbox.file(plan, in: project)
             print("")
-            print("Filed \(outcome.filed) image\(outcome.filed == 1 ? "" : "s") into "
-                + "\(outcome.slots.count) test folder\(outcome.slots.count == 1 ? "" : "s").")
+            print("Filed \(countedNoun(outcome.filed, "image")) into "
+                + "\(countedNoun(outcome.slots.count, "test folder")).")
             print("The inbox copies are in the Trash. Run asckit push-experiment-images to upload them.")
         } else if plan.arrivals.isEmpty == false {
             print("")
@@ -152,8 +152,8 @@ struct InboxCommand: ParsableCommand {
         guard waiting.isEmpty == false else { return }
 
         print("")
-        print("Run it again with --clear-alpha to write \(waiting.count) "
-            + "file\(waiting.count == 1 ? "" : "s") again without the channel.")
+        print("Run it again with --clear-alpha to write \(countedNoun(waiting.count, "file")) "
+            + "again without the channel.")
     }
 
     /// Puts the device classes the waiting files name into the project.
@@ -202,7 +202,7 @@ struct InboxCommand: ParsableCommand {
         let locales = outcome.locales.joined(separator: ", ")
 
         print("")
-        print("Filed \(outcome.filed) screenshot\(outcome.filed == 1 ? "" : "s") into \(locales), "
+        print("Filed \(countedNoun(outcome.filed, "screenshot")) into \(locales), "
             + "version \(version).")
         print("The inbox copies are in the Trash.")
 

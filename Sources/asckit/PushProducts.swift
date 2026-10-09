@@ -43,8 +43,7 @@ struct PushProducts: AsyncParsableCommand {
         let checked = try Checker.check(project: project, version: options.appVersion)
         try stopOnProductErrors(checked, project: project)
 
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
-        let session = PushSession(project: project, client: client)
+        let session = try makeSession(for: project)
         let reading = try await session.read(
             version: options.appVersion,
             includeScreenshots: false
@@ -69,8 +68,7 @@ struct PushProducts: AsyncParsableCommand {
             return
         }
 
-        guard yes || confirm("Write these words to App Store Connect?") else {
-            print("Nothing written.")
+        guard confirmed(yes: yes, "Write these words to App Store Connect?") else {
             throw ExitCode.failure
         }
 
@@ -96,7 +94,7 @@ struct PushProducts: AsyncParsableCommand {
     ) async throws {
         let bodies = try await session.pushProductText(reading, dryRun: true).result.wouldSend
         print("")
-        print("\(bodies.count) request\(bodies.count == 1 ? "" : "s") would go. Nothing was sent.")
+        print("\(countedNoun(bodies.count, "request")) would go. Nothing was sent.")
 
         for body in bodies.prefix(Self.bodiesShown) {
             print("")
@@ -115,14 +113,7 @@ struct PushProducts: AsyncParsableCommand {
     /// different halves, and a price is written by a different command.
     private func stopOnProductErrors(_ checked: CheckResult, project: Project) throws {
         let relevant = checked.errors.filter { $0.area == .products }
-        guard relevant.isEmpty else {
-            for problem in relevant {
-                print(ProblemFormatter.line(for: problem, rootURL: project.rootURL))
-            }
-            print("")
-            print("Fix these first. Nothing was written.")
-            throw ExitCode.failure
-        }
+        try stopOnErrors(relevant, project: project)
     }
 
     private func report(_ result: ProductPusher.TextResult) {

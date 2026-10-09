@@ -29,14 +29,12 @@ struct PushImages: AsyncParsableCommand {
         let checked = try Checker.check(project: project, version: options.appVersion)
         try stopOnScreenshotErrors(checked, project: project)
 
-        let client = try ASCClient(key: PrivateKeyStore.apiKey(for: project.config))
-        let session = PushSession(project: project, client: client)
+        let session = try makeSession(for: project)
         let reading = try await session.read(version: options.appVersion)
         let listing = reading.listing
         let plan = try VersionCheck.plan(in: reading, project: project)
 
-        print("\(listing.appName ?? listing.bundleID), version \(plan.versionString), "
-            + "\(plan.versionState?.rawValue ?? "state unknown")")
+        print(versionHeader(listing, plan))
         print("")
         for line in ChangePlanFormatter.lines(for: plan) {
             print(line)
@@ -53,8 +51,7 @@ struct PushImages: AsyncParsableCommand {
 
         print(ChangePlanFormatter.summary(plan))
 
-        guard yes || confirm("Upload these to App Store Connect?") else {
-            print("Nothing written.")
+        guard confirmed(yes: yes, "Upload these to App Store Connect?") else {
             throw ExitCode.failure
         }
 
@@ -71,26 +68,10 @@ struct PushImages: AsyncParsableCommand {
     /// does, because uploading a wrong size just gets it refused later.
     private func stopOnScreenshotErrors(_ checked: CheckResult, project: Project) throws {
         let relevant = checked.errors.filter { $0.area == .screenshots || $0.area == .configuration }
-        guard relevant.isEmpty else {
-            for problem in relevant {
-                print(ProblemFormatter.line(for: problem, rootURL: project.rootURL))
-            }
-            print("")
-            print("Fix these first. Nothing was written.")
-            throw ExitCode.failure
-        }
+        try stopOnErrors(relevant, project: project)
     }
 
     private func report(_ result: ScreenshotPusher.Result) {
-        print("")
-        if result.uploaded.isEmpty == false {
-            print("Wrote: \(result.uploaded.joined(separator: ", "))")
-        }
-        for failure in result.failed {
-            print("Failed, \(failure.locale) \(failure.deviceClassID): \(failure.message)")
-        }
-        if result.isCompleteSuccess {
-            print("Done. Read it back with asckit diff.")
-        }
+        reportImages(result, readBack: "Read it back with asckit diff.")
     }
 }

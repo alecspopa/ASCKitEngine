@@ -52,7 +52,7 @@ struct FixNames: ParsableCommand {
             print("\(move.from) -> \(move.to)")
         }
         print("")
-        print("Renamed \(moved.count) \(moved.count == 1 ? "file" : "files").")
+        print("Renamed \(countedNoun(moved.count, "file")).")
     }
 
     /// What a rename would do, read off the check rather than off the files, so
