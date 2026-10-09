@@ -255,6 +255,15 @@ final class ProjectLocationsTests {
         #expect(found.destination.standardizedFileURL == data.standardizedFileURL)
     }
 
+    @Test func newProjectForALegacyRepositoryGoesToTheRoot() throws {
+        let repo = try makeRepository(named: "repo")
+        try ProjectScaffold.create(in: repo, config: config(), version: "1.0")
+
+        let found = try NewProject.read(in: repo, locations: ProjectLocations(root: root))
+        #expect(found.alreadyAProject)
+        #expect(found.destination.deletingLastPathComponent().standardizedFileURL.path == root.standardizedFileURL.path)
+    }
+
     // MARK: - Opening and scaffolding
 
     @Test func openingWithDataKeepsTheXcodeFolderAndMovesTheCache() throws {

@@ -23,7 +23,7 @@ public struct NewProject: Sendable {
 
     /// Where the listing would go: `.asckit` beside the Xcode project, or the
     /// folder an older project is already in. With a registry, the folder the
-    /// registry names, or a new one in its root.
+    /// registry names, or a new one in its root, never one in the repository.
     public let destination: URL
 
     /// Whether there is a project at the destination already. Writing over one
@@ -101,9 +101,10 @@ public struct NewProject: Sendable {
     /// Reads a folder the same way, with the project kept outside the
     /// repository.
     ///
-    /// The destination is the folder the registry or the repository already
-    /// has for this app. A new project goes in a folder of the registry's root,
-    /// named after the app.
+    /// The destination is the folder the registry already has for this app. A
+    /// new project goes in a folder of the registry's root, named after the app.
+    /// So does a rebuilt one, when the old project is in the repository.
+    /// `alreadyAProject` is true for that old project.
     public static func read(
         in folderURL: URL,
         target: String? = nil,
@@ -111,7 +112,9 @@ public struct NewProject: Sendable {
     ) throws -> NewProject {
         let found = try read(in: folderURL, target: target)
 
-        guard let resolution = locations.resolve(repo: folderURL) else {
+        // A project in the repository is old. A new or rebuilt one goes to the
+        // root, so the destination there is the same as for no project at all.
+        guard let resolution = locations.resolve(repo: folderURL), resolution.source != .inRepo else {
             let name = locations.folderName(
                 forDisplayName: found.app.displayName,
                 bundleID: found.app.bundleID ?? found.app.displayName
@@ -122,7 +125,7 @@ public struct NewProject: Sendable {
                 app: found.app,
                 regions: found.regions,
                 destination: locations.root.appending(path: name),
-                alreadyAProject: false
+                alreadyAProject: Project.alreadyAProject(in: folderURL)
             )
         }
 

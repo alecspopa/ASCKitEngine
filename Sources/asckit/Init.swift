@@ -8,17 +8,20 @@ import Foundation
 struct Init: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "init",
-        abstract: "Make a project folder beside an Xcode project.",
+        abstract: "Make a project folder for an Xcode project.",
         discussion: """
         Reads the `.xcodeproj` in the folder for the app's name, its bundle identifier, \
         the version being worked on and the languages it ships, and writes the project \
         to ~/Documents/ASCKit/<app name>. ~/Documents/ASCKit/locations.json records which \
         repository it belongs to. Pass --data to put it in another folder.
 
-        A repository that already has an \(ProjectScaffold.folderName) folder keeps it.
+        A new project is never written into the repository.
 
-        Refuses rather than write over a project that is already there. `--force` moves \
-        the project folder to the Trash first, and says what was in it.
+        Refuses rather than write over a project that is already there. `--force` starts \
+        again and says what was in the old project. A project in the data folder is \
+        rebuilt there, and its old files go to the Trash. A project in the repository, \
+        such as an \(ProjectScaffold.folderName) folder, is replaced by a new project \
+        in the data folder, and the old folder goes to the Trash.
 
         The listing is written in one language and translated into the rest. That one is \
         the language Xcode builds the app in. Pass --source-locale when the App Store has \
@@ -83,7 +86,7 @@ struct Init: ParsableCommand {
     ))
     var data: String?
 
-    @Flag(name: .long, help: "Move an existing project to the Trash and start again.")
+    @Flag(name: .long, help: "Start again. The old project goes to the Trash.")
     var force = false
 
     func run() throws {
@@ -229,38 +232,63 @@ struct Init: ParsableCommand {
         repo folderURL: URL,
         locations: ProjectLocations
     ) throws {
+        var locations = locations
         let configPath = destination.appending(path: Project.defaultConfigName).path
-        guard FileManager.default.fileExists(atPath: configPath) else {
-            try ProjectScaffold.create(at: destination, config: config, version: version)
-            var locations = locations
-            locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
-            try locations.save()
-            print("Wrote \(destination.path).")
+
+        if FileManager.default.fileExists(atPath: configPath) {
+            // A project in the folder the registry names is rebuilt where it is.
+            let plan = ProjectRebuild.plan(at: destination)
+            guard force else {
+                throw InitError.alreadyAProject(at: destination, plan: plan)
+            }
+
+            // Said before it happens, even with --force, because the person
+            // reading this output is the only record of what was there.
+            describe(plan)
+            let trashed = try ProjectRebuild.rebuild(plan, config: config, version: version)
+            print("Moved \(countedNoun(trashed.count, "item")) to the Trash.")
+            print("Wrote \(plan.folderURL.path).")
+        } else if Project.alreadyAProject(in: folderURL) {
+            try replaceLegacyProject(
+                config: config, version: version, to: destination, repo: folderURL, locations: &locations
+            )
             return
+        } else {
+            try ProjectScaffold.create(at: destination, config: config, version: version)
+            print("Wrote \(destination.path).")
         }
 
-        // Planned from the project folder itself, so the plan moves what is in
-        // it to the Trash. A project kept in the repository is planned from
-        // the repository, and the plan then moves the project folder whole.
-        let inRepository = destination.deletingLastPathComponent().standardizedFileURL.path == folderURL.path
-        let plan = ProjectRebuild.plan(at: inRepository ? folderURL : destination)
+        locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
+        try locations.save()
+    }
 
+    /// Moves a project kept in the repository to the data folder.
+    ///
+    /// The new folder and the registry come first and the Trash last, so a
+    /// failure never leaves the person with no project.
+    private func replaceLegacyProject(
+        config: ProjectConfig,
+        version: String,
+        to destination: URL,
+        repo folderURL: URL,
+        locations: inout ProjectLocations
+    ) throws {
+        let plan = ProjectRebuild.plan(at: folderURL)
         guard force else {
-            throw InitError.alreadyAProject(at: destination, plan: plan)
+            throw InitError.alreadyAProject(at: plan.folderURL, plan: plan)
+        }
+        guard FileManager.default.fileExists(atPath: destination.path) == false else {
+            throw InitError.destinationTaken(destination)
         }
 
-        // Said before it happens, even with --force, because the person reading
-        // this output is the only record of what was there.
         describe(plan)
-        let trashed = try ProjectRebuild.rebuild(plan, config: config, version: version)
-        print("Moved \(countedNoun(trashed.count, "item")) to the Trash.")
-        print("Wrote \(plan.folderURL.path).")
+        try ProjectScaffold.create(at: destination, config: config, version: version)
+        locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
+        try locations.save()
+        try FileManager.default.trashItem(at: plan.folderURL, resultingItemURL: nil)
 
-        if inRepository == false {
-            var locations = locations
-            locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
-            try locations.save()
-        }
+        print("Wrote \(destination.path).")
+        print("Moved \(plan.folderURL.path) to the Trash.")
     }
 
     private func describe(_ plan: ProjectRebuild.Plan) {
@@ -301,9 +329,12 @@ enum InitError: Error, CustomStringConvertible {
     case noLanguagesInXcode
     case missing(String, flag: String?)
     case alreadyAProject(at: URL, plan: ProjectRebuild.Plan)
+    case destinationTaken(URL)
 
     var description: String {
         switch self {
+        case let .destinationTaken(folder):
+            "There is already a folder at \(folder.path). Pass --data to write the project to another folder."
         case let .unknownDeviceClass(id):
             "\(id) is not a screenshot size ASCKit knows. There is: "
                 + DeviceClass.all.map(\.id).joined(separator: ", ") + "."
@@ -329,7 +360,8 @@ enum InitError: Error, CustomStringConvertible {
             "There is already a project at \(folder.path)"
                 + (plan.languages.isEmpty ? "" : ", holding \(plan.languages.joined(separator: ", "))")
                 + (plan.screenshotCount > 0 ? " and \(plan.screenshotCount) screenshots" : "")
-                + ". Use --force to move it to the Trash and start again."
+                + ". Use --force to start again. The new project goes to the data folder, "
+                + "and the old one goes to the Trash."
         }
     }
 }
