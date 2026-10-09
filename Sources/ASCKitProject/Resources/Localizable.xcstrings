@@ -4133,8 +4133,30 @@
     "set by hand" : {
       "comment" : "Short label at the end of a price line in the publish plan, shown as fixed-width text. A person set this price in the product file."
     },
+    "show %@ from %@" : {
+      "comment" : "Short text in the publish plan: this language shows the art of another language. The first value is a file name. The second is a language code, such as en-US.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "show %1$@ from %2$@"
+          }
+        }
+      }
+    },
     "show the header, %@" : {
       "comment" : "Short text in the publish plan: search results show the header art. The value is its file name."
+    },
+    "show the header, %@ from %@" : {
+      "comment" : "Short text in the publish plan: search results show the header art of another language. The first value is a file name. The second is a language code, such as en-US.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "show the header, %1$@ from %2$@"
+          }
+        }
+      }
     },
     "take it off" : {
       "comment" : "Short text in the publish plan: App Store Connect stops showing this art."

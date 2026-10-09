@@ -415,4 +415,25 @@ struct CreativeSummaryTests {
 
         #expect(ChangePlanFormatter.summary(plan).contains("2 header and search results assets"))
     }
+
+    @Test func namesTheLanguageWhoseArtALanguageShows() throws {
+        let files = try LibraryFiles()
+        defer { files.remove() }
+        var folder = CreativeFolder()
+        folder.files["en-US"] = try [.header: [CreativePlanTests().art("header.png")]]
+        let creative = CreativePlanner.plans(folder: folder, locales: ["en-GB", "en-US"], placements: [],
+                                             record: AssetRecord(), sources: ["en-GB": "en-US"])
+        let plan = ChangePlan(versionString: "2.1", versionState: .prepareForSubmission, textChanges: [],
+                              missingLocales: [], screenshotPlans: [], creativePlans: creative,
+                              blocked: [], skipped: [])
+
+        #expect(ChangePlanFormatter.lines(for: plan) == [
+            "Header and search results:",
+            "  en-GB, header: show header.png from en-US",
+            "  en-GB, search results: show the header, header.png from en-US",
+            "  en-US, header: put up header.png",
+            "  en-US, search results: show the header, header.png",
+            ""
+        ])
+    }
 }
