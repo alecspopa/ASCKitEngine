@@ -105,7 +105,7 @@ extension Validator {
         )
     }
 
-    private func validateFields(_ copy: AppInformation, locale: String, path: String) -> [Problem] {
+    func validateFields(_ copy: AppInformation, locale: String, path: String) -> [Problem] {
         var problems: [Problem] = []
 
         for field in copy.fields.presentFields {

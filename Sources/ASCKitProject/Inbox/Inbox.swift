@@ -31,11 +31,14 @@ public enum Inbox {
         )?.compactMap { $0 as? URL } ?? []
 
         // What waits in the Product Page Optimization folder goes to a
-        // treatment, and `ExperimentInbox` files it.
+        // treatment, and `ExperimentInbox` files it. What waits in the custom
+        // product pages folder goes to a page, and `CustomPageInbox` files it.
         let experiments = ExperimentInbox.url(in: project).standardizedFileURL.path + "/"
+        let customPages = CustomPageInbox.url(in: project).standardizedFileURL.path + "/"
 
         return entries
             .filter { $0.standardizedFileURL.path.hasPrefix(experiments) == false }
+            .filter { $0.standardizedFileURL.path.hasPrefix(customPages) == false }
             .filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false }
             .sorted {
                 let (lhs, rhs) = ($0.lastPathComponent, $1.lastPathComponent)

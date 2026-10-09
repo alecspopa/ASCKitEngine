@@ -26,18 +26,24 @@ public enum PublishReadiness {
         /// The draft tests, from a reading of their own. Nil until one is read.
         public var experimentPlan: ExperimentPlan?
 
+        /// The custom product pages, from a reading of their own. Nil until
+        /// one is read.
+        public var customPagePlan: CustomPagePlan?
+
         public init(
             plan: ChangePlan?,
             versionToCreate: String? = nil,
             stillArrivingImages: Int = 0,
             agreedToRises: Bool = false,
-            experimentPlan: ExperimentPlan? = nil
+            experimentPlan: ExperimentPlan? = nil,
+            customPagePlan: CustomPagePlan? = nil
         ) {
             self.plan = plan
             self.versionToCreate = versionToCreate
             self.stillArrivingImages = stillArrivingImages
             self.agreedToRises = agreedToRises
             self.experimentPlan = experimentPlan
+            self.customPagePlan = customPagePlan
         }
     }
 
@@ -56,6 +62,9 @@ public enum PublishReadiness {
     ) -> PublishAvailability {
         if part == .productPageOptimization {
             return experimentAvailability(inputs.experimentPlan)
+        }
+        if part == .customProductPages {
+            return customPageAvailability(inputs.customPagePlan)
         }
 
         guard let plan = inputs.plan else {
@@ -119,6 +128,15 @@ public enum PublishReadiness {
         return .ready(count)
     }
 
+    /// The custom pages wait for no version folder and no listing read.
+    private static func customPageAvailability(_ plan: CustomPagePlan?) -> PublishAvailability {
+        guard let plan else {
+            return .blocked(String(localized: "The custom product pages have not been read yet.", bundle: .module))
+        }
+        guard let count = ChangePlanFormatter.count(of: plan) else { return .nothingToDo }
+        return .ready(count)
+    }
+
     /// What to say above the button, or nil when nothing is ticked.
     ///
     /// A push is not an edit that can be taken back, so the first sentence says
@@ -130,7 +148,8 @@ public enum PublishReadiness {
             localized: "Push writes over what App Store Connect holds now.", bundle: .module
         )]
 
-        if parts.contains(.screenshots) || parts.contains(.productPageOptimization) {
+        if parts.contains(.screenshots) || parts.contains(.customProductPages)
+            || parts.contains(.productPageOptimization) {
             sentences.append(String(
                 localized: "A screenshot taken off a set stays in the app's asset library.",
                 bundle: .module

@@ -290,6 +290,15 @@ public struct Problem: Sendable, Hashable, Identifiable {
         /// No instalment of a yearly price works out near a twelfth of it, so
         /// the monthly and yearly prices cannot line up.
         case instalmentNotAvailable
+
+        // Custom product pages.
+
+        /// A `page.json` or `text/<locale>.json` that does not read.
+        case customPageFileUnreadable
+        /// A deep link with no scheme, which App Store Connect refuses.
+        case customPageDeepLinkNotValid
+        /// A keyword that is not one of the version on sale in that language.
+        case customPageKeywordNotKnown
     }
 
     public let severity: Severity

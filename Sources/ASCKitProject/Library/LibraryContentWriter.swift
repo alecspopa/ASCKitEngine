@@ -221,11 +221,13 @@ extension LibraryWriteError: CustomStringConvertible {
 
 // MARK: - Where the files go
 
-/// A version, or a treatment of a draft test. Each holds its previews and its
-/// art in the same layout.
+/// A version, a treatment of a draft test, or a custom product page. Each
+/// holds its previews and its art in the same layout.
 public enum LibraryContentPlace: Sendable, Hashable {
     case version(String)
     case treatment(experiment: String, treatment: String)
+    /// A page by its folder name.
+    case customPage(String)
 }
 
 public extension Project {
@@ -236,6 +238,8 @@ public extension Project {
         case let .treatment(experiment, treatment):
             experimentURL(experiment: experiment, treatment: treatment)
                 .appending(path: ExperimentContentStore.previewsFolderName)
+        case let .customPage(page):
+            customPageURL(page: page).appending(path: Project.previewsFolderName)
         }
         return previews.appending(path: locale).appending(path: deviceClassID)
     }
@@ -246,6 +250,8 @@ public extension Project {
             creativeURL(version: version)
         case let .treatment(experiment, treatment):
             experimentURL(experiment: experiment, treatment: treatment).appending(path: CreativeFolder.folderName)
+        case let .customPage(page):
+            customPageURL(page: page).appending(path: CreativeFolder.folderName)
         }
         return creative.appending(path: locale)
     }

@@ -10,7 +10,8 @@ public enum LibraryReport {
     public static func lines(
         library: RemoteAssetLibrary?,
         listing: RemoteListing,
-        experiments: RemoteExperiments? = nil
+        experiments: RemoteExperiments? = nil,
+        customPages: RemoteCustomPages? = nil
     ) -> [String] {
         var lines: [String] = []
         lines += libraryLines(library)
@@ -35,6 +36,20 @@ public enum LibraryReport {
                         indent: "  "
                     )
                 }
+            }
+        }
+
+        for page in customPages?.pages ?? [] {
+            guard let version = page.version else { continue }
+            lines.append("")
+            lines.append("Custom product page \(page.name), \(version.state?.rawValue ?? "state unknown")")
+            for localization in version.localizations {
+                lines += localeLines(
+                    locales: [localization.locale],
+                    sets: nil,
+                    placements: localization.placements,
+                    indent: "  "
+                )
             }
         }
         return lines

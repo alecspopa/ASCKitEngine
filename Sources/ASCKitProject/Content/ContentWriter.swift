@@ -137,6 +137,28 @@ public enum ContentWriter {
         ), in: project)
     }
 
+    /// Adds images to one language of a custom product page, named and
+    /// numbered by the same rule as a version's screenshots.
+    @discardableResult
+    public static func addCustomPageScreenshots(
+        from sourceURLs: [URL],
+        slot: CustomPageSlot,
+        deviceClass: DeviceClass,
+        at position: Int? = nil,
+        replacingExisting: Bool = false,
+        in project: Project
+    ) throws -> ScreenshotWriteOutcome {
+        try writeScreenshots(ScreenshotWriteRequest(
+            sourceURLs: sourceURLs,
+            locale: slot.locale,
+            deviceClass: deviceClass,
+            version: "",
+            position: position,
+            replacingExisting: replacingExisting,
+            directory: project.customPageURL(page: slot.page, locale: slot.locale, deviceClassID: deviceClass.id)
+        ), in: project)
+    }
+
     /// Replaces screenshots with matching names, and keeps the rest of the set.
     ///
     /// Replaced files go to the Trash. Two files match when they show the same

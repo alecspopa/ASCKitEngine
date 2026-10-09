@@ -1,0 +1,171 @@
+import ASCKitAPI
+import Foundation
+
+public extension Validator {
+    /// The files of the custom product pages.
+    ///
+    /// `keywords` are the keywords each language can use, from the last read.
+    /// Without them a keyword is not checked. Whether a page still exists, or
+    /// takes changes, is a question for App Store Connect, and the plan
+    /// answers it.
+    func validate(_ pages: CustomPageContent, keywords: [String: [String]]? = nil) -> [Problem] {
+        var problems = validateCustomPageFiles(pages)
+        problems += validateCustomPageTexts(pages, keywords: keywords)
+        problems += validateCustomPageImages(pages)
+        return problems.sortedForDisplay
+    }
+}
+
+extension Validator {
+    private func validateCustomPageFiles(_ pages: CustomPageContent) -> [Problem] {
+        var problems: [Problem] = []
+
+        for (url, reason) in pages.unreadable.sorted(by: { $0.key.path < $1.key.path }) {
+            let path = Self.customPagePath(of: url) ?? url.lastPathComponent
+            problems.append(Problem(
+                severity: .error,
+                area: .appInformation,
+                message: LocalizedStringResource("\(path) does not read: \(reason)", bundle: .here),
+                fix: LocalizedStringResource("Nothing in it is pushed until it reads.", bundle: .here),
+                path: path,
+                kind: .customPageFileUnreadable
+            ))
+        }
+
+        for (page, settings) in pages.settings.sorted(by: { $0.key < $1.key }) {
+            guard let link = settings.deepLink?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  link.isEmpty == false
+            else { continue }
+            if URL(string: link)?.scheme?.isEmpty != false {
+                let path = "\(CustomPageFolders.folderName)/\(page)/\(CustomPageFolders.settingsFileName)"
+                problems.append(Problem(
+                    severity: .error,
+                    area: .appInformation,
+                    message: LocalizedStringResource("The deep link of \(page) is not an address.", bundle: .here),
+                    fix: LocalizedStringResource(
+                        "Use a universal link or a link with your app's own scheme, such as myapp://moon.",
+                        bundle: .here
+                    ),
+                    path: path,
+                    kind: .customPageDeepLinkNotValid
+                ))
+            }
+        }
+        return problems
+    }
+
+    private func validateCustomPageTexts(
+        _ pages: CustomPageContent,
+        keywords: [String: [String]]?
+    ) -> [Problem] {
+        var problems: [Problem] = []
+
+        for (page, texts) in pages.texts.sorted(by: { $0.key < $1.key }) {
+            for (locale, text) in texts.sorted(by: { $0.key < $1.key }) {
+                let path = "\(CustomPageFolders.folderName)/\(page)/\(CustomPageFolders.textFolderName)/\(locale).json"
+
+                // The same limits as the promotional text of a version.
+                if let promotionalText = text.promotionalText {
+                    var copy = AppInformation(locale: locale)
+                    copy.fields[.promotionalText] = promotionalText
+                    problems += validateFields(copy, locale: locale, path: path)
+                }
+
+                guard let known = keywords?[locale].map(Set.init) else { continue }
+                for keyword in text.keywords ?? [] where known.contains(keyword) == false {
+                    problems.append(Problem(
+                        severity: .warning,
+                        area: .appInformation,
+                        message: LocalizedStringResource(
+                            "\(page) links the keyword \(keyword), which the version on sale does not have.",
+                            bundle: .here
+                        ),
+                        fix: LocalizedStringResource("""
+                        A page can use only the keywords of the version on sale. \
+                        Take it off, or wait until a version with it is on sale.
+                        """, bundle: .here),
+                        locale: locale,
+                        path: path,
+                        kind: .customPageKeywordNotKnown
+                    ))
+                }
+            }
+        }
+        return problems
+    }
+
+    /// The same checks as the images of a test: what App Store Connect
+    /// refuses, and nothing about whether the page exists.
+    private func validateCustomPageImages(_ pages: CustomPageContent) -> [Problem] {
+        var problems: [Problem] = []
+        let deviceClasses = Dictionary(uniqueKeysWithValues: config.resolvedDeviceClasses.map { ($0.id, $0) })
+
+        for (slot, files) in pages.screenshots where files.isEmpty == false {
+            let folder = "\(CustomPageFolders.folderName)/\(slot.path)"
+            guard let deviceClass = deviceClasses[slot.deviceClassID] else {
+                problems.append(Problem(
+                    severity: .warning,
+                    area: .screenshots,
+                    message: LocalizedStringResource("""
+                    \(folder) holds \(files.count) images for a device class this project \
+                    does not list.
+                    """, bundle: .here),
+                    fix: LocalizedStringResource(
+                        "Nothing uploads them. List the device class in asckit.json, or remove the folder.",
+                        bundle: .here
+                    ),
+                    locale: slot.locale,
+                    deviceClassID: slot.deviceClassID,
+                    path: folder,
+                    kind: .deviceClassNotKnown
+                ))
+                continue
+            }
+
+            if files.count > DeviceClass.maximumScreenshotsPerSet {
+                problems.append(Problem(
+                    severity: .error,
+                    area: .screenshots,
+                    message: LocalizedStringResource("""
+                    \(folder) has \(files.count) screenshots, and the limit is \
+                    \(DeviceClass.maximumScreenshotsPerSet).
+                    """, bundle: .here),
+                    locale: slot.locale,
+                    deviceClassID: deviceClass.id,
+                    path: folder,
+                    kind: .screenshotsOverLimit
+                ))
+            }
+            for file in files {
+                problems += validateFile(file, deviceClass: deviceClass, locale: slot.locale, folder: folder)
+            }
+        }
+
+        let byPage = Dictionary(grouping: pages.previews.keys, by: \.page)
+        for page in byPage.keys.sorted() {
+            var folder = PreviewFolder()
+            for slot in byPage[page] ?? [] {
+                folder.previews[ScreenshotSlot(locale: slot.locale, deviceClassID: slot.deviceClassID)]
+                    = pages.previews(in: slot)
+            }
+            problems += validatePreviewFolder(
+                folder, root: "\(CustomPageFolders.folderName)/\(page)/\(Project.previewsFolderName)"
+            )
+        }
+
+        for page in pages.creative.keys.sorted() {
+            problems += validateCreativeFolder(
+                pages.creative[page] ?? CreativeFolder(),
+                root: "\(CustomPageFolders.folderName)/\(page)/\(CreativeFolder.folderName)"
+            )
+        }
+        return problems
+    }
+
+    /// The path of a file below the pages folder, as a problem names it.
+    private static func customPagePath(of url: URL) -> String? {
+        let parts = url.standardizedFileURL.pathComponents
+        guard let index = parts.lastIndex(of: CustomPageFolders.folderName) else { return nil }
+        return parts[index...].joined(separator: "/")
+    }
+}

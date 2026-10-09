@@ -11,7 +11,7 @@ struct ASCKitCommand: AsyncParsableCommand {
         subcommands: [
             Init.self, Check.self, Silence.self, Ignore.self, CopyScreenshots.self, FixNames.self, Pull.self,
             Diff.self, InboxCommand.self, Price.self, Push.self, Experiments.self,
-            PushExperimentImages.self, Library.self
+            PushExperimentImages.self, CustomPages.self, PushCustomPages.self, Library.self
         ],
         defaultSubcommand: Check.self
     )

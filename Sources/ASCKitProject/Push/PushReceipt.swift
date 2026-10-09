@@ -16,6 +16,11 @@ public struct PushReceipt: Codable, Sendable, Hashable {
         case productText
         /// What in-app purchases cost, country by country.
         case prices
+        /// The deep links, promotional text and keywords of the custom
+        /// product pages.
+        case customPageText
+        /// The images of the custom product pages.
+        case customPageImages
     }
 
     public let pushedAt: Date
@@ -303,13 +308,26 @@ public extension PushReceipt {
             : "\(failure.productID) \(failure.what)"
     }
 
+    static func forCustomPageText(_ result: CustomPageTextPusher.Result, at date: Date) -> PushReceipt {
+        PushReceipt(
+            pushedAt: date,
+            kind: .customPageText,
+            version: nil,
+            appVersionState: nil,
+            written: result.written,
+            refused: [],
+            failed: result.failed.map { FailedLocale(locale: $0.label, reason: $0.message) }
+        )
+    }
+
     static func forExperimentImages(
         _ result: ScreenshotPusher.Result,
+        kind: Kind = .experimentImages,
         at date: Date
     ) -> PushReceipt {
         PushReceipt(
             pushedAt: date,
-            kind: .experimentImages,
+            kind: kind,
             version: nil,
             appVersionState: nil,
             written: result.uploaded,

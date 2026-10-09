@@ -198,8 +198,22 @@ public struct ASCClient: Sendable {
 
     /// Relationship updates answer 204 with no body, so they decode nothing.
     func replaceRelationship(_ path: String, with identifiers: [Identifier]) async throws {
+        try await changeRelationship(HTTPMethod.patch, path, identifiers)
+    }
+
+    /// Links more things, and leaves the ones already linked alone.
+    func addToRelationship(_ path: String, _ identifiers: [Identifier]) async throws {
+        try await changeRelationship(HTTPMethod.post, path, identifiers)
+    }
+
+    /// Unlinks only these, and leaves the rest linked.
+    func removeFromRelationship(_ path: String, _ identifiers: [Identifier]) async throws {
+        try await changeRelationship(HTTPMethod.delete, path, identifiers)
+    }
+
+    private func changeRelationship(_ method: String, _ path: String, _ identifiers: [Identifier]) async throws {
         let body = try encode(RelationshipToMany(data: identifiers))
-        _ = try await send(method: HTTPMethod.patch, url: url(path), body: body)
+        _ = try await send(method: method, url: url(path), body: body)
     }
 
     // MARK: - The one place a request actually happens

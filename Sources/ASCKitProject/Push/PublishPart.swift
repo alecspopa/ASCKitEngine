@@ -12,6 +12,9 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
     case purchases
     case prices
     case screenshots
+    /// The deep links, promotional text, keywords and images of the custom
+    /// product pages. They take a reading of their own, apart from the listing.
+    case customProductPages
     /// The images of the treatments in the draft Product Page Optimization
     /// tests. They take a reading of their own, apart from the listing.
     case productPageOptimization
@@ -28,6 +31,7 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
         case .purchases: LocalizedStringResource("In-App Purchases", bundle: .here)
         case .prices: LocalizedStringResource("Prices", bundle: .here)
         case .screenshots: LocalizedStringResource("Screenshots", bundle: .here)
+        case .customProductPages: LocalizedStringResource("Custom Product Pages", bundle: .here)
         case .productPageOptimization: LocalizedStringResource("Product Page Optimization", bundle: .here)
         }
     }
@@ -47,6 +51,11 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
             LocalizedStringResource(
                 "The screenshots, previews and header art. Each file goes up once, then is placed.", bundle: .here
             )
+        case .customProductPages:
+            LocalizedStringResource(
+                "The deep links, promotional text, keywords and images of the custom product pages.",
+                bundle: .here
+            )
         case .productPageOptimization:
             LocalizedStringResource("The images of the treatments in the draft tests.", bundle: .here)
         }
@@ -56,15 +65,21 @@ public enum PublishPart: String, Sendable, CaseIterable, Identifiable, Hashable 
     ///
     /// Words first, because they are the cheapest to put back. Money next. The
     /// images last, because they take the longest, and a failure there is
-    /// worth reading a finished report about. The test images go after the
-    /// listing, because the listing is what every visitor sees.
+    /// worth reading a finished report about. The custom pages and the test
+    /// images go after the listing, because the listing is what every visitor
+    /// sees.
     public static let pushOrder: [PublishPart] = [
-        .appInformation, .purchases, .prices, .screenshots, .productPageOptimization
+        .appInformation, .purchases, .prices, .screenshots, .customProductPages, .productPageOptimization
     ]
 
-    /// Whether this part writes off a reading of the listing. The test images
-    /// write off a reading of the draft tests.
-    public var readsListing: Bool { self != .productPageOptimization }
+    /// Whether this part writes off a reading of the listing. The custom pages
+    /// and the test images each write off a reading of their own.
+    public var readsListing: Bool {
+        switch self {
+        case .customProductPages, .productPageOptimization: false
+        case .appInformation, .purchases, .prices, .screenshots: true
+        }
+    }
 }
 
 /// The parts one press writes.

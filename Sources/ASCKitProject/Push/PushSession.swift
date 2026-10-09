@@ -587,7 +587,7 @@ public struct PushSession: Sendable {
     /// Never throws. App Store Connect has already changed by the time this
     /// runs, so a receipt that cannot be written is worth reporting and is not
     /// worth failing the push over.
-    private func file<Result: Sendable>(
+    func file<Result: Sendable>(
         _ receipt: PushReceipt,
         for result: Result
     ) -> Outcome<Result> {

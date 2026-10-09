@@ -28,12 +28,20 @@ public struct PushProgress: Sendable, Equatable {
 
     public var total: Int { expected.values.reduce(0, +) }
 
-    /// The listing plan is nil when only the test images go, because they
-    /// need no reading of the listing.
-    public init(_ parts: PublishParts, in plan: ChangePlan?, experiments: ExperimentPlan? = nil) {
+    /// The listing plan is nil when only the test images or the custom pages
+    /// go, because they need no reading of the listing.
+    public init(
+        _ parts: PublishParts,
+        in plan: ChangePlan?,
+        experiments: ExperimentPlan? = nil,
+        customPages: CustomPagePlan? = nil
+    ) {
         expected = Dictionary(uniqueKeysWithValues: parts.map { part in
             if part == .productPageOptimization {
                 return (part, experiments.map(Self.steps(in:)) ?? 0)
+            }
+            if part == .customProductPages {
+                return (part, customPages.map(Self.steps(in:)) ?? 0)
             }
             return (part, plan.map { Self.steps(for: part, in: $0) } ?? 0)
         })
@@ -68,9 +76,17 @@ public struct PushProgress: Sendable, Equatable {
         case .purchases: productTextSteps(in: plan)
         case .prices: plan.changedPricedProducts
         case .screenshots: screenshotSteps(in: plan)
-        // An `ExperimentPlan` holds these. See `steps(in:)`.
-        case .productPageOptimization: 0
+        // An `ExperimentPlan` and a `CustomPagePlan` hold these. See
+        // `steps(in:)`.
+        case .productPageOptimization, .customProductPages: 0
         }
+    }
+
+    /// One step for each deep link and each language of text, then the steps
+    /// of the images.
+    public static func steps(in plan: CustomPagePlan) -> Int {
+        let slots = plan.sets.map(\.library) + plan.previewSets.map(\.library) + plan.creativeSets.map(\.plan.library)
+        return plan.deepLinkChanges.count + plan.changingTexts.count + librarySteps(slots)
     }
 
     /// The steps a push of the test images reports: one to empty a set that
@@ -99,8 +115,12 @@ public struct PushProgress: Sendable, Equatable {
     /// A file goes up once however many slots use it. A slot then takes its
     /// placements off, makes the new ones and sets the order.
     private static func screenshotSteps(in plan: ChangePlan) -> Int {
-        let slots = plan.screenshotPlans.map(\.library) + plan.previewPlans.map(\.library)
-            + plan.creativePlans.map(\.library)
+        librarySteps(
+            plan.screenshotPlans.map(\.library) + plan.previewPlans.map(\.library) + plan.creativePlans.map(\.library)
+        )
+    }
+
+    private static func librarySteps(_ slots: [LibrarySlot]) -> Int {
         let changing = slots.filter { $0.isUnchanged == false }
         let uploads = Set(changing.flatMap { slot in
             zip(slot.wanted, slot.checksums).compactMap { $0.0 == nil ? $0.1 : nil }

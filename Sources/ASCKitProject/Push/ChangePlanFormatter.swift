@@ -190,7 +190,7 @@ public enum ChangePlanFormatter {
                 pieces.append(String(localized: "header and search results art", bundle: .module))
             }
             return pieces.formatted(.list(type: .and))
-        case .productPageOptimization:
+        case .productPageOptimization, .customProductPages:
             return nil
         }
     }

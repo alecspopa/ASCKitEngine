@@ -254,7 +254,7 @@ struct PublishReadinessTests {
 
     @Test func everyPartIsAsked() {
         let states = PublishReadiness.availability(given: .init(plan: plan()))
-        #expect(states.count == 5)
+        #expect(states.count == PublishPart.allCases.count)
     }
 
     // MARK: - The test images

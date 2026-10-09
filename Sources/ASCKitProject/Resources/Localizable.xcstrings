@@ -331,6 +331,17 @@
     "%@ does not look like a private key. Apple's file is named AuthKey_<KEY_ID>.p8 and starts with BEGIN PRIVATE KEY." : {
       "comment" : "Error message when a person chooses a private key file. The value is the name of the chosen file. Do not translate AuthKey_<KEY_ID>.p8 or BEGIN PRIVATE KEY."
     },
+    "%@ does not read: %@" : {
+      "comment" : "Problem message in the problem list. The first value is a file path in the custom product pages folder. The second value is the error text from the JSON reader, in English.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ does not read: %2$@"
+          }
+        }
+      }
+    },
     "%@ does not say which device it is for. Name it like %@. This project lists %@." : {
       "comment" : "Error sentence about the name of a screenshot file that a person adds. The first value is a file name. The second is an example file name. The third is a list of device class ids.",
       "localizations" : {
@@ -412,7 +423,7 @@
       }
     },
     "%@ has %lld screenshots, and the limit is %lld." : {
-      "comment" : "Problem message in the problem list. The first value is a folder path in the Product Page Optimization folder. The first count is the number of screenshots. The second count is the limit.",
+      "comment" : "Problem message in the problem list. The first value is a folder path in the Product Page Optimization folder or in the custom product pages folder. The first count is the number of screenshots. The second count is the limit.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -606,7 +617,7 @@
       }
     },
     "%@ holds %lld images for a device class this project does not list." : {
-      "comment" : "Problem message in the problem list. The first value is a folder path in the Product Page Optimization folder. The count is the number of images in it.",
+      "comment" : "Problem message in the problem list. The first value is a folder path in the Product Page Optimization folder or in the custom product pages folder. The count is the number of images in it.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -929,6 +940,17 @@
     "%@ is not a country the App Store sells in." : {
       "comment" : "Problem message in the problem list. The value is a three-letter country code. Do not translate App Store."
     },
+    "%@ is not a custom product page that takes changes. Read App Store Connect to make the folders. Known: %@." : {
+      "comment" : "Refusal for a waiting image. The first value is a page folder name. The second value is a list of the page folders that take images.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is not a custom product page that takes changes. Read App Store Connect to make the folders. Known: %2$@."
+          }
+        }
+      }
+    },
     "%@ is not a date this price can start on." : {
       "comment" : "Problem message in the problem list. The value is the start date text from the file, which the app cannot read as a date."
     },
@@ -980,6 +1002,17 @@
     },
     "%@ is not an https address." : {
       "comment" : "Problem message in the problem list. The value is a JSON field name such as supportUrl, and it stays in English. Do not translate https."
+    },
+    "%@ is not in a page folder. Put it in %@/<page>/." : {
+      "comment" : "Refusal for a waiting image. The first value is a file name. The second value is a folder name that stays in English.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ is not in a page folder. Put it in %2$@/<page>/."
+          }
+        }
+      }
     },
     "%@ is not in a treatment folder. Put it in %@/<test>/<treatment>/." : {
       "comment" : "Refusal for a waiting image. The first value is a file name. The second value is a folder name that stays in English.",
@@ -1066,6 +1099,17 @@
     },
     "%@ is the source language. Every other language is translated from it, and a listing with no source language has nothing to say." : {
       "comment" : "Error when somebody tries to ignore the source language. The value is a language code such as en-US."
+    },
+    "%@ links the keyword %@, which the version on sale does not have." : {
+      "comment" : "Problem message in the problem list. The first value is the name of a custom product page. The second value is a keyword.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ links the keyword %2$@, which the version on sale does not have."
+          }
+        }
+      }
     },
     "%@ names %@, and %@ has no such file." : {
       "comment" : "Warning in a check. The first value is the file poster-frames.json, the second a file name, the third a folder path.",
@@ -2362,6 +2406,9 @@
     "A header or search results video runs 5 to 30 seconds." : {
       "comment" : "How to fix a header or search results video of the wrong length."
     },
+    "A page can use only the keywords of the version on sale. Take it off, or wait until a version with it is on sale." : {
+      "comment" : "Fix for a custom product page keyword that the version on sale does not have."
+    },
     "A price point belongs to one product in one country. Take this one out, or set an amount instead and let ASCKit find the point." : {
       "comment" : "Fix in the problem list. A price point is one fixed price on the list of prices of the App Store. Do not translate ASCKit."
     },
@@ -2808,6 +2855,9 @@
     "Create version %@ on App Store Connect, then pull the updates from there." : {
       "comment" : "Fix in the problem list. The value is a version number. Do not translate App Store Connect."
     },
+    "Custom Product Pages" : {
+      "comment" : "Noun. The name of one part of a publish, on its checkbox in the publish sheet and on its report. It is Apple's name for the extra product pages of an app in App Store Connect. Use the name that App Store Connect uses in your language."
+    },
     "Custom app name" : {
       "comment" : "Noun. The name of a text field on a subscription group. It holds a name the App Store shows instead of the app's own name."
     },
@@ -3026,6 +3076,9 @@
     },
     "Nothing here. ASCKit needs the territory added to its own table." : {
       "comment" : "Fix in the problem list about a country that ASCKit does not know. There is nothing that a person can do. The table is the list of countries in ASCKit."
+    },
+    "Nothing in it is pushed until it reads." : {
+      "comment" : "Fix for a custom product page file that does not read. It says that nothing in the file goes to App Store Connect."
     },
     "Nothing to add." : {
       "comment" : "Report of an action that adds languages or device classes, when it added nothing."
@@ -3361,6 +3414,15 @@
     "The base price, converted, in the higher-income countries, and 60 percent of that everywhere else. The simplest thing that is not the default." : {
       "comment" : "Description of the Two prices price curve, shown under its name. The default is the Apple equalized price curve."
     },
+    "The custom product pages have not been read yet." : {
+      "comment" : "Reason beside the Custom Product Pages checkbox in the publish sheet, when nothing has read the pages."
+    },
+    "The deep link of %@ is not an address." : {
+      "comment" : "Problem message in the problem list. The value is the name of a custom product page."
+    },
+    "The deep links, promotional text, keywords and images of the custom product pages." : {
+      "comment" : "Help for the Custom Product Pages checkbox in the publish sheet. It says what a push of that part writes."
+    },
     "The draft tests have not been read yet." : {
       "comment" : "Reason in the publish sheet that the Product Page Optimization part cannot be published yet."
     },
@@ -3626,6 +3688,9 @@
     },
     "Use a 5244x2950 png, or add a search-results file for this language." : {
       "comment" : "How to fix a header that cannot show in search results. Keep search-results as it is: it is a file name."
+    },
+    "Use a universal link or a link with your app's own scheme, such as myapp://moon." : {
+      "comment" : "Fix for a deep link that is not an address. Keep myapp://moon as it is."
     },
     "Use one of: %@." : {
       "comment" : "Fix in the problem list. The value is a list of ids, such as device class ids or price curve ids."

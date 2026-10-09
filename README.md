@@ -240,6 +240,8 @@ asckit push text
 asckit push images
 asckit experiments       # read the draft Product Page Optimization tests
 asckit push-experiment-images  # upload the images of those tests
+asckit custom-pages      # read the custom product pages
+asckit push-custom-pages # write their deep links, text, keywords and images
 asckit library show      # the app's asset library, and what each language places
 asckit library prune     # delete the library assets that nothing places
 asckit price curves      # the price shapes ASCKit ships. No key, no network
@@ -530,6 +532,44 @@ uploads each new file once and places it, as for a version.
 asckit experiments               # read the draft tests, make the folders, say what a push would do
 asckit push-experiment-images    # upload them
 ```
+
+### Custom product pages
+
+A custom product page is an extra product page of the app, with its own
+screenshots, app previews, header art, promotional text, keywords and deep link.
+ASCKit writes into the pages made in App Store Connect. It never makes a page, a
+version of a page or a language of a page. Only a version in Prepare for
+Submission takes changes. To change an approved page, start a new version of it
+in App Store Connect and read again.
+
+```
+custom-product-pages/
+└── Night sky/                   the page, named as App Store Connect names it
+    ├── page.json                {"deepLink": "moondane://sky"}
+    ├── text/
+    │   └── en-US.json           {"locale": "en-US", "promotionalText": "…", "keywords": ["moon"]}
+    ├── en-US/
+    │   └── iphone-6.9/
+    │       └── 01-moon-iPhone-6.9-en_US.png
+    ├── previews/en-US/iphone-6.9/
+    └── creative/en-US/header.png
+```
+
+The first read writes what App Store Connect holds into the text files, so the
+first plan is empty. A field left out of a file is left alone on App Store
+Connect. A keyword has to be one of the keywords of the version on sale in that
+language. An empty image folder leaves the images of the page as they are, because
+a read makes no image files and images placed in App Store Connect have no file here.
+
+The inbox takes images for a page in `inbox/custom-product-pages/<page>/`.
+
+```
+asckit custom-pages              # read the pages, make the folders and text files, say what a push would do
+asckit custom-pages --raw        # print what App Store Connect answers, with every id
+asckit push-custom-pages         # write the deep links, the text, the keywords and the images
+```
+
+A push does not send a page to review. Send it in App Store Connect.
 
 ### Warnings somebody has read
 

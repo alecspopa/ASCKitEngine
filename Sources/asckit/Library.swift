@@ -41,9 +41,12 @@ struct LibraryShow: AsyncParsableCommand {
         async let experiments = client.draftExperiments(
             bundleID: project.config.bundleID
         )
+        async let customPages = client.customPages(bundleID: project.config.bundleID)
         let library = try await client.readAssetLibrary(appID: listing.appID)
 
-        for line in try await LibraryReport.lines(library: library, listing: listing, experiments: experiments) {
+        for line in try await LibraryReport.lines(
+            library: library, listing: listing, experiments: experiments, customPages: customPages
+        ) {
             print(line)
         }
 

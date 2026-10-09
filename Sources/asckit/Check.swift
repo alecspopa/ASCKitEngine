@@ -7,8 +7,8 @@ struct Check: ParsableCommand {
         commandName: "check",
         abstract: "Check a project without touching App Store Connect.",
         discussion: """
-        Reads the configuration, the app information files, the screenshots and the
-        images of the Product Page Optimization tests, and reports \
+        Reads the configuration, the app information files, the screenshots, the \
+        images of the Product Page Optimization tests and the custom product pages, and reports \
         everything App Store Connect would refuse plus the things it would accept \
         but you would not want published.
 
@@ -32,9 +32,14 @@ struct Check: ParsableCommand {
         print(result.versionString.map { "\(project.config.bundleID), version \($0)" }
             ?? project.config.bundleID)
 
-        // Tests belong to no version, so their problems come from their own folder.
-        var experimentProblems = Validator(project: project)
-            .validate(ExperimentContentStore.load(in: project))
+        // Tests and custom pages belong to no version, so their problems come
+        // from their own folders.
+        let validator = Validator(project: project)
+        var experimentProblems = validator.validate(ExperimentContentStore.load(in: project))
+            + validator.validate(
+                CustomPageContentStore.load(in: project),
+                keywords: CustomPageSnapshotStore.load(in: project)?.keywords
+            )
         if errorsOnly { experimentProblems = experimentProblems.filter { $0.severity == .error } }
 
         let shown = (errorsOnly ? result.errors : result.problems) + experimentProblems

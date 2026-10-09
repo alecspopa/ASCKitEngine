@@ -71,8 +71,9 @@ struct InboxCommand: AsyncParsableCommand {
         }
 
         let experimentPlan = ExperimentInbox.plan(in: project, remote: nil)
+        let customPagePlan = CustomPageInbox.plan(in: project, snapshot: CustomPageSnapshotStore.load(in: project))
 
-        guard plan.isEmpty == false || experimentPlan.isEmpty == false else {
+        guard plan.isEmpty == false || experimentPlan.isEmpty == false || customPagePlan.isEmpty == false else {
             print("Nothing is waiting in \(ProjectScaffold.inboxName)/.")
             return
         }
@@ -98,8 +99,36 @@ struct InboxCommand: AsyncParsableCommand {
         offerToClearTheAlphaChannels(plan)
 
         let experimentsRefused = try handleExperiments(experimentPlan, project: project)
+        let customPagesRefused = try handleCustomPages(customPagePlan, project: project)
 
-        if plan.refusals.isEmpty == false || experimentsRefused { throw ExitCode.failure }
+        if plan.refusals.isEmpty == false || experimentsRefused || customPagesRefused { throw ExitCode.failure }
+    }
+
+    /// The images waiting for a custom product page. Returns true when one
+    /// was refused.
+    private func handleCustomPages(_ plan: CustomPageInbox.Plan, project: Project) throws -> Bool {
+        guard plan.isEmpty == false else { return false }
+
+        print("")
+        print("Custom product pages, \(CustomPageFolders.folderName)/:")
+        for arrival in plan.arrivals {
+            print("\(arrival.file.fileName) -> \(arrival.slot.path), as \(arrival.imageName)")
+        }
+        for refusal in plan.refusals {
+            print("refused: \(refusal.reason)")
+        }
+
+        if file, plan.arrivals.isEmpty == false {
+            let outcome = try CustomPageInbox.file(plan, in: project)
+            print("")
+            print("Filed \(countedNoun(outcome.filed, "image")) into "
+                + "\(countedNoun(outcome.slots.count, "page folder")).")
+            print("The inbox copies are in the Trash. Run asckit push-custom-pages to upload them.")
+        } else if plan.arrivals.isEmpty == false {
+            print("")
+            print("Nothing has moved. Run it again with --file to move these in.")
+        }
+        return plan.refusals.isEmpty == false
     }
 
     /// The images waiting for a Product Page Optimization test. Returns true
