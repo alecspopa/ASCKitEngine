@@ -145,9 +145,7 @@ public struct Project: Sendable {
     /// `Project` is what one read of the folder found. Whoever writes reads the
     /// folder again to see the change.
     public func write(_ config: ProjectConfig) throws {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(config).write(to: configURL)
+        try ProjectJSON.write(config, to: configURL)
     }
 
     public var versionsURL: URL { rootURL.appending(path: config.versionsPath) }
@@ -193,7 +191,7 @@ public struct Project: Sendable {
         return entries
             .filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false }
             .map(\.lastPathComponent)
-            .sorted { $0.compare($1, options: .numeric) == .orderedAscending }
+            .sorted { $0.isNaturallyBefore($1) }
     }
 
     public func versionURL(_ version: String) -> URL {

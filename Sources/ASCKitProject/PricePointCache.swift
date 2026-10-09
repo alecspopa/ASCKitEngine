@@ -189,8 +189,6 @@ public enum PricePointStore {
 
         // Not pretty printed. A ladder is tens of thousands of rows, nobody
         // reads it, and the indentation would be most of the file.
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(cache).write(to: url)
+        try ProjectJSON.write(cache, to: url, pretty: false)
     }
 }

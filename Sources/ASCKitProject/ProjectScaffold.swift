@@ -80,15 +80,12 @@ public enum ProjectScaffold {
         )
         try FileManager.default.createDirectory(at: copyFolder, withIntermediateDirectories: true)
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-
-        try encoder.encode(config).write(to: folder.appending(path: Project.defaultConfigName))
+        try ProjectJSON.write(config, to: folder.appending(path: Project.defaultConfigName))
 
         // A draft rather than approved, because nothing has been written yet
         // and an empty listing must not be publishable.
         let copy = AppInformation(locale: config.sourceLocale, status: .draft)
-        try encoder.encode(copy).write(to: copyFolder.appending(path: "\(config.sourceLocale).json"))
+        try ProjectJSON.write(copy, to: copyFolder.appending(path: "\(config.sourceLocale).json"))
 
         try makeInbox(in: folder)
         try makeCache(in: folder)

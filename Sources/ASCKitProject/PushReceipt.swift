@@ -208,19 +208,14 @@ public enum PushHistory {
             withIntermediateDirectories: true
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        encoder.dateEncodingStrategy = .iso8601
-
         let url = project.historyURL.appending(path: fileName(for: receipt))
-        try encoder.encode(receipt).write(to: url)
+        try ProjectJSON.write(receipt, to: url, datesAsISO8601: true)
         return url
     }
 
     /// Newest first.
     public static func read(from project: Project) -> [PushReceipt] {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        let decoder = ProjectJSON.decoder(datesAsISO8601: true)
 
         return DirectoryListing.files(in: project.historyURL)
             .filter { $0.pathExtension.lowercased() == "json" }

@@ -150,17 +150,10 @@ public enum AssetRecordStore {
     /// Written whole to a temporary file and then moved, so a write that
     /// fails leaves the old record as it was.
     public static func save(_ record: AssetRecord, in project: Project) throws {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        encoder.dateEncodingStrategy = .iso8601
-        try encoder.encode(record).write(to: url(in: project), options: .atomic)
+        try ProjectJSON.write(record, to: url(in: project), datesAsISO8601: true, atomic: true)
     }
 
-    private static var decoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
-    }
+    private static var decoder: JSONDecoder { ProjectJSON.decoder(datesAsISO8601: true) }
 }
 
 public enum AssetRecordError: Error, Equatable, CustomLocalizedStringResourceConvertible {

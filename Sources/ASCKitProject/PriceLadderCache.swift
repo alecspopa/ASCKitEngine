@@ -249,10 +249,7 @@ public enum PriceLadderStore {
 
         // Not pretty printed. A ladder is a hundred thousand rows, nobody reads
         // it, and this file is compressed anyway.
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-
-        let squeezed = try (encoder.encode(cache) as NSData).compressed(using: .lzfse) as Data
+        let squeezed = try (ProjectJSON.encoder(pretty: false).encode(cache) as NSData).compressed(using: .lzfse) as Data
         try (magic + squeezed).write(to: url, options: .atomic)
     }
 

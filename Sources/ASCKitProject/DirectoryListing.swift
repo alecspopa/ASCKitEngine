@@ -37,6 +37,6 @@ enum DirectoryListing {
         entries(in: directory, keys: keys)
             .filter { isDirectory($0) == false }
             .filter { strayFileNames.contains($0.lastPathComponent) == false && extra.contains($0.lastPathComponent) == false }
-            .sorted { $0.lastPathComponent.compare($1.lastPathComponent, options: .numeric) == .orderedAscending }
+            .sortedNaturally()
     }
 }

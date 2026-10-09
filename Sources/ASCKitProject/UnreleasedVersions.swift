@@ -41,6 +41,6 @@ public enum UnreleasedVersions {
 
     /// The same order `Project.versionNames()` uses, so 1.9 comes before 1.10.
     private static func isOlder(_ lhs: String, than rhs: String) -> Bool {
-        lhs.compare(rhs, options: .numeric) == .orderedAscending
+        lhs.isNaturallyBefore(rhs)
     }
 }

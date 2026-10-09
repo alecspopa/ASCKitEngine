@@ -55,9 +55,7 @@ public enum ExperimentSnapshotStore {
     /// Nil until something has read the draft tests.
     public static func load(in project: Project) -> ExperimentSnapshot? {
         guard let data = try? Data(contentsOf: url(in: project)) else { return nil }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try? decoder.decode(ExperimentSnapshot.self, from: data)
+        return try? ProjectJSON.decoder(datesAsISO8601: true).decode(ExperimentSnapshot.self, from: data)
     }
 
     public static func save(_ snapshot: ExperimentSnapshot, in project: Project) throws {
@@ -65,9 +63,6 @@ public enum ExperimentSnapshotStore {
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(), withIntermediateDirectories: true
         )
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(snapshot).write(to: url)
+        try ProjectJSON.write(snapshot, to: url, datesAsISO8601: true)
     }
 }

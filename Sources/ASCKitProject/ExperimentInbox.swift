@@ -72,7 +72,7 @@ public enum ExperimentInbox {
 
         return entries
             .filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false }
-            .sorted { $0.path.compare($1.path, options: .numeric) == .orderedAscending }
+            .sortedNaturally(by: \.path)
             .map(ImageInspector.inspect)
             .filter { $0.pixelWidth != nil }
     }

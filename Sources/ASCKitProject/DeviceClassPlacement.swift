@@ -81,9 +81,7 @@ public enum RefDataCache {
     public static func save(_ refData: AssetLibraryRefData, in project: Project) throws {
         let url = url(in: project)
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(refData).write(to: url, options: .atomic)
+        try ProjectJSON.write(refData, to: url, atomic: true)
     }
 }
 

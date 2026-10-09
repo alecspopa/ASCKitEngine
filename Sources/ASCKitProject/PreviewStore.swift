@@ -25,9 +25,7 @@ public enum PosterFrames {
             try? FileManager.default.removeItem(at: url)
             return
         }
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(frames).write(to: url, options: .atomic)
+        try ProjectJSON.write(frames, to: url, atomic: true)
     }
 
     /// The seconds a time code such as `00:00:05:00` stands for: hours,

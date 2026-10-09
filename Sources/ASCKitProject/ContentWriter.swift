@@ -44,9 +44,7 @@ public enum ContentWriter {
             withIntermediateDirectories: true
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(information).write(to: url)
+        try ProjectJSON.write(information, to: url)
     }
 
     // MARK: - In-app purchases
@@ -68,9 +66,7 @@ public enum ContentWriter {
             withIntermediateDirectories: true
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(product).write(to: url)
+        try ProjectJSON.write(product, to: url)
     }
 
     public static func writeSubscriptionGroup(_ group: SubscriptionGroup, in project: Project) throws {
@@ -84,9 +80,7 @@ public enum ContentWriter {
             withIntermediateDirectories: true
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        try encoder.encode(group).write(to: url)
+        try ProjectJSON.write(group, to: url)
     }
 
     // MARK: - Screenshots

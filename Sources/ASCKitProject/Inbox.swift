@@ -38,11 +38,10 @@ public enum Inbox {
             .filter { $0.standardizedFileURL.path.hasPrefix(experiments) == false }
             .filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false }
             .sorted {
-                switch $0.lastPathComponent.compare($1.lastPathComponent, options: .numeric) {
-                case .orderedAscending: true
-                case .orderedDescending: false
-                case .orderedSame: $0.path < $1.path
-                }
+                let (lhs, rhs) = ($0.lastPathComponent, $1.lastPathComponent)
+                if lhs.isNaturallyBefore(rhs) { return true }
+                if rhs.isNaturallyBefore(lhs) { return false }
+                return $0.path < $1.path
             }
             .map(ImageInspector.inspect)
             .filter { $0.pixelWidth != nil }

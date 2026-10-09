@@ -139,7 +139,7 @@ public enum LibraryContentWriter {
         let frames = PosterFrames.load(in: folder) ?? [:]
         return names
             .filter { videoExtensions.contains(($0 as NSString).pathExtension.lowercased()) && $0.hasPrefix(".") == false }
-            .sorted { $0.compare($1, options: .numeric) == .orderedAscending }
+            .sorted { $0.isNaturallyBefore($1) }
             .map { name in
                 var file = VideoInspector.inspect(url: folder.appending(path: name))
                 file.posterFrame = frames[name]

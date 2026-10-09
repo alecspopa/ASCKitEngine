@@ -336,14 +336,12 @@ public enum WarningSilence {
         in project: Project
     ) throws {
         let url = location.url(in: project)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
 
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        try encoder.encode(Stored(warnings: warnings.sorted())).write(to: url)
+        try ProjectJSON.write(Stored(warnings: warnings.sorted()), to: url)
     }
 }
 
