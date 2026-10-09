@@ -51,7 +51,7 @@ public extension ASCClient {
     func subscriptionGroups(appID: String) async throws -> [Resource<SubscriptionGroupAttributes>] {
         try await list(
             "/v1/apps/\(appID)/subscriptionGroups",
-            query: [URLQueryItem(name: "limit", value: "200")],
+            query: [.maxPageSize],
             as: SubscriptionGroupAttributes.self
         )
     }
@@ -59,7 +59,7 @@ public extension ASCClient {
     func subscriptions(groupID: String) async throws -> [Resource<SubscriptionAttributes>] {
         try await list(
             "/v1/subscriptionGroups/\(groupID)/subscriptions",
-            query: [URLQueryItem(name: "limit", value: "200")],
+            query: [.maxPageSize],
             as: SubscriptionAttributes.self
         )
     }
@@ -72,7 +72,7 @@ public extension ASCClient {
     ) async throws -> [Resource<ProductVersionAttributes>] {
         try await list(
             "/v1/subscriptions/\(subscriptionID)/versions",
-            query: [URLQueryItem(name: "limit", value: "200")],
+            query: [.maxPageSize],
             as: ProductVersionAttributes.self
         )
     }
@@ -83,7 +83,7 @@ public extension ASCClient {
     ) async throws -> [Resource<ProductVersionAttributes>] {
         try await list(
             "/v1/subscriptionGroups/\(groupID)/versions",
-            query: [URLQueryItem(name: "limit", value: "200")],
+            query: [.maxPageSize],
             as: ProductVersionAttributes.self
         )
     }
@@ -132,6 +132,11 @@ public extension ASCClient {
         )
     }
 
+    static let subscriptionPricesQuery = [
+        URLQueryItem(name: "include", value: "subscriptionPricePoint,territory"),
+        .maxPageSize
+    ]
+
     /// What each country is charged today.
     ///
     /// A subscription has no price schedule resource. Its prices are a list,
@@ -141,10 +146,7 @@ public extension ASCClient {
     ) async throws -> [Resource<SubscriptionPriceAttributes>] {
         try await list(
             "/v1/subscriptions/\(subscriptionID)/prices",
-            query: [
-                URLQueryItem(name: "include", value: "subscriptionPricePoint,territory"),
-                URLQueryItem(name: "limit", value: "200")
-            ],
+            query: ASCClient.subscriptionPricesQuery,
             as: SubscriptionPriceAttributes.self
         )
     }

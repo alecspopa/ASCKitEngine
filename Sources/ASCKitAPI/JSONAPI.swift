@@ -48,7 +48,12 @@ struct SingleResponse<Attributes: Decodable & Sendable>: Decodable, Sendable {
     let data: Resource<Attributes>
 }
 
-struct ListResponse<Attributes: Decodable & Sendable>: Decodable, Sendable {
+/// A page that may point at the next one.
+protocol PagedResponse: Decodable {
+    var nextURL: URL? { get }
+}
+
+struct ListResponse<Attributes: Decodable & Sendable>: Decodable, PagedResponse, Sendable {
     let data: [Resource<Attributes>]
 
     /// Resources asked for with `include`.
@@ -61,6 +66,8 @@ struct ListResponse<Attributes: Decodable & Sendable>: Decodable, Sendable {
 
     let links: Links?
     let meta: Meta?
+
+    var nextURL: URL? { links?.next.flatMap(URL.init(string:)) }
 
     struct Links: Decodable, Sendable {
         let next: String?
@@ -78,10 +85,12 @@ struct ListResponse<Attributes: Decodable & Sendable>: Decodable, Sendable {
 
 /// A list whose `included` resources are of another kind than its data, such
 /// as placements that bring their images and videos along.
-struct MixedListResponse<Attributes: Decodable & Sendable, Included: Decodable & Sendable>: Decodable, Sendable {
+struct MixedListResponse<Attributes: Decodable & Sendable, Included: Decodable & Sendable>: Decodable, PagedResponse, Sendable {
     let data: [Resource<Attributes>]
     let included: [Resource<Included>]?
     let links: ListResponse<Attributes>.Links?
+
+    var nextURL: URL? { links?.next.flatMap(URL.init(string:)) }
 }
 
 /// The body shape for a create or an update.

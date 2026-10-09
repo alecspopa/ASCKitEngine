@@ -73,7 +73,7 @@ public struct ASCClient: Sendable {
         query: [URLQueryItem] = [],
         as type: Attributes.Type = Attributes.self
     ) async throws -> Resource<Attributes> {
-        let data = try await send(method: "GET", url: url(path, query: query), body: nil).0
+        let data = try await send(method: HTTPMethod.get, url: url(path, query: query), body: nil).0
         return try decode(SingleResponse<Attributes>.self, from: data).data
     }
 
@@ -83,15 +83,8 @@ public struct ASCClient: Sendable {
         query: [URLQueryItem] = [],
         as type: Attributes.Type = Attributes.self
     ) async throws -> [Resource<Attributes>] {
-        var next: URL? = url(path, query: query)
         var collected: [Resource<Attributes>] = []
-
-        while let current = next {
-            let data = try await send(method: "GET", url: current, body: nil).0
-            let page = try decode(ListResponse<Attributes>.self, from: data)
-            collected.append(contentsOf: page.data)
-            next = page.links?.next.flatMap(URL.init(string:))
-        }
+        try await walk(ListResponse<Attributes>.self, path, query) { collected += $0.data }
         return collected
     }
 
@@ -106,16 +99,11 @@ public struct ASCClient: Sendable {
         query: [URLQueryItem] = [],
         as type: Attributes.Type = Attributes.self
     ) async throws -> (data: [Resource<Attributes>], included: [Resource<Attributes>]) {
-        var next: URL? = url(path, query: query)
         var data: [Resource<Attributes>] = []
         var included: [Resource<Attributes>] = []
-
-        while let current = next {
-            let raw = try await send(method: "GET", url: current, body: nil).0
-            let page = try decode(ListResponse<Attributes>.self, from: raw)
-            data += page.data
-            included += page.included ?? []
-            next = page.links?.next.flatMap(URL.init(string:))
+        try await walk(ListResponse<Attributes>.self, path, query) {
+            data += $0.data
+            included += $0.included ?? []
         }
         return (data, included)
     }
@@ -127,18 +115,28 @@ public struct ASCClient: Sendable {
         as type: Attributes.Type = Attributes.self,
         including includedType: Included.Type = Included.self
     ) async throws -> (data: [Resource<Attributes>], included: [Resource<Included>]) {
-        var next: URL? = url(path, query: query)
         var data: [Resource<Attributes>] = []
         var included: [Resource<Included>] = []
-
-        while let current = next {
-            let raw = try await send(method: "GET", url: current, body: nil).0
-            let page = try decode(MixedListResponse<Attributes, Included>.self, from: raw)
-            data += page.data
-            included += page.included ?? []
-            next = page.links?.next.flatMap(URL.init(string:))
+        try await walk(MixedListResponse<Attributes, Included>.self, path, query) {
+            data += $0.data
+            included += $0.included ?? []
         }
         return (data, included)
+    }
+
+    private func walk<Page: PagedResponse>(
+        _ type: Page.Type,
+        _ path: String,
+        _ query: [URLQueryItem],
+        collect: (Page) -> Void
+    ) async throws {
+        var next: URL? = url(path, query: query)
+        while let current = next {
+            let raw = try await send(method: HTTPMethod.get, url: current, body: nil).0
+            let page = try decode(Page.self, from: raw)
+            collect(page)
+            next = page.nextURL
+        }
     }
 
     // MARK: - Writing
@@ -148,8 +146,7 @@ public struct ASCClient: Sendable {
         body: WriteRequest<some Encodable & Sendable>,
         as type: Attributes.Type = Attributes.self
     ) async throws -> Resource<Attributes> {
-        let data = try await send(method: "POST", url: url(path), body: encode(body)).0
-        return try decode(SingleResponse<Attributes>.self, from: data).data
+        try await write(HTTPMethod.post, path, body: body, as: type)
     }
 
     /// A create whose body carries the resources it points at.
@@ -161,8 +158,7 @@ public struct ASCClient: Sendable {
         compound body: CompoundWriteRequest<some Encodable & Sendable>,
         as type: Attributes.Type = Attributes.self
     ) async throws -> Resource<Attributes> {
-        let data = try await send(method: "POST", url: url(path), body: encode(body)).0
-        return try decode(SingleResponse<Attributes>.self, from: data).data
+        try await write(HTTPMethod.post, path, body: body, as: type)
     }
 
     /// A change whose body carries the resources it points at.
@@ -175,8 +171,7 @@ public struct ASCClient: Sendable {
         compound body: CompoundWriteRequest<some Encodable & Sendable>,
         as type: Attributes.Type = Attributes.self
     ) async throws -> Resource<Attributes> {
-        let data = try await send(method: "PATCH", url: url(path), body: encode(body)).0
-        return try decode(SingleResponse<Attributes>.self, from: data).data
+        try await write(HTTPMethod.patch, path, body: body, as: type)
     }
 
     func patch<Attributes: Decodable & Sendable>(
@@ -184,18 +179,27 @@ public struct ASCClient: Sendable {
         body: WriteRequest<some Encodable & Sendable>,
         as type: Attributes.Type = Attributes.self
     ) async throws -> Resource<Attributes> {
-        let data = try await send(method: "PATCH", url: url(path), body: encode(body)).0
+        try await write(HTTPMethod.patch, path, body: body, as: type)
+    }
+
+    private func write<Attributes: Decodable & Sendable>(
+        _ method: String,
+        _ path: String,
+        body: some Encodable & Sendable,
+        as type: Attributes.Type
+    ) async throws -> Resource<Attributes> {
+        let data = try await send(method: method, url: url(path), body: encode(body)).0
         return try decode(SingleResponse<Attributes>.self, from: data).data
     }
 
     func delete(_ path: String) async throws {
-        _ = try await send(method: "DELETE", url: url(path), body: nil)
+        _ = try await send(method: HTTPMethod.delete, url: url(path), body: nil)
     }
 
     /// Relationship updates answer 204 with no body, so they decode nothing.
     func replaceRelationship(_ path: String, with identifiers: [Identifier]) async throws {
         let body = try encode(RelationshipToMany(data: identifiers))
-        _ = try await send(method: "PATCH", url: url(path), body: body)
+        _ = try await send(method: HTTPMethod.patch, url: url(path), body: body)
     }
 
     // MARK: - The one place a request actually happens
@@ -256,18 +260,19 @@ public struct ASCClient: Sendable {
     private func sendOnce(method: String, url: URL, body: Data?) async throws -> (Data, RateLimit?) {
         var request = URLRequest(url: url)
         request.httpMethod = method
-        try await request.setValue("Bearer \(tokens.token())", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        try await request.setValue("Bearer \(tokens.token())", forHTTPHeaderField: Header.authorization)
+        request.setValue(Header.json, forHTTPHeaderField: Header.accept)
         if let body {
             request.httpBody = body
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(Header.json, forHTTPHeaderField: Header.contentType)
         }
 
         let (data, response) = try await perform(request)
         let rateLimit = RateLimit(response: response)
 
-        guard (200 ..< 300).contains(response.statusCode) else {
-            let failure = ASCError.from(status: response.statusCode, data: data, response: response)
+        do {
+            try Self.checked(data: data, response: response)
+        } catch let failure as ASCError {
             // A token with no issuer in it is refused for what it says rather
             // than for when it was made, so this one is worth telling apart.
             if case let .unauthorized(details) = failure, signsIndividualKey {
@@ -292,6 +297,13 @@ public struct ASCClient: Sendable {
 
     // MARK: - Helpers
 
+    /// Throws the error App Store Connect's answer describes, unless it is a 2xx.
+    static func checked(data: Data, response: HTTPURLResponse) throws {
+        guard (200 ..< 300).contains(response.statusCode) else {
+            throw ASCError.from(status: response.statusCode, data: data, response: response)
+        }
+    }
+
     private func url(_ path: String, query: [URLQueryItem] = []) -> URL {
         var components = URLComponents(
             url: baseURL.appending(path: path),
@@ -311,5 +323,28 @@ public struct ASCClient: Sendable {
         } catch {
             throw ASCError.decodingFailed(underlying: error, body: data)
         }
+    }
+}
+
+enum HTTPMethod {
+    static let get = "GET"
+    static let post = "POST"
+    static let patch = "PATCH"
+    static let delete = "DELETE"
+}
+
+private enum Header {
+    static let authorization = "Authorization"
+    static let accept = "Accept"
+    static let contentType = "Content-Type"
+    static let json = "application/json"
+}
+
+extension URLQueryItem {
+    /// The most rows App Store Connect gives for one page of most lists.
+    static let maxPageSize = limit(200)
+
+    static func limit(_ rows: Int) -> URLQueryItem {
+        URLQueryItem(name: "limit", value: String(rows))
     }
 }

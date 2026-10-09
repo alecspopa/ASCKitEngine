@@ -18,7 +18,7 @@ public extension ASCClient {
     func territories() async throws -> [Resource<TerritoryAttributes>] {
         try await list(
             "/v1/territories",
-            query: [URLQueryItem(name: "limit", value: "200")],
+            query: [.maxPageSize],
             as: TerritoryAttributes.self
         )
     }

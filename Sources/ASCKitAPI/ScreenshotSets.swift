@@ -77,8 +77,6 @@ public extension ASCClient {
         }
 
         let (data, response) = try await perform(request)
-        guard (200 ..< 300).contains(response.statusCode) else {
-            throw ASCError.from(status: response.statusCode, data: data, response: response)
-        }
+        try Self.checked(data: data, response: response)
     }
 }

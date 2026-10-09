@@ -101,7 +101,7 @@ public extension ASCClient {
     ) async throws -> [Resource<LibraryAssetAttributes>] {
         var query = [
             URLQueryItem(name: "include", value: "placements"),
-            URLQueryItem(name: "limit", value: "200")
+            .maxPageSize
         ]
         if let ids {
             guard ids.isEmpty == false else { return [] }
@@ -211,7 +211,7 @@ public extension ASCClient {
             query: [
                 URLQueryItem(name: "include", value: "image,video"),
                 URLQueryItem(name: "sort", value: "placementGroupPosition"),
-                URLQueryItem(name: "limit", value: "200")
+                .maxPageSize
             ],
             as: PlacementAttributes.self,
             including: LibraryAssetAttributes.self

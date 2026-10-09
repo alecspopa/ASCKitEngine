@@ -80,15 +80,11 @@ public extension ASCClient {
         baseAmount: String,
         territories: [String]
     ) async throws -> RemotePrices {
-        let wanted = Set(territories).union([baseTerritory]).sorted()
-        let ladder = try await ladder(for: product, territories: wanted)
-
-        let anchors = try await anchors(
+        let (ladders, anchors) = try await ladderAndAnchors(
             for: product,
             baseTerritory: baseTerritory,
             baseAmount: baseAmount,
-            territories: wanted,
-            ladder: ladder
+            territories: territories
         )
 
         let today = try await currentPrices(for: product)
@@ -97,7 +93,7 @@ public extension ASCClient {
             // nothing: the same 800 points and the same identifiers come back
             // either way, because the plan type belongs to the price rather
             // than to the point.
-            ladders: Dictionary(grouping: ladder, by: \.territory),
+            ladders: ladders,
             anchors: anchors,
             current: today.current,
             currentMonthly: today.currentMonthly
@@ -220,10 +216,7 @@ public extension ASCClient {
     ) async throws -> (upfront: [String: String], monthly: [String: String]) {
         let answer = try await listIncluding(
             "/v1/subscriptions/\(subscriptionID)/prices",
-            query: [
-                URLQueryItem(name: "include", value: "subscriptionPricePoint,territory"),
-                URLQueryItem(name: "limit", value: "200")
-            ],
+            query: ASCClient.subscriptionPricesQuery,
             as: PricePointAttributes.self
         )
 
@@ -279,7 +272,7 @@ public extension ASCClient {
 
     private static let priceQuery = [
         URLQueryItem(name: "include", value: "inAppPurchasePricePoint,territory"),
-        URLQueryItem(name: "limit", value: "200")
+        .maxPageSize
     ]
 
     /// A price says what it costs only through the price point it points at, so

@@ -65,7 +65,7 @@ public extension ASCClient {
     func inAppPurchases(appID: String) async throws -> [Resource<InAppPurchaseAttributes>] {
         try await list(
             "/v1/apps/\(appID)/inAppPurchasesV2",
-            query: [URLQueryItem(name: "limit", value: "200")],
+            query: [.maxPageSize],
             as: InAppPurchaseAttributes.self
         )
     }
@@ -81,7 +81,7 @@ public extension ASCClient {
     ) async throws -> [Resource<ProductVersionAttributes>] {
         try await list(
             "/v2/inAppPurchases/\(purchaseID)/versions",
-            query: [URLQueryItem(name: "limit", value: "200")],
+            query: [.maxPageSize],
             as: ProductVersionAttributes.self
         )
     }
@@ -168,7 +168,7 @@ public extension ASCClient {
                     // the ladder reads as empty. Filtering by territory does not
                     // imply asking for it.
                     URLQueryItem(name: "include", value: "territory"),
-                    URLQueryItem(name: "limit", value: "8000")
+                    .limit(8000)
                 ],
                 as: PricePointAttributes.self
             )
