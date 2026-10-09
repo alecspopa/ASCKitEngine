@@ -101,6 +101,25 @@ final class PushSessionPriceSourceTests {
     ]}
     """
 
+    /// The yearly subscription is sold outright and in monthly instalments in
+    /// the United States. Apple sends one row for each.
+    static let yearlyPricesJSON = """
+    {"data":[
+      {"type":"subscriptionPrices","id":"y1","attributes":{"planType":"UPFRONT"},
+       "relationships":{
+         "territory":{"data":{"type":"territories","id":"USA"}},
+         "subscriptionPricePoint":{"data":{"type":"subscriptionPricePoints","id":"USA-499"}}}},
+      {"type":"subscriptionPrices","id":"y2","attributes":{"planType":"MONTHLY"},
+       "relationships":{
+         "territory":{"data":{"type":"territories","id":"USA"}},
+         "subscriptionPricePoint":{"data":{"type":"subscriptionPricePoints","id":"USA-049"}}}}
+    ],
+    "included":[
+      {"type":"subscriptionPricePoints","id":"USA-499","attributes":{"customerPrice":"4.99"}},
+      {"type":"subscriptionPricePoints","id":"USA-049","attributes":{"customerPrice":"0.49"}}
+    ]}
+    """
+
     /// - Parameters:
     ///   - ladderIDSuffix: Added to every price point id, so a second read can
     ///     hand back the same prices under identifiers Apple regenerated.
@@ -123,7 +142,7 @@ final class PushSessionPriceSourceTests {
             ("/subscriptions/sub1/pricePoints", .ok(ladder)),
             ("/equalizations", .ok(Self.equalizationsJSON)),
             ("/subscriptions/sub1/prices", .ok(Self.currentPricesJSON)),
-            ("/subscriptions/sub2/prices", .ok(Self.currentPricesJSON)),
+            ("/subscriptions/sub2/prices", .ok(Self.yearlyPricesJSON)),
             ("/subscriptionGroups/group1/subscriptions", .ok("""
             {"data":[{"type":"subscriptions","id":"sub1","attributes":{
               "productId":"com.example.pro","name":"Pro",
@@ -186,6 +205,18 @@ final class PushSessionPriceSourceTests {
         #expect(reading.priceOrigins["com.example.plus"] == nil)
         #expect(reading.changes?.pricePlans.contains { $0.productID == "com.example.plus" }
             == false)
+    }
+
+    /// The instalment comes back apart from the price of the whole year, so a
+    /// window can show both for a product with no price plan.
+    @Test func readsTodaysInstalmentForAProductWithNoPricePlan() async throws {
+        try fixture.writeProduct(Self.unpriced)
+        let transport = transport(withUnpriced: true)
+        let reading = try await session(on: transport).read(prices: .cached)
+
+        #expect(reading.currentPrices["com.example.plus"]?["USA"] == Money(string: "4.99"))
+        #expect(reading.currentMonthlyPrices["com.example.plus"]?["USA"] == Money(string: "0.49"))
+        #expect(reading.currentMonthlyPrices["com.example.pro"]?.isEmpty ?? true)
     }
 
     @Test func notReadAsksForNoPricesAtAll() async throws {

@@ -57,6 +57,13 @@ public struct PushSession: Sendable {
         /// project or not. Empty when nobody asked for prices.
         public let currentPrices: [String: [String: Money]]
 
+        /// What one monthly instalment costs today, keyed by product then by
+        /// country.
+        ///
+        /// Only a yearly subscription sold in instalments has these, and only
+        /// in the countries that offer them. Empty when nobody asked for prices.
+        public let currentMonthlyPrices: [String: [String: Money]]
+
         /// The app's library and this project's record of it. Nil when the
         /// app has no library, and then screenshots go to the old sets.
         public var library: LibraryState?
@@ -110,12 +117,14 @@ public struct PushSession: Sendable {
         var product: ProductPlanner.Outcome?
         var origins: [String: PriceLadderCache.Origin] = [:]
         var currentPrices: [String: [String: Money]] = [:]
+        var currentMonthlyPrices: [String: [String: Money]] = [:]
         if let onDisk, let onStore {
             let read = prices.wantsPrices
                 ? try await readPrices(for: onDisk, on: onStore, source: prices)
                 : (prices: ProductPlanner.Prices(), origins: [:])
             origins = read.origins
             currentPrices = read.prices.current
+            currentMonthlyPrices = read.prices.currentMonthly
 
             product = ProductPlanner.plan(
                 local: onDisk,
@@ -143,6 +152,7 @@ public struct PushSession: Sendable {
             priceProblems: product?.problems ?? [],
             priceOrigins: origins,
             currentPrices: currentPrices,
+            currentMonthlyPrices: currentMonthlyPrices,
             library: library
         )
     }
