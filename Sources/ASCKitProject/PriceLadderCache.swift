@@ -159,23 +159,13 @@ public struct PriceLadderCache: Codable, Sendable {
 
     /// How many days old the numbers are, or nil when `readOn` is not a date.
     public func daysOld(on day: Date = .now) -> Int? {
-        guard let read = Self.formatter.date(from: readOn) else { return nil }
-        return Calendar(identifier: .gregorian).dateComponents([.day], from: read, to: day).day
+        guard let read = CalendarDay.date(from: readOn) else { return nil }
+        return CalendarDay.daysBetween(read, day)
     }
 
     public static func today(_ day: Date = .now) -> String {
-        formatter.string(from: day)
+        CalendarDay.string(from: day)
     }
-
-    /// A plain day, in no time zone anybody has to think about. POSIX so a
-    /// person whose calendar is not Gregorian still gets 2026-08-30.
-    private static let formatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
 
     /// Where one product's prices came from, so a window can say so.
     public enum Origin: Sendable, Hashable {

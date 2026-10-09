@@ -198,10 +198,7 @@ extension Validator {
     ) -> [Problem] {
         guard let written else { return [] }
 
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        guard formatter.date(from: written) == nil else { return [] }
+        guard CalendarDay.date(from: written) == nil else { return [] }
 
         return [Problem(
             severity: .error,
@@ -217,18 +214,16 @@ extension Validator {
     /// A curve's numbers are a snapshot of the world. Income groups move, and
     /// tax rates move more often. A table nobody has looked at in a year is
     /// worth saying out loud once.
-    private func validateProvenance(
+    func validateProvenance(
         of curve: PriceCurve,
         product: Product,
-        path: String
+        path: String,
+        now: Date = Date()
     ) -> [Problem] {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        guard let taken = formatter.date(from: curve.provenance.takenOn) else { return [] }
+        guard let taken = CalendarDay.date(from: curve.provenance.takenOn) else { return [] }
 
         let year: TimeInterval = 365 * 24 * 60 * 60
-        guard Date().timeIntervalSince(taken) > year else { return [] }
+        guard now.timeIntervalSince(taken) > year else { return [] }
 
         return [Problem(
             severity: .warning,
