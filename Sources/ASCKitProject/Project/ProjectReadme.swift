@@ -192,8 +192,9 @@ enum ProjectReadme {
     folder holding the source language's files byte for byte.
 
     The header and search results art works the same way. A language listed
-    here shows the source language's files, and the push places the assets
-    already in the library, so nothing goes up twice:
+    here has no art of its own on App Store Connect, so App Store Connect
+    shows the source language's. The push uploads nothing for it, and takes
+    off any art that is there:
 
     ```json
     "usesSourceCreative": ["en-AU", "en-CA", "en-GB"]

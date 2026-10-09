@@ -525,11 +525,7 @@ private extension ChangePlanFormatter {
             let role = item.role == .header
                 ? String(localized: "header", bundle: .module)
                 : String(localized: "search results", bundle: .module)
-            let words = if let file = item.file, let source = item.shownFrom, item.usesHeader {
-                String(localized: "show the header, \(file.fileName) from \(source)", bundle: .module)
-            } else if let file = item.file, let source = item.shownFrom {
-                String(localized: "show \(file.fileName) from \(source)", bundle: .module)
-            } else if let file = item.file, item.usesHeader {
+            let words = if let file = item.file, item.usesHeader {
                 String(localized: "show the header, \(file.fileName)", bundle: .module)
             } else if let file = item.file {
                 String(localized: "put up \(file.fileName)", bundle: .module)

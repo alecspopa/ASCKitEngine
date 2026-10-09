@@ -71,8 +71,9 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
     /// Languages that show the source language's header and search results
     /// art: `["en-GB"]`.
     ///
-    /// The push places the source language's assets on them, so nothing goes
-    /// up twice. A language with files of its own shows its own.
+    /// App Store Connect shows the primary language's art on a language with
+    /// none, so nothing is uploaded for them. A language with files of its own
+    /// shows its own.
     public var usesSourceCreative: [String]
 
     /// The country a price is written in before a curve spreads it out, as a

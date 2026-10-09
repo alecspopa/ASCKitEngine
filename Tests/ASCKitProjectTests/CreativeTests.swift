@@ -183,36 +183,22 @@ struct CreativePlanTests {
         #expect(LibraryPusher.uploads(in: targets).count == 1, "one upload, two placements")
     }
 
-    @Test func placesTheSourceArtOnALanguageThatShowsIt() throws {
-        defer { files.remove() }
-        var folder = CreativeFolder()
-        folder.files["en-US"] = try [.header: [art("header.png")], .searchResults: [art("search-results.png")]]
-
-        let plans = CreativePlanner.plans(folder: folder, locales: ["en-GB", "en-US"], placements: [],
-                                          record: AssetRecord(), sources: ["en-GB": "en-US"])
-
-        #expect(plans.map(\.id) == ["en-GB|header", "en-GB|search-results", "en-US|header", "en-US|search-results"])
-        #expect(plans.map(\.shownFrom) == ["en-US", "en-US", nil, nil])
-        #expect(plans[0].file?.url == plans[2].file?.url)
-        let targets = plans.map {
-            LibraryPusher.Target(id: $0.id, label: $0.locale, deviceClassID: $0.role.rawValue,
-                                 parent: .versionLocalization(id: "l"), files: $0.file.map { [$0.libraryFile] } ?? [],
-                                 slot: $0.library)
-        }
-        #expect(LibraryPusher.uploads(in: targets).count == 2, "one upload for each file, four placements")
-    }
-
-    @Test func keepsTheOwnArtOfALanguageThatShowsTheSource() throws {
+    /// App Store Connect shows the primary language's art on a language with
+    /// none, so a language with no files takes off what was placed there.
+    @Test func leavesALanguageWithNoArtToThePrimaryLanguage() throws {
         defer { files.remove() }
         var folder = CreativeFolder()
         folder.files["en-US"] = try [.header: [art("header.png")]]
-        folder.files["en-GB"] = try [.header: [art("gb-header.png")]]
 
-        let plans = CreativePlanner.plans(folder: folder, locales: ["en-GB"], placements: [],
-                                          record: AssetRecord(), sources: ["en-GB": "en-US"])
+        let plans = CreativePlanner.plans(
+            folder: folder, locales: ["en-GB", "en-US"],
+            placements: [Self.placed("p1", asset: "a1", type: .productPageHeader, locale: "en-GB")],
+            record: AssetRecord()
+        )
 
-        #expect(plans.map(\.shownFrom) == [nil, nil])
-        #expect(plans.first?.file?.fileName == "gb-header.png")
+        #expect(plans.map(\.id) == ["en-GB|header", "en-US|header", "en-US|search-results"])
+        #expect(plans.first?.file == nil)
+        #expect(plans.first?.action == .replace(removing: 1, adding: 0))
     }
 
     @Test func takesOffAPlacementWhoseFileIsGone() {
@@ -416,21 +402,23 @@ struct CreativeSummaryTests {
         #expect(ChangePlanFormatter.summary(plan).contains("2 header and search results assets"))
     }
 
-    @Test func namesTheLanguageWhoseArtALanguageShows() throws {
+    @Test func takesTheArtOffALanguageWithNone() throws {
         let files = try LibraryFiles()
         defer { files.remove() }
         var folder = CreativeFolder()
         folder.files["en-US"] = try [.header: [CreativePlanTests().art("header.png")]]
-        let creative = CreativePlanner.plans(folder: folder, locales: ["en-GB", "en-US"], placements: [],
-                                             record: AssetRecord(), sources: ["en-GB": "en-US"])
+        let creative = CreativePlanner.plans(
+            folder: folder, locales: ["en-GB", "en-US"],
+            placements: [CreativePlanTests.placed("p1", asset: "a1", type: .productPageHeader, locale: "en-GB")],
+            record: AssetRecord()
+        )
         let plan = ChangePlan(versionString: "2.1", versionState: .prepareForSubmission, textChanges: [],
                               missingLocales: [], screenshotPlans: [], creativePlans: creative,
                               blocked: [], skipped: [])
 
         #expect(ChangePlanFormatter.lines(for: plan) == [
             "Header and search results:",
-            "  en-GB, header: show header.png from en-US",
-            "  en-GB, search results: show the header, header.png from en-US",
+            "  en-GB, header: take it off",
             "  en-US, header: put up header.png",
             "  en-US, search results: show the header, header.png",
             ""

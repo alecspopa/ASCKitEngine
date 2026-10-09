@@ -320,8 +320,7 @@ struct PublishReadinessTests {
             versionString: "1.0", versionState: .prepareForSubmission, textChanges: [], missingLocales: [],
             screenshotPlans: [],
             previewPlans: [.init(locale: "en-US", deviceClass: .iPhone69, localFiles: [], library: slot)],
-            creativePlans: [CreativePlan(locale: "en-US", role: .header, file: nil, usesHeader: false, shownFrom: nil,
-                                         library: art)],
+            creativePlans: [CreativePlan(locale: "en-US", role: .header, file: nil, usesHeader: false, library: art)],
             blocked: [], skipped: []
         )
         #expect(ChangePlanFormatter.count(of: .screenshots, in: changes)
