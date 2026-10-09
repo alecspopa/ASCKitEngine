@@ -339,6 +339,12 @@ public struct ChangePlan: Sendable {
         /// Countries left out of the write on purpose.
         public let skipped: [PriceResolver.Skipped]
 
+        /// Countries with no price that ASCKit worked out, and that the file
+        /// does not skip on purpose. While any is here, no price of this
+        /// product goes out: App Store Connect would choose those prices
+        /// itself.
+        public internal(set) var unpriced: [String] = []
+
         public var id: String { productID }
 
         /// Which way one country's price moves.

@@ -89,6 +89,19 @@ public struct ProductPusher: Sendable {
                 continue
             }
 
+            // A country with no price would get whatever App Store Connect
+            // picks. Nothing of this product goes, rather than a price
+            // nobody saw.
+            guard change.unpriced.isEmpty else {
+                result.failed.append(Failure(
+                    productID: change.productID,
+                    what: "",
+                    reason: "ASCKit has no price for \(change.unpriced.joined(separator: ", ")), "
+                        + "so no price of this product was sent."
+                ))
+                continue
+            }
+
             if change.replacesWholeSchedule {
                 await replaceSchedule(
                     change, of: product, dryRun: dryRun, progress: progress, into: &result

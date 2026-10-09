@@ -38,4 +38,10 @@ public struct PricePoint: Codable, Sendable, Hashable, Identifiable {
         self.proceeds = proceeds
         self.currency = currency
     }
+
+    /// Whether the price ends in `.49` or `.99`, the two endings ASCKit lands
+    /// on. Apple's ladder holds others too, such as `.90` and `.95`.
+    var landsOnALadderEnding: Bool {
+        customerPrice.endsInNinetyNine || customerPrice.endsInFortyNine
+    }
 }

@@ -389,29 +389,15 @@ public enum ProductPlanner {
                 // The year cannot go out on its own. Apple would refuse the
                 // whole request, so the country is left out and said out loud
                 // rather than quietly taking the rest down with it.
-                problems.append(Problem(
-                    severity: .warning,
-                    area: .pricing,
-                    message: LocalizedStringResource("""
-                    \(product.productID) cannot be \(resolved.customerPrice.description) in \
-                    \(resolved.territory): no instalment there works out between a \
-                    twelfth and an eighth of it.
-                    """, bundle: .here),
-                    fix: LocalizedStringResource("""
-                    Set that country by hand, or leave it out with skip. A year sold \
-                    with a 12-month commitment needs both prices, and this country's \
-                    ladder has no instalment Apple would take.
-                    """, bundle: .here),
-                    productID: product.productID,
-                    territory: resolved.territory,
-                    kind: .instalmentNotAvailable
-                ))
+                problems.append(noInstalment(for: product.productID, at: resolved))
                 continue
             }
 
             rows.append(yearly)
             rows.append(instalmentRow(point, was: wasInstalment, like: resolved))
         }
+
+        let unpriced = unpricedCountries(plan: plan, asked: Array(ladders.keys), rows: rows)
 
         return Priced(
             plan: ChangePlan.PriceChange(
@@ -423,9 +409,32 @@ public enum ProductPlanner {
                 replacesWholeSchedule: kind.priceWriteReplacesEveryTerritory,
                 preserveCurrentPrice: kind.isAutoRenewable ? plan.preservesCurrentPrice : nil,
                 rows: rows,
-                skipped: resolution.skipped
+                skipped: resolution.skipped,
+                unpriced: unpriced
             ),
-            problems: problems
+            problems: problems,
+            blocked: blocked(product.productID, unpriced: unpriced)
+        )
+    }
+
+    /// A country whose year has no instalment that Apple would take.
+    private static func noInstalment(for productID: String, at resolved: PriceResolver.Resolved) -> Problem {
+        Problem(
+            severity: .warning,
+            area: .pricing,
+            message: LocalizedStringResource("""
+            \(productID) cannot be \(resolved.customerPrice.description) in \
+            \(resolved.territory): no instalment there works out between a \
+            twelfth and an eighth of it.
+            """, bundle: .here),
+            fix: LocalizedStringResource("""
+            Set that country by hand, or leave it out with skip. A year sold \
+            with a 12-month commitment needs both prices, and this country's \
+            ladder has no instalment Apple would take.
+            """, bundle: .here),
+            productID: productID,
+            territory: resolved.territory,
+            kind: .instalmentNotAvailable
         )
     }
 

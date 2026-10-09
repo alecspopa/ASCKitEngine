@@ -50,15 +50,22 @@ public struct Money: Sendable, Hashable, Comparable, CustomStringConvertible {
 
     /// Whether this amount ends in `.99`.
     ///
-    /// App Store price ladders step through `.49` and `.99`, and `.99` is the
-    /// one to land on. A currency with no minor unit, such as the yen, has
-    /// neither, and answers false here for every amount.
-    public var endsInNinetyNine: Bool {
+    /// `.99` is the ending ASCKit lands on. A currency with no minor unit,
+    /// such as the yen, has no such ending, and answers false here for every
+    /// amount.
+    public var endsInNinetyNine: Bool { cents == 99 }
+
+    /// Whether this amount ends in `.49`, the other ending ASCKit uses.
+    public var endsInFortyNine: Bool { cents == 49 }
+
+    /// The two decimals of a whole number of cents, or nil for an amount with
+    /// more decimals than that.
+    private var cents: Int? {
         var scaled = amount * 100
         var whole = Decimal()
         NSDecimalRound(&whole, &scaled, 0, .plain)
-        guard whole == scaled else { return false }
-        return NSDecimalNumber(decimal: whole).intValue % 100 == 99
+        guard whole == scaled else { return nil }
+        return NSDecimalNumber(decimal: whole).intValue % 100
     }
 
     public static func < (lhs: Money, rhs: Money) -> Bool {

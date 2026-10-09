@@ -373,6 +373,31 @@ final class PushSessionPriceSourceTests {
         let change = try #require(preview.change)
         #expect(Set(change.rows.map(\.territory)) == ["USA"])
         #expect(change.skipped.contains { $0.territory == "DEU" })
+
+        // Germany would get whatever App Store Connect picks, so the plan
+        // names it and no price of this product may go.
+        #expect(change.unpriced.contains("DEU"))
+        #expect(preview.blocked.isEmpty == false)
+    }
+
+    /// A push refuses a product with a country that has no price, and sends
+    /// nothing for it.
+    @Test func aPushSendsNoPriceWhileACountryHasNone() async throws {
+        // 3.50 is off the ladder, and rounds to 3.99 in the United States,
+        // which pays 4.99 today. So the plan changes a price.
+        var plan = try #require(Self.subscription.price)
+        plan.baseAmount = try #require(Money(string: "3.50"))
+        var offTheLadder = Self.subscription
+        offTheLadder.price = plan
+        try fixture.writeProduct(offTheLadder)
+
+        let transport = transport()
+        let session = try session(on: transport)
+        let reading = try await session.read(prices: .fresh)
+        let outcome = try await session.pushPrices(reading, dryRun: true)
+
+        #expect(outcome.result.wouldSend.isEmpty)
+        #expect(outcome.result.failed.contains { $0.productID == "com.example.pro" })
     }
 
     /// With no plan, only the prices of today are read. That is one request

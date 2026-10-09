@@ -103,6 +103,42 @@ struct PriceResolverTests {
         #expect(price?.customerPrice.description == "1.99")
     }
 
+    /// Apple's real dollar ladder, between 1.79 and 2.19. It holds .90 and
+    /// .95 steps, and ASCKit lands only on .49 and .99.
+    var denseDollars: [PricePoint] {
+        ladder("USA", ["1.79", "1.89", "1.90", "1.95", "1.99", "2.00", "2.09", "2.19"])
+    }
+
+    /// A target just under .90 does not stop on .90 or .95.
+    @Test func passesTheStepsThatEndInNinetyAndNinetyFive() {
+        let price = PriceResolver.roundedUp(from: "1.895", in: denseDollars)
+        #expect(price?.customerPrice.description == "1.99")
+    }
+
+    /// A curve that lands exactly on .90 still rounds up. Only a typed price
+    /// is taken as it is.
+    @Test func roundsUpACurveTargetThatIsExactlyANinetyStep() {
+        let curve = PriceResolver.roundedUp(from: "1.90", in: denseDollars, takesAnyExactStep: false)
+        let typed = PriceResolver.roundedUp(from: "1.90", in: denseDollars)
+        #expect(curve?.customerPrice.description == "1.99")
+        #expect(typed?.customerPrice == Money(string: "1.90"))
+    }
+
+    /// Above 50 the dollar ladder has .90 and .99 steps and no .49, so a price
+    /// lands on the next .99.
+    @Test func landsOnTheNextNinetyNineWhereThereIsNoFortyNine() {
+        let points = ladder("USA", ["50.90", "50.99", "51.00", "51.90", "51.99"])
+        let price = PriceResolver.roundedUp(from: "51.20", in: points)
+        #expect(price?.customerPrice.description == "51.99")
+    }
+
+    /// The Swiss franc has no .49 or .99 step, so it takes the next step.
+    @Test func takesTheNextStepInACurrencyWithNoFortyNineOrNinetyNine() {
+        let points = ladder("CHE", ["10.50", "10.90", "10.95", "11.00"], currency: "CHF")
+        let price = PriceResolver.roundedUp(from: "10.60", in: points)
+        #expect(price?.customerPrice == Money(string: "10.90"))
+    }
+
     @Test func findsNothingInAnEmptyLadder() {
         #expect(PriceResolver.roundedUp(from: "1.00", in: []) == nil)
     }
