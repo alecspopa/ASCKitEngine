@@ -307,6 +307,106 @@ final class PushSessionPriceSourceTests {
         }
     }
 
+    // MARK: - The prices of one product
+
+    /// The product on the store, as a read finds it.
+    func remoteProduct(on transport: StubTransport) async throws -> RemoteProduct {
+        let reading = try await session(on: transport).read(prices: .notRead)
+        return try #require(reading.remoteProducts?.byProductID["com.example.pro"])
+    }
+
+    /// A preview works out every country and leaves the product file alone.
+    @Test func aPreviewPricesAProductWithNoPlanAndWritesNothing() async throws {
+        var unpriced = Self.subscription
+        unpriced.price = nil
+        try fixture.writeProduct(unpriced)
+
+        let transport = transport()
+        let match = try await remoteProduct(on: transport)
+        let plan = try #require(Self.subscription.price)
+
+        let preview = try await session(on: transport)
+            .readProductPrices(of: unpriced, plan: plan, on: match)
+
+        let change = try #require(preview.change)
+        let germany = try #require(change.rows.first { $0.territory == "DEU" })
+        #expect(germany.oldAmount == Money(string: "3.99"))
+        #expect(germany.newAmount == Money(string: "4.99"))
+        #expect(germany.direction == .up)
+        #expect(preview.origin == .network)
+
+        let onDisk = try ProductStore.load(in: fixture.load()).products["com.example.pro"]
+        #expect(onDisk?.price == nil)
+    }
+
+    /// The ladder a preview read is kept, so writing the same plan next costs
+    /// no second ladder read.
+    @Test func aPlanWrittenAfterAPreviewReadsNoLadder() async throws {
+        var unpriced = Self.subscription
+        unpriced.price = nil
+        try fixture.writeProduct(unpriced)
+
+        let first = transport()
+        let match = try await remoteProduct(on: first)
+        let plan = try #require(Self.subscription.price)
+        _ = try await session(on: first).readProductPrices(of: unpriced, plan: plan, on: match)
+
+        try fixture.writeProduct(Self.subscription)
+        let second = transport()
+        try await session(on: second).read(prices: .cached)
+
+        #expect(await ladderRequests(second) == 0)
+    }
+
+    /// A base price that is not on the ladder gets no anchors. Only the base
+    /// country gets a price, and the preview names every other country as left
+    /// out instead of inventing prices.
+    @Test func aPreviewOfAPriceOffTheLadderSaysWhatIsWrong() async throws {
+        let transport = transport()
+        let match = try await remoteProduct(on: transport)
+        var plan = try #require(Self.subscription.price)
+        plan.baseAmount = try #require(Money(string: "4.50"))
+
+        let preview = try await session(on: transport)
+            .readProductPrices(of: Self.subscription, plan: plan, on: match)
+
+        let change = try #require(preview.change)
+        #expect(Set(change.rows.map(\.territory)) == ["USA"])
+        #expect(change.skipped.contains { $0.territory == "DEU" })
+    }
+
+    /// With no plan, only the prices of today are read. That is one request
+    /// and no ladder.
+    @Test func readingAProductWithNoPlanReadsNoLadder() async throws {
+        let transport = transport()
+        let match = try await remoteProduct(on: transport)
+        let before = await ladderRequests(transport)
+
+        let reading = try await session(on: transport)
+            .readProductPrices(of: Self.subscription, plan: nil, on: match)
+
+        #expect(await ladderRequests(transport) == before)
+        #expect(reading.current["DEU"] == Money(string: "3.99"))
+        #expect(reading.change == nil)
+        #expect(reading.origin == nil)
+    }
+
+    /// Fresh reads the ladder again, the way the read button on the price page
+    /// does, even with a kept copy on disk.
+    @Test func aFreshProductReadReadsTheLadderAgain() async throws {
+        let transport = transport()
+        let match = try await remoteProduct(on: transport)
+        let plan = try #require(Self.subscription.price)
+        _ = try await session(on: transport).readProductPrices(of: Self.subscription, plan: plan, on: match)
+        let first = await ladderRequests(transport)
+
+        let reading = try await session(on: transport)
+            .readProductPrices(of: Self.subscription, plan: plan, on: match, source: .fresh)
+
+        #expect(await ladderRequests(transport) > first)
+        #expect(reading.origin == .network)
+    }
+
     // MARK: - A kept ladder plans the same push
 
     /// If these two differed, a push after a cached read would be refused every

@@ -255,7 +255,7 @@ public struct PushSession: Sendable {
     }
 
     /// One product's ladder, its anchors, and where the two came from.
-    private struct Ladder {
+    struct Ladder {
         let anchors: [String: Money]
         let rungs: [String: [PricePoint]]
         let origin: PriceLadderCache.Origin
@@ -266,7 +266,7 @@ public struct PushSession: Sendable {
     ///
     /// The decision is per product, not per run. A person who changed one base
     /// price pays for that one product and reads the rest off a file.
-    private func ladder(
+    func ladder(
         for plan: Product.PricePlan,
         on match: RemoteProduct,
         productID: String,
@@ -322,7 +322,7 @@ public struct PushSession: Sendable {
     /// A ladder that came off the disk is not written back to it. Nothing about
     /// it changed. What each country pays did, so the small file is written
     /// either way.
-    private func keep(
+    func keep(
         productID: String,
         plan: Product.PricePlan,
         match: RemoteProduct,

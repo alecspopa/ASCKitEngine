@@ -315,13 +315,16 @@ public enum ProductPlanner {
     // MARK: - Prices
 
     /// What one product's price worked out to, or why it did not.
-    private struct Priced {
+    ///
+    /// Internal rather than private, so a preview works out a price the same
+    /// way a plan does.
+    struct Priced {
         var plan: ChangePlan.PriceChange?
         var problems: [Problem] = []
         var blocked: [ChangePlan.Blocked] = []
     }
 
-    private static func price(
+    static func price(
         of product: Product,
         against remote: RemoteProduct,
         prices: Prices
