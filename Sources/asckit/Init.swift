@@ -11,11 +11,14 @@ struct Init: ParsableCommand {
         abstract: "Make a project folder beside an Xcode project.",
         discussion: """
         Reads the `.xcodeproj` in the folder for the app's name, its bundle identifier, \
-        the version being worked on and the languages it ships, and writes \
-        \(ProjectScaffold.folderName) beside it.
+        the version being worked on and the languages it ships, and writes the project \
+        to ~/Documents/ASCKit/<app name>. ~/Documents/ASCKit/locations.json records which \
+        repository it belongs to. Pass --data to put it in another folder.
+
+        A repository that already has an \(ProjectScaffold.folderName) folder keeps it.
 
         Refuses rather than write over a project that is already there. `--force` moves \
-        \(ProjectScaffold.folderName) to the Trash first, and says what was in it.
+        the project folder to the Trash first, and says what was in it.
 
         The listing is written in one language and translated into the rest. That one is \
         the language Xcode builds the app in. Pass --source-locale when the App Store has \
@@ -74,16 +77,25 @@ struct Init: ParsableCommand {
     ))
     var deviceClass: [String] = []
 
+    @Option(name: .long, help: ArgumentHelp(
+        "The folder to write the project to. Defaults to ~/Documents/ASCKit/<app name>.",
+        valueName: "path"
+    ))
+    var data: String?
+
     @Flag(name: .long, help: "Move an existing project to the Trash and start again.")
     var force = false
 
     func run() throws {
-        let folderURL = URL(
-            fileURLWithPath: folder,
-            relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        ).standardizedFileURL
+        let currentFolder = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let folderURL = URL(fileURLWithPath: folder, relativeTo: currentFolder).standardizedFileURL
 
-        let found = try NewProject.read(in: folderURL, target: target)
+        let locations = try ProjectLocations.load(
+            root: ProjectLocations.defaultRoot(home: FileManager.default.homeDirectoryForCurrentUser)
+        )
+        let found = try NewProject.read(in: folderURL, target: target, locations: locations)
+        let destination = data.map { URL(fileURLWithPath: $0, relativeTo: currentFolder).standardizedFileURL }
+            ?? found.destination
         let languages = try chooseLanguages(in: found)
 
         let config = try ProjectConfig(
@@ -105,7 +117,7 @@ struct Init: ParsableCommand {
             print("Platform: \(platform)")
         }
 
-        try write(config: config, version: version, in: folderURL)
+        try write(config: config, version: version, to: destination, repo: folderURL, locations: locations)
     }
 
     // MARK: - Languages
@@ -210,19 +222,28 @@ struct Init: ParsableCommand {
 
     // MARK: - Writing
 
-    private func write(config: ProjectConfig, version: String, in folderURL: URL) throws {
-        let destination = Project.projectFolder(under: folderURL)
-
-        guard FileManager.default.fileExists(atPath: destination.path) else {
-            try ProjectScaffold.create(in: folderURL, config: config, version: version)
-            print("Wrote \(destination.lastPathComponent).")
+    private func write(
+        config: ProjectConfig,
+        version: String,
+        to destination: URL,
+        repo folderURL: URL,
+        locations: ProjectLocations
+    ) throws {
+        let configPath = destination.appending(path: Project.defaultConfigName).path
+        guard FileManager.default.fileExists(atPath: configPath) else {
+            try ProjectScaffold.create(at: destination, config: config, version: version)
+            var locations = locations
+            locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
+            try locations.save()
+            print("Wrote \(destination.path).")
             return
         }
 
-        // Planned from the folder holding the Xcode project, the same folder
-        // the app opens. That is what moves the project folder to the Trash
-        // rather than emptying it.
-        let plan = ProjectRebuild.plan(at: folderURL)
+        // Planned from the project folder itself, so the plan moves what is in
+        // it to the Trash. A project kept in the repository is planned from
+        // the repository, and the plan then moves the project folder whole.
+        let inRepository = destination.deletingLastPathComponent().standardizedFileURL.path == folderURL.path
+        let plan = ProjectRebuild.plan(at: inRepository ? folderURL : destination)
 
         guard force else {
             throw InitError.alreadyAProject(at: destination, plan: plan)
@@ -233,7 +254,13 @@ struct Init: ParsableCommand {
         describe(plan)
         let trashed = try ProjectRebuild.rebuild(plan, config: config, version: version)
         print("Moved \(countedNoun(trashed.count, "item")) to the Trash.")
-        print("Wrote \(destination.lastPathComponent).")
+        print("Wrote \(plan.folderURL.path).")
+
+        if inRepository == false {
+            var locations = locations
+            locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
+            try locations.save()
+        }
     }
 
     private func describe(_ plan: ProjectRebuild.Plan) {

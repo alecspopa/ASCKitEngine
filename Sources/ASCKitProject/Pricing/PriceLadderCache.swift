@@ -229,7 +229,7 @@ public enum PriceLadderStore {
         // The cache folder needs the `.gitignore` that empties it. A project
         // made before that folder existed has neither, and this writes megabytes
         // per product. `makeCache` leaves an existing one alone.
-        try ProjectScaffold.makeCache(in: project.rootURL)
+        try ProjectScaffold.makeCache(at: project.cacheURL)
 
         let url = url(productID: cache.productID, in: project)
         try FileManager.default.createDirectory(

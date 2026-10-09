@@ -2788,6 +2788,17 @@
         }
       }
     },
+    "Could not read %@: %@. Fix the file or move it away, and ASCKit finds the projects again." : {
+      "comment" : "Error sentence when the file that records where each project is kept cannot be read. The first value is a file path. The second is the error text. Do not translate ASCKit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Could not read %1$@: %2$@. Fix the file or move it away, and ASCKit finds the projects again."
+          }
+        }
+      }
+    },
     "Could not read project.xcproj or project.pbxproj in %@." : {
       "comment" : "Error sentence when the app opens an Xcode project. The value is the name of the Xcode project folder. Do not translate project.xcproj and project.pbxproj. They are file names."
     },

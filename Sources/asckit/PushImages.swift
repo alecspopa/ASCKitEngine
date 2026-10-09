@@ -9,7 +9,7 @@ struct PushImages: AsyncParsableCommand {
         abstract: "Upload the screenshots. Touches no text.",
         discussion: """
         The images go into the app's asset library. Each file goes up once, \
-        however many languages use it, and .asckit/asset-library.json records \
+        however many languages use it, and asset-library.json in the project folder records \
         it. A slot that already holds the right images keeps them. A placement \
         that goes leaves its image in the library, so nothing is lost. \
         asckit library prune deletes what nothing places.

@@ -99,6 +99,31 @@ final class XcodeDriftTests {
         try Data(pbxproj.utf8).write(to: url.appending(path: "project.pbxproj"))
     }
 
+    /// Data kept outside the repository still checks against the Xcode project.
+    @Test func findsTheXcodeProjectWhenTheDataIsOutsideTheRepository() throws {
+        let repository = fixture.rootURL.appending(path: "repo-external")
+        try FileManager.default.createDirectory(at: repository, withIntermediateDirectories: true)
+        try writeXcodeProject(in: repository, bundleID: "com.example.Demo", marketingVersion: "2.0", knownRegions: ["en-US"])
+
+        let config = ProjectConfig(
+            bundleID: "com.example.Demo",
+            keyID: "ABC123",
+            issuerID: "issuer",
+            sourceLocale: "en-US",
+            locales: ["en-US"],
+            deviceClasses: [DeviceClass.iPhone69.id]
+        )
+        let data = try ProjectScaffold.create(
+            at: fixture.rootURL.appending(path: "external-data"),
+            config: config,
+            version: "1.0"
+        )
+
+        let project = try Project.open(repo: repository, data: data, cacheRoot: nil)
+        let kinds = try Checker.check(project: project).problems.map(\.kind)
+        #expect(kinds.contains(.versionFolderMissingForXcode))
+    }
+
     func problems(in repository: URL) throws -> [Problem] {
         try Checker.check(project: Project.load(at: repository)).problems
     }

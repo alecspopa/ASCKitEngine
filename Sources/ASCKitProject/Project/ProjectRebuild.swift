@@ -195,7 +195,14 @@ public enum ProjectRebuild {
         // Into the project folder, never into the repository around it. The
         // folder keeps its name, so a project living in one called `appstore`
         // still does.
-        try ProjectScaffold.write(into: plan.folderURL, config: config, version: version)
+        //
+        // A folder outside the repository keeps its cache elsewhere.
+        try ProjectScaffold.write(
+            into: plan.folderURL,
+            config: config,
+            version: version,
+            withCache: ProjectScaffold.knownFolderNames.contains(plan.folderURL.lastPathComponent)
+        )
         return trashed
     }
 }

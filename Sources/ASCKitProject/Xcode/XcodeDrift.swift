@@ -13,7 +13,7 @@ import Foundation
 enum XcodeDrift {
     static func problems(project: Project, versions: [String]) -> [Problem] {
         guard
-            let projectURL = XcodeProject.find(in: project.rootURL.deletingLastPathComponent()),
+            let projectURL = XcodeProject.find(in: project.xcodeFolderURL),
             let xcode = try? XcodeProject.read(at: projectURL)
         else {
             return []

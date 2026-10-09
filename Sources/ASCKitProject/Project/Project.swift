@@ -28,10 +28,42 @@ public struct Project: Sendable {
     /// `appstore` keeps its name.
     public static let knownInformationFolderNames = [informationFolderName, "app-information"]
 
-    public init(configURL: URL, config: ProjectConfig) {
+    /// The folder holding the `.xcodeproj`.
+    ///
+    /// The parent of the project folder for a project kept in the repository,
+    /// and the repository itself for one kept somewhere else.
+    public let xcodeFolderURL: URL
+
+    /// Things ASCKit read from App Store Connect and kept, so a window opens
+    /// without asking again. Never in the repository.
+    ///
+    /// A `cache` folder in the project folder for an older project, and a
+    /// folder in a cache root for one kept outside the repository.
+    public let cacheURL: URL
+
+    public init(configURL: URL, config: ProjectConfig, xcodeFolderURL: URL? = nil, cacheURL: URL? = nil) {
+        let rootURL = configURL.deletingLastPathComponent()
         self.configURL = configURL
-        rootURL = configURL.deletingLastPathComponent()
+        self.rootURL = rootURL
         self.config = config
+        self.xcodeFolderURL = xcodeFolderURL ?? rootURL.deletingLastPathComponent()
+        self.cacheURL = cacheURL ?? rootURL.appending(path: Self.cacheFolderName)
+    }
+
+    /// Loads a project whose data lives outside the repository.
+    ///
+    /// `repo` holds the `.xcodeproj` and `data` holds `asckit.json`. The cache
+    /// goes in `cacheRoot/<bundle identifier>`, so one app never reads
+    /// another's, and stays out of a folder that syncs.
+    public static func open(repo: URL, data: URL, cacheRoot: URL?) throws -> Project {
+        try checkXcodeProject(in: repo)
+        let loaded = try load(at: data)
+        return Project(
+            configURL: loaded.configURL,
+            config: loaded.config,
+            xcodeFolderURL: repo,
+            cacheURL: cacheRoot?.appending(path: loaded.config.bundleID)
+        )
     }
 
     /// Loads the project in a folder holding an Xcode project.
@@ -174,10 +206,6 @@ public struct Project: Sendable {
     /// This project's own price curves, for a shape none of the shipped ones
     /// have.
     public var priceCurvesURL: URL { rootURL.appending(path: "price-curves") }
-
-    /// Things ASCKit read from App Store Connect and kept, so a window opens
-    /// without asking again. Never in the repository.
-    public var cacheURL: URL { rootURL.appending(path: Self.cacheFolderName) }
 
     /// The version folders, newest-looking last. Sorted the way version numbers
     /// read rather than the way strings sort, so 1.10 comes after 1.9.

@@ -68,13 +68,37 @@ public enum ProjectScaffold {
         return folder
     }
 
+    /// Writes the project straight into a folder, with no `.asckit` inside it.
+    ///
+    /// This is for a project kept outside the repository. Its cache lives in a
+    /// cache root, so no `cache/` is made here.
+    ///
+    /// Refuses a folder that already has a configuration, for the same reason
+    /// `create(in:)` does.
+    @discardableResult
+    public static func create(at folder: URL, config: ProjectConfig, version: String) throws -> URL {
+        guard FileManager.default.fileExists(
+            atPath: folder.appending(path: Project.defaultConfigName).path
+        ) == false else {
+            throw ScaffoldError.alreadyAProject(at: folder)
+        }
+
+        try write(into: folder, config: config, version: version, withCache: false)
+        return folder
+    }
+
     /// Writes a whole project into a folder, whatever the folder is called.
     ///
     /// Separate from `create` because rebuilding writes into the folder it was
     /// given rather than into a child of it. A sandboxed app that opened the
     /// project folder directly has permission for that folder and not for its
     /// parent, so a rebuild must never reach upwards.
-    static func write(into folder: URL, config: ProjectConfig, version: String) throws {
+    static func write(
+        into folder: URL,
+        config: ProjectConfig,
+        version: String,
+        withCache: Bool = true
+    ) throws {
         let copyFolder = Project.informationFolder(
             in: folder.appending(path: config.versionsPath).appending(path: version)
         )
@@ -88,7 +112,9 @@ public enum ProjectScaffold {
         try ProjectJSON.write(copy, to: copyFolder.appending(path: "\(config.sourceLocale).json"))
 
         try makeInbox(in: folder)
-        try makeCache(in: folder)
+        if withCache {
+            try makeCache(at: folder.appending(path: Project.cacheFolderName))
+        }
         try writeReadme(in: folder)
     }
 
@@ -105,13 +131,13 @@ public enum ProjectScaffold {
     !.gitignore
     """
 
-    /// Where ASCKit keeps what it read from App Store Connect.
+    /// Makes the folder ASCKit keeps what it read from App Store Connect in.
     ///
     /// The folder needs a tracked file in it or it does not survive a clone,
     /// and the `.gitignore` is that file and the rule that empties the folder
-    /// at the same time. That is what the inbox does, for the same reason.
-    static func makeCache(in folder: URL) throws {
-        let cache = folder.appending(path: Project.cacheFolderName)
+    /// at the same time. That is what the inbox does, for the same reason. A
+    /// cache outside the repository gets one too, which does no harm.
+    static func makeCache(at cache: URL) throws {
         try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
 
         let ignore = cache.appending(path: ".gitignore")

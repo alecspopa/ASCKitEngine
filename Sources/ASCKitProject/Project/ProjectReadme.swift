@@ -31,7 +31,7 @@ enum ProjectReadme {
     ```
     asckit.json                  which app this is, and which languages
     inbox/                       new screenshots wait here before they go in
-    cache/                       what ASCKit read from the store. Not in git
+    cache/                       only in a project kept in a repository. Not in git
     products/
       com.example.pro.json       one file per in-app purchase
       silenced.json              product warnings somebody has read

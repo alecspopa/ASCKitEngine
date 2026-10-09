@@ -22,7 +22,8 @@ public struct NewProject: Sendable {
     public let regions: [(region: String, outcome: RegionMatch.Outcome)]
 
     /// Where the listing would go: `.asckit` beside the Xcode project, or the
-    /// folder an older project is already in.
+    /// folder an older project is already in. With a registry, the folder the
+    /// registry names, or a new one in its root.
     public let destination: URL
 
     /// Whether there is a project at the destination already. Writing over one
@@ -94,6 +95,46 @@ public struct NewProject: Sendable {
             regions: RegionMatch.outcomes(for: xcode.knownRegions),
             destination: destination,
             alreadyAProject: Project.alreadyAProject(in: folderURL)
+        )
+    }
+
+    /// Reads a folder the same way, with the project kept outside the
+    /// repository.
+    ///
+    /// The destination is the folder the registry or the repository already
+    /// has for this app. A new project goes in a folder of the registry's root,
+    /// named after the app.
+    public static func read(
+        in folderURL: URL,
+        target: String? = nil,
+        locations: ProjectLocations
+    ) throws -> NewProject {
+        let found = try read(in: folderURL, target: target)
+
+        guard let resolution = locations.resolve(repo: folderURL) else {
+            let name = locations.folderName(
+                forDisplayName: found.app.displayName,
+                bundleID: found.app.bundleID ?? found.app.displayName
+            )
+            return NewProject(
+                folderURL: found.folderURL,
+                projectName: found.projectName,
+                app: found.app,
+                regions: found.regions,
+                destination: locations.root.appending(path: name),
+                alreadyAProject: false
+            )
+        }
+
+        return NewProject(
+            folderURL: found.folderURL,
+            projectName: found.projectName,
+            app: found.app,
+            regions: found.regions,
+            destination: resolution.dataURL,
+            alreadyAProject: FileManager.default.fileExists(
+                atPath: resolution.dataURL.appending(path: Project.defaultConfigName).path
+            )
         )
     }
 
