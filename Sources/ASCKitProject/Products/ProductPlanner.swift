@@ -131,7 +131,7 @@ public enum ProductPlanner {
                 }
             }
 
-            let priced = price(of: product, against: match, prices: prices)
+            let priced = price(of: product, prices: prices)
             if let plan = priced.plan { pricePlans.append(plan) }
             problems += priced.problems
             blocked += priced.blocked
@@ -324,11 +324,7 @@ public enum ProductPlanner {
         var blocked: [ChangePlan.Blocked] = []
     }
 
-    static func price(
-        of product: Product,
-        against remote: RemoteProduct,
-        prices: Prices
-    ) -> Priced {
+    static func price(of product: Product, prices: Prices) -> Priced {
         guard let plan = product.price else { return Priced() }
         guard let kind = product.resolvedKind else { return Priced() }
 

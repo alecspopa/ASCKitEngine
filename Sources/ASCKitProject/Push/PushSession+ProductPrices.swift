@@ -31,6 +31,11 @@ public struct ProductPriceReading: Sendable {
     /// ladder was read.
     public let origin: PriceLadderCache.Origin?
 
+    /// The day an earlier read wrote the prices of today to the disk, when
+    /// they came from there. Nil when they came straight off App Store
+    /// Connect. Then "today" means that day.
+    public let keptOn: String?
+
     public init(
         productID: String,
         plan: Product.PricePlan?,
@@ -39,7 +44,8 @@ public struct ProductPriceReading: Sendable {
         change: ChangePlan.PriceChange? = nil,
         problems: [Problem] = [],
         blocked: [ChangePlan.Blocked] = [],
-        origin: PriceLadderCache.Origin? = nil
+        origin: PriceLadderCache.Origin? = nil,
+        keptOn: String? = nil
     ) {
         self.productID = productID
         self.plan = plan
@@ -49,6 +55,71 @@ public struct ProductPriceReading: Sendable {
         self.problems = problems
         self.blocked = blocked
         self.origin = origin
+        self.keptOn = keptOn
+    }
+}
+
+public extension ProductPriceReading {
+    /// The prices an earlier read kept on disk, worked out with no network.
+    ///
+    /// The prices of today come from `cache/price-points/`. With a plan, the
+    /// ladder comes from the kept ladder of the same base price, and the new
+    /// prices are worked out the way a push plan does it. With no kept ladder
+    /// for that base price, the reading holds the prices of today alone.
+    ///
+    /// For a window to show at once, before anything reads App Store Connect.
+    /// A push never uses this: what each country pays today can have moved
+    /// since, and a push reads it again.
+    ///
+    /// - Returns: Nil when no read kept anything for this product.
+    static func kept(
+        of product: Product,
+        plan: Product.PricePlan?,
+        in project: Project
+    ) -> ProductPriceReading? {
+        guard let points = PricePointStore.load(productID: product.productID, in: project) else {
+            return nil
+        }
+
+        let productID = product.productID
+        let today = ProductPriceReading(
+            productID: productID,
+            plan: plan,
+            current: points.current,
+            currentMonthly: points.currentMonthly,
+            keptOn: points.readOn
+        )
+
+        guard let plan,
+              let ladder = PriceLadderStore.load(productID: productID, in: project),
+              ladder.baseTerritory == plan.baseTerritory,
+              ladder.baseAmount == plan.baseAmount,
+              ladder.anchors.isEmpty == false
+        else { return today }
+
+        var planned = product
+        planned.price = plan
+        let priced = ProductPlanner.price(
+            of: planned,
+            prices: ProductPlanner.Prices(
+                anchors: [productID: ladder.anchors],
+                ladders: [productID: ladder.everyLadder],
+                current: [productID: points.current],
+                currentMonthly: [productID: points.currentMonthly]
+            )
+        )
+
+        return ProductPriceReading(
+            productID: productID,
+            plan: plan,
+            current: points.current,
+            currentMonthly: points.currentMonthly,
+            change: priced.plan,
+            problems: priced.problems,
+            blocked: priced.blocked,
+            origin: .cache(readOn: ladder.readOn),
+            keptOn: points.readOn
+        )
     }
 }
 
@@ -93,7 +164,6 @@ public extension PushSession {
         planned.price = plan
         let priced = ProductPlanner.price(
             of: planned,
-            against: match,
             prices: ProductPlanner.Prices(
                 anchors: [productID: rungs.anchors],
                 ladders: [productID: rungs.rungs],

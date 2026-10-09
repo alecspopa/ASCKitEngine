@@ -432,6 +432,50 @@ final class PushSessionPriceSourceTests {
         #expect(reading.origin == .network)
     }
 
+    // MARK: - The prices kept on disk
+
+    /// A read keeps the prices, and a window can show the same table from the
+    /// disk with no network.
+    @Test func theKeptPricesWorkOutTheSameTableWithNoNetwork() async throws {
+        let transport = transport()
+        let match = try await remoteProduct(on: transport)
+        let plan = try #require(Self.subscription.price)
+        let read = try await session(on: transport)
+            .readProductPrices(of: Self.subscription, plan: plan, on: match)
+
+        let kept = try #require(
+            ProductPriceReading.kept(of: Self.subscription, plan: plan, in: fixture.load())
+        )
+
+        #expect(kept.keptOn == PricePointCache.today())
+        #expect(kept.current == read.current)
+        #expect(kept.change?.rows.map(\.newAmount) == read.change?.rows.map(\.newAmount))
+        #expect(kept.change?.rows.map(\.territory) == read.change?.rows.map(\.territory))
+    }
+
+    /// Another base price has no kept ladder, so only the prices of today
+    /// come back.
+    @Test func theKeptPricesOfAnotherBasePriceHoldNoTable() async throws {
+        let transport = transport()
+        let match = try await remoteProduct(on: transport)
+        let plan = try #require(Self.subscription.price)
+        _ = try await session(on: transport).readProductPrices(of: Self.subscription, plan: plan, on: match)
+
+        var other = plan
+        other.baseAmount = try #require(Money(string: "3.99"))
+        let kept = try #require(
+            ProductPriceReading.kept(of: Self.subscription, plan: other, in: fixture.load())
+        )
+
+        #expect(kept.change == nil)
+        #expect(kept.current.isEmpty == false)
+    }
+
+    @Test func nothingIsKeptBeforeTheFirstRead() throws {
+        let kept = try ProductPriceReading.kept(of: Self.subscription, plan: nil, in: fixture.load())
+        #expect(kept == nil)
+    }
+
     // MARK: - A kept ladder plans the same push
 
     /// If these two differed, a push after a cached read would be refused every
