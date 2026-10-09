@@ -474,6 +474,7 @@ public struct ChangePlan: Sendable {
     public struct UnusedFile: Sendable, Hashable {
         public enum Slot: Sendable, Hashable {
             case screenshots(DeviceClass)
+            case previews(DeviceClass)
             case creative(CreativeRole)
         }
 
@@ -489,10 +490,12 @@ public struct ChangePlan: Sendable {
             self.fileName = fileName
         }
 
-        /// A device class id, or a role such as `header`.
+        /// A device class id, the same with `/previews`, or a role such as
+        /// `header`.
         public var slotID: String {
             switch slot {
             case let .screenshots(deviceClass): deviceClass.id
+            case let .previews(deviceClass): "\(deviceClass.id)/previews"
             case let .creative(role): role.rawValue
             }
         }

@@ -187,9 +187,10 @@ enum ProjectReadme {
     In the app it is a checkbox in each device class heading on a language's
     Screenshots page. It holds for every version.
 
-    The tick wins over files in the folder. A push uploads nothing for that
-    language, takes off what App Store Connect holds for it, and moves the
-    files in its folder to the Trash.
+    The tick wins over files in the folder, and it covers the app previews of
+    the device class too. A push uploads nothing for that language, takes off
+    what App Store Connect holds for it, and moves the files in its folders to
+    the Trash.
 
     A language that reads different words gets no checkbox. It needs pictures
     with its own words in them, so an empty folder is a warning, and so is a

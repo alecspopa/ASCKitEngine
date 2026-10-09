@@ -227,6 +227,9 @@
         }
       }
     },
+    "%@ app preview" : {
+      "comment" : "Short text in the publish plan, shown as fixed-width text. The value is a device class name, such as iPhone 6.9\". A file name of an app preview video comes after it."
+    },
     "%@ asks for %@ in %@, and the most the store sells for there is %@." : {
       "comment" : "Problem message in the problem list, about a price. The first value is a product id, and the second is a price. The third is a country code. The fourth is the highest price the store sells in that country.",
       "localizations" : {

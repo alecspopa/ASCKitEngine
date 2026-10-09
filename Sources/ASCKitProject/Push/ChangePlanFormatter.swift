@@ -558,6 +558,8 @@ private extension ChangePlanFormatter {
         for file in plan.unusedFiles {
             let slot = switch file.slot {
             case let .screenshots(deviceClass): deviceClass.displayName
+            case let .previews(deviceClass):
+                String(localized: "\(deviceClass.displayName) app preview", bundle: .module)
             case .creative(.header): String(localized: "header", bundle: .module)
             case .creative(.searchResults): String(localized: "search results", bundle: .module)
             }

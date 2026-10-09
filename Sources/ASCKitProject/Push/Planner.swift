@@ -202,7 +202,10 @@ public enum Planner {
             guard remote.versionLocalizations[locale] != nil else { continue }
 
             for deviceClass in config.resolvedDeviceClasses where deviceClass.takesPreviews {
-                let files = local.previews(locale: locale, deviceClassID: deviceClass.id)
+                // The tick covers the previews of the device class too.
+                let files = config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id)
+                    ? []
+                    : local.previews(locale: locale, deviceClassID: deviceClass.id)
                 let current = LibraryPlanner.current(
                     in: remote.placements, locale: locale, group: deviceClass.placementGroup, type: .appPreview
                 )
@@ -242,6 +245,9 @@ public enum Planner {
                 where config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id) {
                 unused += local.screenshots(locale: locale, deviceClassID: deviceClass.id).map {
                     .init(locale: locale, slot: .screenshots(deviceClass), url: $0.url, fileName: $0.fileName)
+                }
+                unused += local.previews(locale: locale, deviceClassID: deviceClass.id).map {
+                    .init(locale: locale, slot: .previews(deviceClass), url: $0.url, fileName: $0.fileName)
                 }
             }
             guard config.creativeSource(locale: locale) != nil else { continue }

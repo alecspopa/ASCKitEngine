@@ -96,6 +96,25 @@ struct SourceFallbackPlanTests {
         #expect(ChangePlanFormatter.lines(for: plan).contains("  en-GB, header: header.png"))
     }
 
+    /// The tick covers the previews of the device class too.
+    @Test func usesNoPreviewOfALanguageThatShowsTheSource() throws {
+        defer { fixture.remove() }
+        _ = try content()
+        let project = try fixture.load()
+        let folder = project.previewsURL(version: "1.0", locale: "en-GB", deviceClassID: deviceClass.id)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try Data("a movie".utf8).write(to: folder.appending(path: "01-a.mov"))
+        let listing = listing(placements: [])
+        let plan = try Planner.plan(local: fixture.content(), config: project.config, remote: listing,
+                                    record: AssetRecord())
+
+        #expect(plan.previewPlans.isEmpty)
+        #expect(PushSession.targets(in: plan, listing: listing).allSatisfy { $0.label == "en-US" })
+        #expect(plan.unusedFiles.map { "\($0.locale)/\($0.slotID)/\($0.fileName)" } == [
+            "en-GB/\(deviceClass.id)/previews/01-a.mov"
+        ])
+    }
+
     @Test func takesOffWhatALanguageThatShowsTheSourceHolds() throws {
         defer { fixture.remove() }
         let listing = listing(placements: [
