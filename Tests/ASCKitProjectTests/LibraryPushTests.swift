@@ -82,9 +82,7 @@ struct LibraryPusherTests {
         saved: SavedRecords = SavedRecords()
     ) async throws -> (result: ScreenshotPusher.Result, record: AssetRecord) {
         let pusher = try LibraryPusher(client: ASCClient.stubbed(transport: transport), poll: .immediate, uploadLimit: 1)
-        return await pusher.push(targets, libraryID: "lib1", record: record, saveRecord: { record in
-            Task { await saved.add(record) }
-        })
+        return await pusher.push(targets, libraryID: "lib1", record: record, saveRecord: { record in await saved.add(record) })
     }
 
     static func calls(_ transport: StubTransport) async -> [String] {

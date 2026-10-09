@@ -62,7 +62,7 @@ public struct LibraryPusher: Sendable {
         _ targets: [Target],
         libraryID: String,
         record: AssetRecord,
-        saveRecord: @escaping @Sendable (AssetRecord) -> Void,
+        saveRecord: @escaping @Sendable (AssetRecord) async -> Void,
         at date: Date = .now,
         progress: (@Sendable (ScreenshotPusher.Step) -> Void)? = nil
     ) async -> (result: ScreenshotPusher.Result, record: AssetRecord) {
@@ -129,7 +129,7 @@ public struct LibraryPusher: Sendable {
         _ uploads: [String: (file: LibraryFile, target: Target)],
         libraryID: String,
         box: RecordBox,
-        saveRecord: @escaping @Sendable (AssetRecord) -> Void,
+        saveRecord: @escaping @Sendable (AssetRecord) async -> Void,
         progress: (@Sendable (ScreenshotPusher.Step) -> Void)?
     ) async -> [String: String] {
         guard uploads.isEmpty == false else { return [:] }
