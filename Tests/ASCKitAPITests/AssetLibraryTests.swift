@@ -11,8 +11,7 @@ enum LibraryJSON {
     }
 
     static func body(of request: URLRequest) throws -> NSDictionary {
-        let data = try #require(request.httpBody)
-        return try #require(JSONSerialization.jsonObject(with: data) as? NSDictionary)
+        try #require(request.jsonObject() as NSDictionary?)
     }
 
     static func query(of request: URLRequest) -> [String: String] {

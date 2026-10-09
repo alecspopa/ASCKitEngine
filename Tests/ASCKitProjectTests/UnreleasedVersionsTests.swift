@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -25,20 +26,11 @@ final class UnreleasedVersionsTests {
     }
 
     func listing(released: String?, pending: String?) -> RemoteListing {
-        RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
-            versionID: "v1",
+        .fixture(
             versionString: pending ?? released ?? "",
             versionState: pending == nil ? .readyForDistribution : .prepareForSubmission,
             releasedVersionString: released,
-            pendingVersionString: pending,
-            appInfoLocalizations: [:],
-            versionLocalizations: [:],
-            screenshotSets: []
+            pendingVersionString: pending
         )
     }
 

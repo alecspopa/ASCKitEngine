@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -75,15 +76,9 @@ final class VersionSeedTests {
     }
 
     func listing(placements: [RemotePlacement]) -> RemoteListing {
-        RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
+        .fixture(
             versionID: "v2",
             versionString: "2.0",
-            versionState: .prepareForSubmission,
             appInfoLocalizations: [
                 "en-US": RemoteLocalization(id: "i1", locale: "en-US", values: ["name": "Demo", "subtitle": "Lists"]),
                 "fr-FR": RemoteLocalization(id: "i2", locale: "fr-FR", values: ["name": "Démo"])
@@ -94,7 +89,6 @@ final class VersionSeedTests {
                 "es-ES": RemoteLocalization(id: "v3", locale: "es-ES", values: [:]),
                 "es-MX": RemoteLocalization(id: "v4", locale: "es-MX", values: [:])
             ],
-            screenshotSets: [],
             placements: placements
         )
     }

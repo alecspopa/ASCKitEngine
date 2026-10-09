@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -46,14 +47,9 @@ final class PlannerTests {
             version[locale] = version[locale] ?? [:]
         }
 
-        return RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
+        return .fixture(
             appInfoID: appInfoState == .prepareForSubmission ? "info1" : nil,
             appInfoState: appInfoState,
-            versionID: "v1",
-            versionString: "1.0",
             versionState: versionState,
             appInfoLocalizations: appInfo.mapValues {
                 RemoteLocalization(id: "i-\($0.hashValue)", locale: "", values: $0)

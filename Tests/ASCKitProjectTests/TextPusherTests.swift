@@ -29,18 +29,11 @@ struct TextPusherTests {
             })
         }
 
-        return RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
+        return .fixture(
             appInfoID: appInfoID,
-            appInfoState: .prepareForSubmission,
             versionID: "ver1",
-            versionString: "1.0",
-            versionState: .prepareForSubmission,
             appInfoLocalizations: localizations("i", of: appInfo),
-            versionLocalizations: localizations("v", of: version),
-            screenshotSets: []
+            versionLocalizations: localizations("v", of: version)
         )
     }
 
@@ -86,8 +79,7 @@ struct TextPusherTests {
         )
 
         #expect(result.written == ["en-US"])
-        let body = try #require(await transport.request(at: 0).httpBody)
-        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let json = try #require(await transport.request(at: 0).jsonObject())
         let attributes = try #require((json["data"] as? [String: Any])?["attributes"] as? [String: Any])
 
         #expect(attributes["keywords"] as? String == "household,restock")
@@ -332,8 +324,7 @@ struct RefusedFieldTests {
         #expect(result.refused.map(\.field) == [.whatsNew])
 
         // The retry carries the acceptable field and leaves out the refused one.
-        let retry = try #require(await transport.request(at: 1).httpBody)
-        let json = try #require(try JSONSerialization.jsonObject(with: retry) as? [String: Any])
+        let json = try #require(await transport.request(at: 1).jsonObject())
         let attributes = try #require((json["data"] as? [String: Any])?["attributes"] as? [String: Any])
 
         #expect(attributes["promotionalText"] as? String == "New this week")

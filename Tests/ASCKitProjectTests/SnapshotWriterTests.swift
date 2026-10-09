@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -44,15 +45,7 @@ final class SnapshotWriterTests {
         let englishParts = split(english)
         let germanParts = split(german)
 
-        return RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
-            versionID: "v1",
-            versionString: "1.0",
-            versionState: .prepareForSubmission,
+        return .fixture(
             appInfoLocalizations: [
                 "en-US": RemoteLocalization(id: "i-en", locale: "en-US", values: englishParts.info),
                 "de-DE": RemoteLocalization(id: "i-de", locale: "de-DE", values: germanParts.info)
@@ -60,8 +53,7 @@ final class SnapshotWriterTests {
             versionLocalizations: [
                 "en-US": RemoteLocalization(id: "v-en", locale: "en-US", values: englishParts.version),
                 "de-DE": RemoteLocalization(id: "v-de", locale: "de-DE", values: germanParts.version)
-            ],
-            screenshotSets: []
+            ]
         )
     }
 

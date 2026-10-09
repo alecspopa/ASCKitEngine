@@ -154,3 +154,58 @@ public extension StubTransport {
         ("/appAssetLibraryRefData", .ok(#"{"data":[]}"#))
     ]
 }
+
+// MARK: - Request bodies
+
+public extension URLRequest {
+    /// The JSON body as an object. Nil when there is no body or it is not an object.
+    func jsonObject() -> [String: Any]? {
+        httpBody.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+    }
+}
+
+public extension StubTransport {
+    /// The body of one request as text.
+    func bodyText(at index: Int) -> String? {
+        request(at: index).httpBody.flatMap { String(bytes: $0, encoding: .utf8) }
+    }
+}
+
+// MARK: - A listing to start from
+
+public extension RemoteListing {
+    /// A listing of the shared demo app, ready for submission. A test passes only
+    /// what it cares about.
+    static func fixture(
+        appInfoID: String? = "info1",
+        appInfoState: AppInfoState? = .prepareForSubmission,
+        versionID: String = "v1",
+        versionString: String = "1.0",
+        versionState: AppVersionState? = .prepareForSubmission,
+        releasedVersionString: String? = nil,
+        pendingVersionString: String? = nil,
+        appInfoLocalizations: [String: RemoteLocalization] = [:],
+        versionLocalizations: [String: RemoteLocalization] = [:],
+        screenshotSets: [RemoteScreenshotSet] = [],
+        placements: [RemotePlacement] = [],
+        live: LiveTexts? = nil
+    ) -> RemoteListing {
+        RemoteListing(
+            appID: "app1",
+            appName: "Demo",
+            bundleID: "com.example.Demo",
+            appInfoID: appInfoID,
+            appInfoState: appInfoState,
+            versionID: versionID,
+            versionString: versionString,
+            versionState: versionState,
+            releasedVersionString: releasedVersionString,
+            pendingVersionString: pendingVersionString,
+            appInfoLocalizations: appInfoLocalizations,
+            versionLocalizations: versionLocalizations,
+            screenshotSets: screenshotSets,
+            placements: placements,
+            live: live
+        )
+    }
+}

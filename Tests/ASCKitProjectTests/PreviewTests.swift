@@ -269,8 +269,7 @@ struct PreviewPlanTests {
     let files: LibraryFiles
 
     static func body(_ transport: StubTransport, at index: Int) async throws -> String {
-        let data = try #require(await transport.request(at: index).httpBody)
-        return try #require(String(bytes: data, encoding: .utf8))
+        try #require(await transport.bodyText(at: index))
     }
 
     init() throws {

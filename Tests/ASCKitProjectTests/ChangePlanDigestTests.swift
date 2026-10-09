@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -40,20 +41,12 @@ final class ChangePlanDigestTests {
         var version = version
         version["en-US"] = version["en-US"] ?? [:]
 
-        return RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
-            versionID: "v1",
+        return .fixture(
             versionString: versionString,
             versionState: versionState,
-            appInfoLocalizations: [:],
             versionLocalizations: version.mapValues {
                 RemoteLocalization(id: "v-\($0.hashValue)", locale: "en-US", values: $0)
-            },
-            screenshotSets: []
+            }
         )
     }
 

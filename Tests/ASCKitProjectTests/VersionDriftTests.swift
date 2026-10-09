@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -26,19 +27,7 @@ final class VersionDriftTests {
     }
 
     func listing(version: String) -> RemoteListing {
-        RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
-            versionID: "v1",
-            versionString: version,
-            versionState: .prepareForSubmission,
-            appInfoLocalizations: [:],
-            versionLocalizations: [:],
-            screenshotSets: []
-        )
+        .fixture(versionString: version)
     }
 
     // MARK: - Comparing

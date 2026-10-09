@@ -6,8 +6,7 @@ import Testing
 /// The write calls, checked at the level of the JSON that leaves the machine.
 struct WriteRequestTests {
     func body(of request: URLRequest) throws -> [String: Any] {
-        let data = try #require(request.httpBody)
-        let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let json = try #require(request.jsonObject())
         return try #require(json["data"] as? [String: Any])
     }
 

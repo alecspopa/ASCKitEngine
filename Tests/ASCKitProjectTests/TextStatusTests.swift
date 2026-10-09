@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Testing
 @testable import ASCKitProject
 
@@ -9,18 +10,11 @@ struct TextStatusTests {
         version: [String: String] = [:],
         live: (appInfo: [String: String], version: [String: String])? = ([:], [:])
     ) -> RemoteListing {
-        RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
+        .fixture(
             versionID: "v2",
             versionString: "1.1",
-            versionState: .prepareForSubmission,
             appInfoLocalizations: ["en-US": RemoteLocalization(id: "i", locale: "en-US", values: appInfo)],
             versionLocalizations: ["en-US": RemoteLocalization(id: "v", locale: "en-US", values: version)],
-            screenshotSets: [],
             live: live.map {
                 LiveTexts(
                     versionString: "1.0",

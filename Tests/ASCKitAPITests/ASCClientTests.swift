@@ -113,8 +113,7 @@ struct ASCClientTests {
         #expect(request.httpMethod == "POST")
         #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
 
-        let body = try #require(request.httpBody)
-        let json = try #require(try JSONSerialization.jsonObject(with: body) as? [String: Any])
+        let json = try #require(request.jsonObject())
         let data = try #require(json["data"] as? [String: Any])
         let attributes = try #require(data["attributes"] as? [String: Any])
         let relationships = try #require(data["relationships"] as? [String: Any])

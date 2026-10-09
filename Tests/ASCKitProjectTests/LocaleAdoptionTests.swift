@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -43,18 +44,10 @@ final class LocaleAdoptionTests {
             )
         }
 
-        return RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
-            versionID: "v1",
+        return .fixture(
             versionString: fixture.version,
-            versionState: .prepareForSubmission,
             appInfoLocalizations: info,
-            versionLocalizations: version,
-            screenshotSets: []
+            versionLocalizations: version
         )
     }
 

@@ -11,8 +11,7 @@ import Testing
 /// wrong from inside.
 struct PriceWriteTests {
     func body(of request: URLRequest) throws -> [String: Any] {
-        let data = try #require(request.httpBody)
-        return try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        try #require(request.jsonObject())
     }
 
     func data(of request: URLRequest) throws -> [String: Any] {

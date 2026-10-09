@@ -1,4 +1,5 @@
 import ASCKitAPI
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -234,18 +235,6 @@ final class IgnoredLocalesTests {
             version[locale] = RemoteLocalization(id: "v-\(locale)", locale: locale, values: [:])
         }
 
-        return RemoteListing(
-            appID: "app1",
-            appName: "Demo",
-            bundleID: "com.example.Demo",
-            appInfoID: "info1",
-            appInfoState: .prepareForSubmission,
-            versionID: "v1",
-            versionString: "1.0",
-            versionState: .prepareForSubmission,
-            appInfoLocalizations: info,
-            versionLocalizations: version,
-            screenshotSets: []
-        )
+        return .fixture(appInfoLocalizations: info, versionLocalizations: version)
     }
 }
