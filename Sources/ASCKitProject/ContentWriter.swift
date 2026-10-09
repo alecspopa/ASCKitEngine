@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// Writes a version folder. The mirror of `ContentStore`, which reads one.
@@ -194,8 +195,9 @@ public enum ContentWriter {
 
         // Every file is checked before any file moves, so a batch with one bad
         // image leaves the slot exactly as it was.
+        let refData = RefDataCache.load(in: project)
         for url in sourceURLs {
-            try check(url, against: deviceClass)
+            try check(url, against: deviceClass, refData: refData)
         }
 
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -272,8 +274,9 @@ public enum ContentWriter {
 
         // Every file is checked before any file moves, so a batch with one bad
         // image leaves the slot exactly as it was.
+        let refData = RefDataCache.load(in: project)
         for url in request.sourceURLs {
-            try check(url, against: request.deviceClass)
+            try check(url, against: request.deviceClass, refData: refData)
         }
 
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -424,51 +427,11 @@ public enum ContentWriter {
         return moved
     }
 
-    // MARK: - Checking one image
-
-    /// Why this device class would refuse this image, or nil when it would take it.
-    ///
-    /// Public because the reason is worth showing before somebody asks for the
-    /// move, not only after it is refused.
-    public static func reasonToRefuse(_ file: ScreenshotFile, for deviceClass: DeviceClass) -> String? {
-        guard let width = file.pixelWidth, let height = file.pixelHeight else {
-            return String(localized: "\(file.fileName) could not be read as an image.", bundle: .module)
-        }
-        if deviceClass.accepts(width: width, height: height) == false {
-            return String(localized: """
-            \(file.fileName) is \(file.pixelDescription). \(deviceClass.displayName) takes \
-            \(deviceClass.acceptedSizeList), or the same sizes on their side.
-            """, bundle: .module)
-        }
-        if file.hasAlpha == true {
-            return String(localized: """
-            \(file.fileName) has an alpha channel. App Store Connect refuses those. \
-            Export it again without one. Artwork that looks fully opaque still gets \
-            an alpha channel from most design tools.
-            """, bundle: .module)
-        }
-        return nil
-    }
-
-    /// Whether the alpha channel is the only thing between this image and that
-    /// device class's set.
-    ///
-    /// `AlphaRemoval` acts on this. An image the right size that carries a
-    /// channel can be written again without it and filed as it is, and an image
-    /// of the wrong size cannot: clearing that one would change the file and
-    /// leave it refused.
-    public static func onlyTheAlphaChannelRefuses(
-        _ file: ScreenshotFile, for deviceClass: DeviceClass
-    ) -> Bool {
-        guard let width = file.pixelWidth, let height = file.pixelHeight else { return false }
-        return file.hasAlpha == true && deviceClass.accepts(width: width, height: height)
-    }
-
-    private static func check(_ url: URL, against deviceClass: DeviceClass) throws {
+    private static func check(_ url: URL, against deviceClass: DeviceClass, refData: AssetLibraryRefData?) throws {
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw ContentWriteError.noSuchFile(url)
         }
-        if let reason = reasonToRefuse(ImageInspector.inspect(url: url), for: deviceClass) {
+        if let reason = reasonToRefuse(ImageInspector.inspect(url: url), for: deviceClass, refData: refData) {
             throw ContentWriteError.refusedImage(reason: reason)
         }
     }

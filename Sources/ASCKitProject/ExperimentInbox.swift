@@ -97,7 +97,8 @@ public enum ExperimentInbox {
                     .formUnion(names.values)
             }
         }
-        return plan(waiting(in: project), root: url(in: project), known: known, config: project.config)
+        return plan(waiting(in: project), root: url(in: project), known: known, config: project.config,
+                    refData: RefDataCache.load(in: project))
     }
 
     /// The same, with the treatments the last read of App Store Connect found.
@@ -111,14 +112,16 @@ public enum ExperimentInbox {
         for experiment in snapshot?.experiments ?? [] {
             known[experiment.folder, default: []].formUnion(experiment.treatments.map(\.folder))
         }
-        return plan(waiting(in: project), root: url(in: project), known: known, config: project.config)
+        return plan(waiting(in: project), root: url(in: project), known: known, config: project.config,
+                    refData: RefDataCache.load(in: project))
     }
 
     static func plan(
         _ files: [ScreenshotFile],
         root: URL,
         known: [String: Set<String>],
-        config: ProjectConfig
+        config: ProjectConfig,
+        refData: AssetLibraryRefData? = nil
     ) -> Plan {
         var plan = Plan()
         let rootParts = root.standardizedFileURL.pathComponents
@@ -150,7 +153,7 @@ public enum ExperimentInbox {
 
             switch ScreenshotNaming.read(file.fileName, config: config) {
             case let .success(named):
-                if let reason = ContentWriter.reasonToRefuse(file, for: named.deviceClass) {
+                if let reason = ContentWriter.reasonToRefuse(file, for: named.deviceClass, refData: refData) {
                     plan.refusals.append(Refusal(file: file, reason: reason))
                 } else {
                     plan.arrivals.append(Arrival(

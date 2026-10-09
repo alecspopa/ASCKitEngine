@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// The folder a screenshot waits in before it goes into a set.
@@ -174,7 +175,7 @@ public enum Inbox {
 
     /// Reads the inbox and works out where each image would go.
     public static func plan(in project: Project) -> Plan {
-        plan(waiting(in: project), config: project.config)
+        plan(waiting(in: project), config: project.config, refData: RefDataCache.load(in: project))
     }
 
     /// Where each of these images goes, read off its name.
@@ -182,15 +183,17 @@ public enum Inbox {
     /// The name says the language and the device class. The image itself has
     /// to agree: a file the named device class would refuse is refused here,
     /// with the pixel sizes that device class does take.
-    public static func plan(_ files: [ScreenshotFile], config: ProjectConfig) -> Plan {
+    public static func plan(
+        _ files: [ScreenshotFile], config: ProjectConfig, refData: AssetLibraryRefData? = nil
+    ) -> Plan {
         var plan = Plan()
         for file in files {
             switch ScreenshotNaming.read(file.fileName, config: config) {
             case let .success(parts):
                 let clearable = ContentWriter.onlyTheAlphaChannelRefuses(
-                    file, for: parts.deviceClass
+                    file, for: parts.deviceClass, refData: refData
                 )
-                if let reason = ContentWriter.reasonToRefuse(file, for: parts.deviceClass) {
+                if let reason = ContentWriter.reasonToRefuse(file, for: parts.deviceClass, refData: refData) {
                     plan.refusals.append(Refusal(
                         file: file,
                         // A channel that can be cleared is said in one line.
