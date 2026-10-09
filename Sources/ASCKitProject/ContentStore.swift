@@ -4,7 +4,7 @@ import Foundation
 /// nothing; that is the validator's job.
 public enum ContentStore {
     public static func load(version: String, in project: Project) throws -> VersionContent {
-        let versionURL = project.versionsURL.appending(path: version)
+        let versionURL = project.versionURL(version)
         guard FileManager.default.fileExists(atPath: versionURL.path) else {
             throw ProjectError.noSuchVersion(version)
         }

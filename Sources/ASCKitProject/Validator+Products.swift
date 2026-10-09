@@ -139,12 +139,12 @@ extension Validator {
 
     private func validateReviewNote(_ product: Product) -> [Problem] {
         guard let note = product.reviewNote else { return [] }
-        guard note.count > 4000 else { return [] }
+        guard note.count > ProductField.reviewNoteCharacters else { return [] }
         return [Problem(
             severity: .error,
             area: .products,
             message: LocalizedStringResource("The review note is \(note.count) characters, and the limit is 4000.", bundle: .here),
-            fix: LocalizedStringResource("Cut \(note.count - 4000) characters.", bundle: .here),
+            fix: LocalizedStringResource("Cut \(note.count - ProductField.reviewNoteCharacters) characters.", bundle: .here),
             productID: product.productID,
             path: path(for: product.productID),
             kind: .reviewNoteOverLimit

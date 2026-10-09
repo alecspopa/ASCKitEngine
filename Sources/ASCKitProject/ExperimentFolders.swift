@@ -169,7 +169,7 @@ public struct ExperimentContent: Sendable {
 }
 
 public enum ExperimentContentStore {
-    public static let previewsFolderName = "previews"
+    public static let previewsFolderName = Project.previewsFolderName
 
     public static func load(in project: Project) -> ExperimentContent {
         var screenshots: [ExperimentSlot: [ScreenshotFile]] = [:]

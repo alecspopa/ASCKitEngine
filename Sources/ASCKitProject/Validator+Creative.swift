@@ -31,6 +31,17 @@ public struct CreativeRules: Sendable {
     public let duration: ClosedRange<Double>
     public let frameRates: [Double]
 
+    // MARK: Apple's published numbers
+
+    static let headerSize = exact(3840, 1646)
+    static let wideSize = exact(5244, 2950)
+    static let searchResultsSize = AssetLibraryRefData.Dimensions(
+        minWidth: 1920, maxWidth: 3840, minHeight: 1280, maxHeight: 2560
+    )
+    static let searchResultsRatio = (3, 2)
+    static let defaultDuration: ClosedRange<Double> = 5 ... 30
+    static let defaultFrameRates: [Double] = [30, 60]
+
     public static func rules(for role: CreativeRole, refData: AssetLibraryRefData?) -> CreativeRules {
         let imageSpecs = refData?.imageSpecs(type: role.placementType, group: CreativeRole.group) ?? []
         guard imageSpecs.isEmpty == false else { return builtIn(role) }
@@ -49,41 +60,41 @@ public struct CreativeRules: Sendable {
                              alphaAllowed: false, universal: spec.universalAsset == true)
         }
         let rates = videoSpecs.flatMap { $0.frameRates ?? [] }.flatMap { [Double($0.minFps), Double($0.maxFps)] }
-        let low = videoSpecs.compactMap { $0.duration?.min.flatMap(VideoRules.seconds) }.min() ?? 5
-        let high = videoSpecs.compactMap { $0.duration?.max.flatMap(VideoRules.seconds) }.max() ?? 30
+        let low = videoSpecs.compactMap { $0.duration?.min.flatMap(VideoRules.seconds) }.min() ?? Self.defaultDuration.lowerBound
+        let high = videoSpecs.compactMap { $0.duration?.max.flatMap(VideoRules.seconds) }.max() ?? Self.defaultDuration.upperBound
         return CreativeRules(images: images, videoSizes: videos.isEmpty ? builtIn(role).videoSizes : videos,
                              duration: low ... max(low, high),
-                             frameRates: rates.isEmpty ? [30, 60] : Array(Set(rates)).sorted())
+                             frameRates: rates.isEmpty ? Self.defaultFrameRates : Array(Set(rates)).sorted())
     }
 
     /// Apple's creative assets specification, for a check with no reference data.
     static func builtIn(_ role: CreativeRole) -> CreativeRules {
-        let still = [".jpg", ".jpeg", ".png"]
-        let movie = [".mov", ".m4v", ".mp4"]
-        let wide = ImageRule(size: exact(5244, 2950), ratio: nil, fileExtensions: [".png"],
+        let still = MediaExtensions.dotted(MediaExtensions.image)
+        let movie = MediaExtensions.dotted(MediaExtensions.video)
+        let wide = ImageRule(size: wideSize, ratio: nil, fileExtensions: [".png"],
                              alphaAllowed: false, universal: true)
         switch role {
         case .header:
             return CreativeRules(
-                images: [ImageRule(size: exact(3840, 1646), ratio: nil, fileExtensions: still,
+                images: [ImageRule(size: headerSize, ratio: nil, fileExtensions: still,
                                    alphaAllowed: false, universal: false), wide],
-                videoSizes: [ImageRule(size: exact(3840, 1646), ratio: nil, fileExtensions: movie,
+                videoSizes: [ImageRule(size: headerSize, ratio: nil, fileExtensions: movie,
                                        alphaAllowed: false, universal: false)],
-                duration: 5 ... 30, frameRates: [30, 60]
+                duration: defaultDuration, frameRates: defaultFrameRates
             )
         case .searchResults:
-            let range = AssetLibraryRefData.Dimensions(minWidth: 1920, maxWidth: 3840, minHeight: 1280, maxHeight: 2560)
+            let range = searchResultsSize
             return CreativeRules(
-                images: [ImageRule(size: range, ratio: (3, 2), fileExtensions: still,
+                images: [ImageRule(size: range, ratio: searchResultsRatio, fileExtensions: still,
                                    alphaAllowed: false, universal: false), wide],
-                videoSizes: [ImageRule(size: range, ratio: (3, 2), fileExtensions: movie,
+                videoSizes: [ImageRule(size: range, ratio: searchResultsRatio, fileExtensions: movie,
                                        alphaAllowed: false, universal: false)],
-                duration: 5 ... 30, frameRates: [30, 60]
+                duration: defaultDuration, frameRates: defaultFrameRates
             )
         }
     }
 
-    private static func exact(_ width: Int, _ height: Int) -> AssetLibraryRefData.Dimensions {
+    static func exact(_ width: Int, _ height: Int) -> AssetLibraryRefData.Dimensions {
         .init(minWidth: width, maxWidth: width, minHeight: height, maxHeight: height)
     }
 
@@ -232,7 +243,7 @@ extension Validator {
     private func validateCreativeFile(_ file: CreativeFile, role: CreativeRole, locale: String, path: String) -> [Problem] {
         var problems: [Problem] = []
         let ext = file.url.pathExtension.lowercased()
-        guard CreativeFolder.imageExtensions.contains(ext) || CreativeFolder.videoExtensions.contains(ext) else {
+        guard MediaExtensions.image.contains(ext) || MediaExtensions.video.contains(ext) else {
             return [creativeProblem(.error, .creativeWrongFileType, locale: locale, path: path,
                                     LocalizedStringResource("App Store Connect does not take \(file.fileName).",
                                                             bundle: .here),

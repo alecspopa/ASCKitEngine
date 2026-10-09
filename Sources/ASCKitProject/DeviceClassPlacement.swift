@@ -16,7 +16,7 @@ public extension DeviceClass {
     /// Where a screenshot of this device class goes. An iMessage app has a
     /// type of its own in the same groups as the iPhone and iPad.
     var screenshotPlacementType: PlacementType {
-        heading == "iMessage App" ? .iMessageAppScreenshot : .appScreenshot
+        heading == DeviceClass.iMessageHeading ? .iMessageAppScreenshot : .appScreenshot
     }
 
     /// App Store Connect takes no app preview for a watch or an iMessage app.

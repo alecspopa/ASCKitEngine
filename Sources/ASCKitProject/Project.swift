@@ -177,7 +177,7 @@ public struct Project: Sendable {
 
     /// Things ASCKit read from App Store Connect and kept, so a window opens
     /// without asking again. Never in the repository.
-    public var cacheURL: URL { rootURL.appending(path: "cache") }
+    public var cacheURL: URL { rootURL.appending(path: Self.cacheFolderName) }
 
     /// The version folders, newest-looking last. Sorted the way version numbers
     /// read rather than the way strings sort, so 1.10 comes after 1.9.
@@ -221,12 +221,18 @@ public struct Project: Sendable {
     }
 
     public func screenshotsURL(version: String) -> URL {
-        versionsURL.appending(path: version).appending(path: "screenshots")
+        versionURL(version).appending(path: Self.screenshotsFolderName)
     }
 
     public func screenshotsURL(version: String, locale: String, deviceClassID: String) -> URL {
         screenshotsURL(version: version).appending(path: locale).appending(path: deviceClassID)
     }
+}
+
+extension Project {
+    static let previewsFolderName = "previews"
+    static let screenshotsFolderName = "screenshots"
+    static let cacheFolderName = "cache"
 }
 
 public enum ProjectError: Error, CustomLocalizedStringResourceConvertible {

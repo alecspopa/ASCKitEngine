@@ -4,8 +4,6 @@ import Foundation
 /// version or of a Product Page Optimization treatment. Every caller writes
 /// through here, so each leaves the same files behind.
 public enum LibraryContentWriter {
-    static let videoExtensions: Set = ["mov", "mp4", "m4v"]
-
     // MARK: - Previews
 
     /// Copies videos into a slot, after the ones there. The whole call is
@@ -22,7 +20,7 @@ public enum LibraryContentWriter {
         let folder = project.previewsURL(place, locale: locale, deviceClassID: deviceClass.id)
         let existing = previews(in: folder)
 
-        for url in urls where videoExtensions.contains(url.pathExtension.lowercased()) == false {
+        for url in urls where MediaExtensions.video.contains(url.pathExtension.lowercased()) == false {
             throw LibraryWriteError.notAVideo(url.lastPathComponent)
         }
         guard existing.count + urls.count <= VideoRules.maximumPerSet else {
@@ -121,7 +119,7 @@ public enum LibraryContentWriter {
             throw LibraryWriteError.noSuchFile(name)
         }
         if let timeCode {
-            guard let seconds = PosterFrames.seconds(of: timeCode, frameRate: file.frameRate ?? 30),
+            guard let seconds = PosterFrames.seconds(of: timeCode, frameRate: file.frameRate ?? PosterFrames.defaultFrameRate),
                   file.duration.map({ seconds <= $0 }) ?? true
             else { throw LibraryWriteError.badTimeCode(timeCode) }
         }
@@ -138,7 +136,7 @@ public enum LibraryContentWriter {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
         let frames = PosterFrames.load(in: folder) ?? [:]
         return names
-            .filter { videoExtensions.contains(($0 as NSString).pathExtension.lowercased()) && $0.hasPrefix(".") == false }
+            .filter { MediaExtensions.video.contains(($0 as NSString).pathExtension.lowercased()) && $0.hasPrefix(".") == false }
             .sorted { $0.isNaturallyBefore($1) }
             .map { name in
                 var file = VideoInspector.inspect(url: folder.appending(path: name))
@@ -158,7 +156,7 @@ public enum LibraryContentWriter {
         in project: Project
     ) throws -> CreativeFile {
         let ext = url.pathExtension.lowercased()
-        guard CreativeFolder.imageExtensions.contains(ext) || CreativeFolder.videoExtensions.contains(ext) else {
+        guard MediaExtensions.image.contains(ext) || MediaExtensions.video.contains(ext) else {
             throw LibraryWriteError.notArt(url.lastPathComponent)
         }
         let folder = project.creativeURL(place, locale: locale)

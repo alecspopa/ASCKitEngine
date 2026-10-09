@@ -118,6 +118,11 @@ public enum MetadataField: String, Sendable, CaseIterable, Codable {
     }
 }
 
+extension ProductField {
+    /// The note for App Review, which a purchase carries beside its words.
+    static let reviewNoteCharacters = 4000
+}
+
 /// The length limits App Store Connect enforces on an in-app purchase.
 ///
 /// A separate enum from `MetadataField` rather than more cases on it. That enum

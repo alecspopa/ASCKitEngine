@@ -17,19 +17,30 @@ public struct VideoRules: Sendable, Equatable {
 
     public static let maximumPerSet = 3
 
+    // MARK: Apple's published numbers
+
+    static let iPadSize = (width: 1200, height: 1600)
+    static let desktopSize = (width: 1920, height: 1080)
+    static let visionProSize = (width: 3840, height: 2160)
+    static let phoneSize = (width: 886, height: 1920)
+    static let defaultFrameRates: ClosedRange<Double> = 1 ... 30
+    static let defaultDuration: ClosedRange<Double> = 15 ... 30
+    static let defaultMaxFileSize = 500 * 1024 * 1024
+
     public static func preview(of deviceClass: DeviceClass, refData: AssetLibraryRefData?) -> VideoRules {
         let specs = refData?.videoSpecs(type: .appPreview, group: deviceClass.placementGroup) ?? []
         guard specs.isEmpty == false else { return builtIn(deviceClass) }
 
         let rates = specs.flatMap { $0.frameRates ?? [] }
-        let low = specs.compactMap { $0.duration?.min.flatMap(Self.seconds) }.min() ?? 15
-        let high = specs.compactMap { $0.duration?.max.flatMap(Self.seconds) }.max() ?? 30
+        let low = specs.compactMap { $0.duration?.min.flatMap(Self.seconds) }.min() ?? Self.defaultDuration.lowerBound
+        let high = specs.compactMap { $0.duration?.max.flatMap(Self.seconds) }.max() ?? Self.defaultDuration.upperBound
         return VideoRules(
             sizes: specs.compactMap(\.dimensions),
-            frameRates: Double(rates.map(\.minFps).min() ?? 1) ... Double(rates.map(\.maxFps).max() ?? 30),
+            frameRates: (rates.map { Double($0.minFps) }.min() ?? Self.defaultFrameRates.lowerBound)
+                ... (rates.map { Double($0.maxFps) }.max() ?? Self.defaultFrameRates.upperBound),
             duration: low ... max(low, high),
             audioRequired: specs.contains { $0.audioRequired == true },
-            maxFileSize: specs.compactMap(\.maxFileSize).max() ?? 500 * 1024 * 1024,
+            maxFileSize: specs.compactMap(\.maxFileSize).max() ?? Self.defaultMaxFileSize,
             fileExtensions: Array(Set(specs.flatMap { $0.fileExtensions ?? [] }.map { $0.lowercased() })).sorted()
         )
     }
@@ -37,18 +48,18 @@ public struct VideoRules: Sendable, Equatable {
     /// Apple's app preview specification, for a check with no reference data.
     static func builtIn(_ deviceClass: DeviceClass) -> VideoRules {
         let size = switch deviceClass.family {
-        case "iPad": (1200, 1600)
-        case "Mac", "Apple TV": (1920, 1080)
-        case "Apple Vision Pro": (3840, 2160)
-        default: (886, 1920)
+        case "iPad": iPadSize
+        case "Mac", "Apple TV": desktopSize
+        case "Apple Vision Pro": visionProSize
+        default: phoneSize
         }
         return VideoRules(
-            sizes: [.init(minWidth: size.0, maxWidth: size.0, minHeight: size.1, maxHeight: size.1)],
-            frameRates: 1 ... 30,
-            duration: 15 ... 30,
+            sizes: [.init(minWidth: size.width, maxWidth: size.width, minHeight: size.height, maxHeight: size.height)],
+            frameRates: defaultFrameRates,
+            duration: defaultDuration,
             audioRequired: false,
-            maxFileSize: 500 * 1024 * 1024,
-            fileExtensions: [".m4v", ".mov", ".mp4"]
+            maxFileSize: defaultMaxFileSize,
+            fileExtensions: MediaExtensions.dotted(MediaExtensions.video)
         )
     }
 
@@ -240,7 +251,7 @@ extension Validator {
                 LocalizedStringResource("App Store Connect wants one, even a silent one.", bundle: .here))
         }
         if let posterFrame = file.posterFrame {
-            let seconds = PosterFrames.seconds(of: posterFrame, frameRate: file.frameRate ?? 30)
+            let seconds = PosterFrames.seconds(of: posterFrame, frameRate: file.frameRate ?? PosterFrames.defaultFrameRate)
             if seconds == nil || seconds.map({ $0 > duration }) == true {
                 add(.error, .previewPosterFrameNotValid,
                     LocalizedStringResource("The poster frame of \(file.fileName) is \(posterFrame).", bundle: .here),

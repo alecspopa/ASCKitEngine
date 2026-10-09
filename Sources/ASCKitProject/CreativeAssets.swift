@@ -18,7 +18,7 @@ public struct CreativeFile: Sendable, Hashable {
 
     public static func inspect(url: URL) -> CreativeFile {
         let ext = url.pathExtension.lowercased()
-        if CreativeFolder.videoExtensions.contains(ext) {
+        if MediaExtensions.video.contains(ext) {
             let video = VideoInspector.inspect(url: url)
             return CreativeFile(url: url, fileName: video.fileName, byteCount: video.byteCount, media: .video,
                                 pixelWidth: video.pixelWidth, pixelHeight: video.pixelHeight, hasAlpha: nil,
@@ -55,8 +55,6 @@ public enum CreativeRole: String, Sendable, CaseIterable, Hashable {
 /// for a version or for a treatment of a test.
 public struct CreativeFolder: Sendable {
     public static let folderName = "creative"
-    static let videoExtensions: Set = ["mov", "mp4", "m4v"]
-    static let imageExtensions: Set = ["png", "jpg", "jpeg"]
 
     /// By locale, then by role. A role with two files, such as `header.png`
     /// and `header.mov`, keeps both, so the check can say so.
@@ -92,7 +90,7 @@ public struct CreativeFolder: Sendable {
 
 public extension Project {
     func creativeURL(version: String) -> URL {
-        versionsURL.appending(path: version).appending(path: CreativeFolder.folderName)
+        versionURL(version).appending(path: CreativeFolder.folderName)
     }
 }
 

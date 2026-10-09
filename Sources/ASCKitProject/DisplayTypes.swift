@@ -304,7 +304,7 @@ public extension DeviceClass {
 /// An iMessage app is sold inside an iOS app and takes pictures of its own, at
 /// the sizes of the device that shows them.
 public extension DeviceClass {
-    private static let iMessageHeading = "iMessage App"
+    static let iMessageHeading = "iMessage App"
 
     static let iMessageIPhone69 = DeviceClass(
         id: "imessage-iphone-6.9",

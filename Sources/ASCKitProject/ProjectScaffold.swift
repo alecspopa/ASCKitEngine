@@ -111,7 +111,7 @@ public enum ProjectScaffold {
     /// and the `.gitignore` is that file and the rule that empties the folder
     /// at the same time. That is what the inbox does, for the same reason.
     static func makeCache(in folder: URL) throws {
-        let cache = folder.appending(path: "cache")
+        let cache = folder.appending(path: Project.cacheFolderName)
         try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
 
         let ignore = cache.appending(path: ".gitignore")
