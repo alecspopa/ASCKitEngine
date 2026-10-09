@@ -33,8 +33,7 @@ extension Validator {
             if usesSource {
                 // App Store Connect shows the source language's screenshots for
                 // a language that has none, so an empty folder here is the
-                // decision working. A folder with files in it is not: the push
-                // uploads what is there, and the language shows its own.
+                // decision working. The tick wins over files in the folder.
                 if files.isEmpty == false {
                     problems.append(Problem(
                         severity: .warning,
@@ -45,8 +44,8 @@ extension Validator {
                         of its own.
                         """, bundle: .here),
                         fix: LocalizedStringResource("""
-                        The files win: they are uploaded and this language shows them. \
-                        Remove them, or take \(locale) out of usesSourceScreenshots.
+                        The files are not used, and a push moves them to the Trash. To show \
+                        them, take \(locale) out of usesSourceScreenshots.
                         """, bundle: .here),
                         locale: locale,
                         deviceClassID: deviceClass.id,

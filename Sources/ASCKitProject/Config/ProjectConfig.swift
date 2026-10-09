@@ -72,8 +72,8 @@ public struct ProjectConfig: Codable, Sendable, Hashable {
     /// art: `["en-GB"]`.
     ///
     /// App Store Connect shows the primary language's art on a language with
-    /// none, so nothing is uploaded for them. A language with files of its own
-    /// shows its own.
+    /// none, so nothing is uploaded for them. Files in their folders are not
+    /// used, and a push moves them to the Trash.
     public var usesSourceCreative: [String]
 
     /// The country a price is written in before a curve spreads it out, as a

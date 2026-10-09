@@ -178,6 +178,7 @@ public struct PushSession: Sendable {
             screenshotPlans: listingPlan?.screenshotPlans ?? [],
             previewPlans: listingPlan?.previewPlans ?? [],
             creativePlans: listingPlan?.creativePlans ?? [],
+            unusedFiles: listingPlan?.unusedFiles ?? [],
             productTextChanges: product?.textChanges ?? [],
             groupTextChanges: product?.groupTextChanges ?? [],
             pricePlans: product?.pricePlans ?? [],
@@ -425,12 +426,13 @@ public struct PushSession: Sendable {
         let planned = try planned(in: reading)
 
         guard let library = reading.library else { throw LibraryReadError.notRead }
-        let result = await pushToLibrary(
+        var result = await pushToLibrary(
             Self.targets(in: planned.changes, listing: reading.listing),
             library: library,
             at: date,
             progress: progress
         )
+        Self.trash(planned.changes.unusedFiles, into: &result)
         return file(
             PushReceipt.forImages(
                 result,

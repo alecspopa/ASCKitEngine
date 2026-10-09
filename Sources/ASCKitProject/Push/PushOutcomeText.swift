@@ -30,6 +30,9 @@ public enum PushOutcomeText {
             "Archived in the library, because nothing shows them any more:", bundle: .here
         )
         static let overwritten = LocalizedStringResource("Overwritten:", bundle: .here)
+        static let trashed = LocalizedStringResource(
+            "Moved to the Trash, because the language shows the source language's:", bundle: .here
+        )
         static let filled = LocalizedStringResource("Filled from App Store Connect:", bundle: .here)
 
         static let nothingToWrite = LocalizedStringResource("Nothing to write.", bundle: .here)
@@ -352,6 +355,7 @@ public enum PushOutcomeText {
         let text = join([
             section(Words.overwritten, uploaded),
             section(Words.archived, archived),
+            section(Words.trashed, result.trashed),
             section(Words.failed, failures)
         ])
         return text.isEmpty ? String(localized: Words.nothingToUpload) : text

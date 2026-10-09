@@ -144,6 +144,19 @@ extension PushSession {
         }
     }
 
+    /// Moves the files a tick leaves out to the Trash. A file that will not go
+    /// is a failure of its slot, and the others still go.
+    static func trash(_ files: [ChangePlan.UnusedFile], into result: inout ScreenshotPusher.Result) {
+        for file in files {
+            do {
+                try FileManager.default.trashItem(at: file.url, resultingItemURL: nil)
+                result.trashed.append("\(file.locale)/\(file.fileName)")
+            } catch {
+                result.failed.append(.init(locale: file.locale, deviceClassID: file.slotID, message: "\(error)"))
+            }
+        }
+    }
+
     /// Pushes through the library and writes the record as each upload lands.
     func pushToLibrary(
         _ targets: [LibraryPusher.Target],

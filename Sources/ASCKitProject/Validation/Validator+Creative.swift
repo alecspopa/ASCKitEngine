@@ -8,7 +8,7 @@ extension Validator {
         let root = creativePath(content)
         var problems = validateCreativeFolder(content.creativeFolder, root: root)
 
-        // The push places the files a language has, so its own win.
+        // The tick wins over files in the folder.
         for locale in config.creativeSources.keys.sorted() where content.creativeFolder.files[locale]?.isEmpty == false {
             problems.append(creativeProblem(.warning, .creativeBesideSourceCopy, locale: locale, path: "\(root)/\(locale)",
                                             LocalizedStringResource("""
@@ -16,8 +16,8 @@ extension Validator {
                                             search results, and has files of its own.
                                             """, bundle: .here),
                                             LocalizedStringResource("""
-                                            The files win: this language shows them. Remove them, or take \
-                                            \(locale) out of usesSourceCreative.
+                                            The files are not used, and a push moves them to the Trash. \
+                                            To show them, take \(locale) out of usesSourceCreative.
                                             """, bundle: .here)))
         }
         return problems

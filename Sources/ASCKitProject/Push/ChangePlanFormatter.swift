@@ -67,6 +67,7 @@ public enum ChangePlanFormatter {
         lines += screenshotLines(plan)
         lines += previewLines(plan)
         lines += creativeLines(plan)
+        lines += unusedLines(plan)
         lines += productTextLines(plan)
         lines += priceLines(plan, showingEvery: showingEveryPrice)
         lines += skippedLines(plan)
@@ -99,6 +100,8 @@ public enum ChangePlanFormatter {
         if art > 0 {
             parts.append(String(localized: "\(art) header and search results assets", bundle: .module))
         }
+
+        parts += unusedCount(plan).map { [$0] } ?? []
 
         if plan.productTextChanges.isEmpty == false {
             parts.append(String(
@@ -189,6 +192,7 @@ public enum ChangePlanFormatter {
             if plan.creativePlans.contains(where: \.changesAnything) {
                 pieces.append(String(localized: "header and search results art", bundle: .module))
             }
+            pieces += unusedCount(plan).map { [$0] } ?? []
             return pieces.formatted(.list(type: .and))
         case .productPageOptimization, .customProductPages:
             return nil
@@ -533,6 +537,31 @@ private extension ChangePlanFormatter {
                 String(localized: "take it off", bundle: .module)
             }
             lines.append("  \(item.locale), \(role): \(words)")
+        }
+        return lines + [""]
+    }
+
+    static let unusedHeading = LocalizedStringResource(
+        "Not used, because the language shows the source language's. A push moves them to the Trash:",
+        bundle: .here
+    )
+
+    static func unusedCount(_ plan: ChangePlan) -> String? {
+        guard plan.unusedFiles.isEmpty == false else { return nil }
+        return String(localized: "\(plan.unusedFiles.count) unused files", bundle: .module)
+    }
+
+    static func unusedLines(_ plan: ChangePlan) -> [String] {
+        guard plan.unusedFiles.isEmpty == false else { return [] }
+
+        var lines = [String(localized: unusedHeading)]
+        for file in plan.unusedFiles {
+            let slot = switch file.slot {
+            case let .screenshots(deviceClass): deviceClass.displayName
+            case .creative(.header): String(localized: "header", bundle: .module)
+            case .creative(.searchResults): String(localized: "search results", bundle: .module)
+            }
+            lines.append("  \(file.locale), \(slot): \(file.fileName)")
         }
         return lines + [""]
     }

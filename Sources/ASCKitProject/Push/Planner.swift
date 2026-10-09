@@ -59,7 +59,7 @@ public enum Planner {
         let screenshotPlans = plans(for: local, config: config, remote: remote, record: record)
         let previewPlans = previewPlans(for: local, config: config, remote: remote, record: record)
         let creativePlans = CreativePlanner.plans(
-            folder: local.creativeFolder,
+            folder: usedCreative(local.creativeFolder, config: config),
             locales: config.writtenLocales.filter {
                 local.appInformation[$0]?.status.canPublish == true && remote.versionLocalizations[$0] != nil
             },
@@ -75,6 +75,7 @@ public enum Planner {
             screenshotPlans: screenshotPlans,
             previewPlans: previewPlans,
             creativePlans: creativePlans,
+            unusedFiles: unusedFiles(in: local, config: config),
             blocked: blocked(
                 textChanges: textChanges,
                 screenshotPlans: screenshotPlans,
@@ -163,7 +164,11 @@ public enum Planner {
             guard remote.versionLocalizations[locale] != nil else { continue }
 
             for deviceClass in config.resolvedDeviceClasses {
-                let files = local.screenshots(locale: locale, deviceClassID: deviceClass.id)
+                // The tick wins over files in the folder. App Store Connect
+                // shows the source language's on a language with none.
+                let files = config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id)
+                    ? []
+                    : local.screenshots(locale: locale, deviceClassID: deviceClass.id)
                 let type = deviceClass.screenshotPlacementType
                 let current = LibraryPlanner.current(
                     in: remote.placements, locale: locale, group: deviceClass.placementGroup, type: type
@@ -215,6 +220,38 @@ public enum Planner {
             }
         }
         return plans
+    }
+
+    // MARK: - Languages that show the source language's
+
+    /// The art folder without the languages that show the source language's
+    /// art. Their placements still plan, so a push takes them off.
+    private static func usedCreative(_ folder: CreativeFolder, config: ProjectConfig) -> CreativeFolder {
+        var used = folder
+        for locale in config.creativeSources.keys {
+            used.files[locale] = nil
+        }
+        return used
+    }
+
+    /// The files a tick leaves out, in language order.
+    static func unusedFiles(in local: VersionContent, config: ProjectConfig) -> [ChangePlan.UnusedFile] {
+        var unused: [ChangePlan.UnusedFile] = []
+        for locale in config.writtenLocales.sorted() {
+            for deviceClass in config.resolvedDeviceClasses
+                where config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id) {
+                unused += local.screenshots(locale: locale, deviceClassID: deviceClass.id).map {
+                    .init(locale: locale, slot: .screenshots(deviceClass), url: $0.url, fileName: $0.fileName)
+                }
+            }
+            guard config.creativeSource(locale: locale) != nil else { continue }
+            for role in CreativeRole.allCases {
+                unused += (local.creativeFolder.files[locale]?[role] ?? []).map {
+                    .init(locale: locale, slot: .creative(role), url: $0.url, fileName: $0.fileName)
+                }
+            }
+        }
+        return unused
     }
 
     /// Placements whose asset App Store Connect is still processing, in the

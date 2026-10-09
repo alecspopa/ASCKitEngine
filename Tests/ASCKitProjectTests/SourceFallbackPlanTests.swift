@@ -71,6 +71,31 @@ struct SourceFallbackPlanTests {
         #expect(LibraryPusher.uploads(in: targets).count == 2, "the en-US screenshot and header, once each")
     }
 
+    /// The tick wins over files in the folder: they go up nowhere, and the
+    /// plan names them as files a push moves to the Trash.
+    @Test func usesNoFileOfALanguageThatShowsTheSource() throws {
+        defer { fixture.remove() }
+        _ = try content()
+        try fixture.writeScreenshot(locale: "en-GB", deviceClassID: deviceClass.id,
+                                    named: "01-a.png", width: 1320, height: 2868)
+        let creative = fixture.rootURL.appending(path: "versions/1.0/creative/en-GB")
+        try FileManager.default.createDirectory(at: creative, withIntermediateDirectories: true)
+        try PNGWriter.write(to: creative.appending(path: "header.png"), width: 5244, height: 2950,
+                            hasAlpha: false, seed: "gb")
+        let listing = listing(placements: [])
+        let plan = try Planner.plan(local: fixture.content(), config: fixture.load().config, remote: listing,
+                                    record: AssetRecord())
+
+        let targets = PushSession.targets(in: plan, listing: listing)
+        #expect(targets.allSatisfy { $0.label == "en-US" })
+        #expect(LibraryPusher.uploads(in: targets).count == 2)
+        #expect(plan.unusedFiles.map { "\($0.locale)/\($0.slotID)/\($0.fileName)" } == [
+            "en-GB/\(deviceClass.id)/01-a.png", "en-GB/header/header.png"
+        ])
+        #expect(plan.hasScreenshotChanges)
+        #expect(ChangePlanFormatter.lines(for: plan).contains("  en-GB, header: header.png"))
+    }
+
     @Test func takesOffWhatALanguageThatShowsTheSourceHolds() throws {
         defer { fixture.remove() }
         let listing = listing(placements: [

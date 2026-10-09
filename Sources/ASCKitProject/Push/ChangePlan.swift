@@ -29,6 +29,11 @@ public struct ChangePlan: Sendable {
     /// the App Asset Library.
     public let creativePlans: [CreativePlan]
 
+    /// Files in the folder of a language that shows the source language's
+    /// screenshots or art. The tick wins, so they are not used, and a push of
+    /// the images moves them to the Trash.
+    public let unusedFiles: [UnusedFile]
+
     /// An in-app purchase's name or description, in one language.
     ///
     /// Sorted by product, then language, then field. The digest walks these in
@@ -73,6 +78,7 @@ public struct ChangePlan: Sendable {
         screenshotPlans.contains(where: \.changesAnything)
             || previewPlans.contains(where: \.changesAnything)
             || creativePlans.contains(where: \.changesAnything)
+            || unusedFiles.isEmpty == false
     }
 
     /// The words of a purchase or of a subscription group. Both go out as one
@@ -160,6 +166,7 @@ public struct ChangePlan: Sendable {
         screenshotPlans: [ScreenshotPlan],
         previewPlans: [PreviewPlan] = [],
         creativePlans: [CreativePlan] = [],
+        unusedFiles: [UnusedFile] = [],
         productTextChanges: [ProductTextChange] = [],
         groupTextChanges: [GroupTextChange] = [],
         pricePlans: [PriceChange] = [],
@@ -175,6 +182,7 @@ public struct ChangePlan: Sendable {
         self.screenshotPlans = screenshotPlans
         self.previewPlans = previewPlans
         self.creativePlans = creativePlans
+        self.unusedFiles = unusedFiles
         self.productTextChanges = productTextChanges
         self.groupTextChanges = groupTextChanges
         self.pricePlans = pricePlans
@@ -461,6 +469,35 @@ public struct ChangePlan: Sendable {
         blocked.filter { $0.parts.contains(part) }
     }
 
+    /// A file of a language that shows the source language's screenshots or
+    /// art in its place.
+    public struct UnusedFile: Sendable, Hashable {
+        public enum Slot: Sendable, Hashable {
+            case screenshots(DeviceClass)
+            case creative(CreativeRole)
+        }
+
+        public let locale: String
+        public let slot: Slot
+        public let url: URL
+        public let fileName: String
+
+        public init(locale: String, slot: Slot, url: URL, fileName: String) {
+            self.locale = locale
+            self.slot = slot
+            self.url = url
+            self.fileName = fileName
+        }
+
+        /// A device class id, or a role such as `header`.
+        public var slotID: String {
+            switch slot {
+            case let .screenshots(deviceClass): deviceClass.id
+            case let .creative(role): role.rawValue
+            }
+        }
+    }
+
     public struct Skipped: Sendable, Hashable {
         public let locale: String
         public let reason: LocalizedStringResource
@@ -552,6 +589,11 @@ public extension ChangePlan {
         }
         for plan in creativePlans {
             feed(plan.id, plan.action.digestKey, plan.file?.fileName ?? "", "\(plan.file?.byteCount ?? 0)")
+        }
+
+        // Fed only when there is one, so a plan with none keeps its digest.
+        for file in unusedFiles {
+            feed("unused", file.locale, file.slotID, file.fileName)
         }
 
         for change in productTextChanges {

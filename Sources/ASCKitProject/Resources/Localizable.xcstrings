@@ -2293,6 +2293,29 @@
         }
       }
     },
+    "%lld unused files" : {
+      "comment" : "Part of the publish summary and of the line beside Screenshots in the publish sheet. The number is how many files a push moves to the Trash, because their language shows the source language's screenshots and art.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unused file"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unused files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld up" : {
       "comment" : "Part of a price line in the publish plan, shown as fixed-width text. Keep it short. The count is the number of prices that go up.",
       "localizations" : {
@@ -3055,6 +3078,9 @@
     "Moved to the Trash, because App Store Connect never released these versions:" : {
       "comment" : "Heading in a report. A list of version folders comes after it, such as versions/1.16. App Store Connect never released those versions, so the app moved the folders to the Trash."
     },
+    "Moved to the Trash, because the language shows the source language's:" : {
+      "comment" : "Heading in the push report. The lines under it name image files, such as en-AU/header.png. Each language is set to show the screenshots and art of the source language, so the push moved its own files to the Trash."
+    },
     "Name" : {
       "comment" : "Noun. The name of a text field in the listing and in an in-app purchase. It holds the name of the app or of the in-app purchase."
     },
@@ -3100,6 +3126,9 @@
     },
     "Non-renewing subscription" : {
       "comment" : "Noun. The name of a kind of in-app purchase, as App Store Connect names it. It gives access for a fixed time and does not renew."
+    },
+    "Not used, because the language shows the source language's. A push moves them to the Trash:" : {
+      "comment" : "Heading in the publish plan. The lines under it name image files of languages that are set to show the screenshots and art of the source language."
     },
     "Not ready to publish." : {
       "comment" : "Last part of the summary of the problem list. It shows when there is one error or more."
@@ -3468,14 +3497,14 @@
     "The files as they arrived are in the Trash." : {
       "comment" : "Line in the report of the action that removes the alpha channel from screenshots. The original files are in the macOS Trash."
     },
-    "The files that were there are in the Trash." : {
-      "comment" : "Line in the report after screenshots are filed, shown as fixed-width text. It comes after a list of languages that copied the new screenshots of a related language. The files are the screenshots those languages held before."
+    "The files are not used, and a push moves them to the Trash. To show them, take %@ out of usesSourceCreative." : {
+      "comment" : "How to fix a problem in the problem list. Do not translate usesSourceCreative. It is a JSON key. The value is a language code. The files are the header and search results art in the folder of the language."
     },
-    "The files win: they are uploaded and this language shows them. Remove them, or take %@ out of usesSourceScreenshots." : {
+    "The files are not used, and a push moves them to the Trash. To show them, take %@ out of usesSourceScreenshots." : {
       "comment" : "Fix in the problem list. The value is a language code. Do not translate usesSourceScreenshots, which is a JSON key. The files are the screenshots in the folder of the language."
     },
-    "The files win: this language shows them. Remove them, or take %@ out of usesSourceCreative." : {
-      "comment" : "How to fix a problem in the problem list. Do not translate usesSourceCreative. It is a JSON key. The value is a language code."
+    "The files that were there are in the Trash." : {
+      "comment" : "Line in the report after screenshots are filed, shown as fixed-width text. It comes after a list of languages that copied the new screenshots of a related language. The files are the screenshots those languages held before."
     },
     "The images of the treatments in the draft tests." : {
       "comment" : "Description of the Product Page Optimization part in the publish sheet. A treatment is one version of the product page in a test."

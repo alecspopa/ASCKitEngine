@@ -97,6 +97,34 @@ final class PushSessionLibraryTests {
         #expect(writes.isEmpty)
     }
 
+    /// en-GB shows the en-US screenshots, so its own file goes to the Trash
+    /// and nothing goes up for it.
+    @Test func movesTheFilesOfALanguageThatShowsTheSourceToTheTrash() async throws {
+        try fixture.writeConfig(ProjectConfig(
+            bundleID: "com.example.Demo", keyID: "ABC123", issuerID: "issuer",
+            sourceLocale: "en-US", locales: ["en-US", "en-GB"], deviceClasses: [DeviceClass.iPhone69.id],
+            usesSourceScreenshots: ["en-GB": [DeviceClass.iPhone69.id]]
+        ))
+        try fixture.writeScreenshot(locale: "en-GB", deviceClassID: DeviceClass.iPhone69.id,
+                                    named: "01-a.png", width: 1320, height: 2868)
+        let british = fixture.screenshotsDirectory(locale: "en-GB", deviceClassID: DeviceClass.iPhone69.id)
+            .appending(path: "01-a.png")
+        let md5 = try FileChecksum.md5(of: localFile)
+        let size = try Data(contentsOf: localFile).count
+        let transport = StubTransport(routes: routes(oldChecksum: md5, fileSize: size))
+        let session = try session(transport)
+        let before = await transport.requestCount
+
+        let outcome = try await session.pushImages(session.read(includeProducts: false))
+
+        #expect(outcome.result.isCompleteSuccess)
+        #expect(outcome.result.trashed == ["en-GB/01-a.png"])
+        #expect(FileManager.default.fileExists(atPath: british.path) == false)
+        #expect(FileManager.default.fileExists(atPath: localFile.path))
+        let writes = await transport.requests.dropFirst(before).filter { $0.httpMethod != "GET" }
+        #expect(writes.isEmpty)
+    }
+
     @Test func replacesAPlacementWhoseFileChanged() async throws {
         let size = try Data(contentsOf: localFile).count
         let transport = StubTransport(routes: routes(oldChecksum: "an-older-export", fileSize: size))

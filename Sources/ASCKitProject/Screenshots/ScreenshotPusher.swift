@@ -15,6 +15,10 @@ public enum ScreenshotPusher {
         /// nothing places them any more.
         public var archived: [RemoteLibraryAsset] = []
 
+        /// The files of languages that show the source language's, moved to
+        /// the Trash, as `locale/file name`.
+        public var trashed: [String] = []
+
         public var isCompleteSuccess: Bool { failed.isEmpty }
     }
 
