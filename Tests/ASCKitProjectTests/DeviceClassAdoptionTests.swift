@@ -135,7 +135,7 @@ final class DeviceClassAdoptionTests {
         #expect(after.refusals.isEmpty)
         #expect(after.arrivals.count == 2)
 
-        let outcome = try Inbox.file(after, version: fixture.version, in: project)
+        let outcome = try Inbox.file(after, version: fixture.version, listing: nil, in: project)
         defer {
             for url in outcome.trashed {
                 try? FileManager.default.removeItem(at: url)

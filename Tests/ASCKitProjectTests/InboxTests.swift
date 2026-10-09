@@ -192,7 +192,7 @@ final class InboxTests {
         try putInInbox(named: "02-shared-iPhone-6.9-de_DE.png")
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(outcome.filed == 2)
@@ -207,7 +207,7 @@ final class InboxTests {
         let waiting = try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(outcome.filed == 1)
@@ -222,7 +222,7 @@ final class InboxTests {
         try Data().write(to: waiting.deletingLastPathComponent().appending(path: ".DS_Store"))
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         let inbox = Inbox.url(in: project)
@@ -241,7 +241,7 @@ final class InboxTests {
         let untouched = inbox.appending(path: "next")
         try FileManager.default.createDirectory(at: untouched, withIntermediateDirectories: true)
 
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(FileManager.default.fileExists(atPath: inbox.appending(path: "v7/de-DE").path) == false)
@@ -280,7 +280,7 @@ final class InboxTests {
         try putInInbox(named: "02-shared-iPhone-6.9-es_MX.png")
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(outcome.locales == ["es-MX"])
@@ -304,7 +304,7 @@ final class InboxTests {
         try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(outcome.copied.isEmpty)
@@ -318,7 +318,7 @@ final class InboxTests {
         try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(outcome.filed == 2)
@@ -331,7 +331,7 @@ final class InboxTests {
         try putInInbox(named: "01-pad-iPad-13-en_US.png", width: 2064, height: 2752)
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(try slot(deviceClassID: DeviceClass.iPhone69.id) == ["01-phone-iPhone-6.9-en_US.png"])
@@ -360,6 +360,7 @@ final class InboxTests {
         let outcome = try Inbox.file(
             Inbox.plan(in: project),
             version: "1.0",
+            listing: nil,
             in: project,
             replacingExisting: true
         )
@@ -387,6 +388,7 @@ final class InboxTests {
         let outcome = try Inbox.file(
             Inbox.plan(in: project),
             version: "1.0",
+            listing: nil,
             in: project,
             replacingExisting: true
         )
@@ -401,7 +403,7 @@ final class InboxTests {
         try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(try Inbox.waiting(in: project).isEmpty)
@@ -415,7 +417,7 @@ final class InboxTests {
         try putInInbox(named: "01-small-iPhone-6.9-en_US.png", width: 800, height: 600)
 
         let project = try fixture.load()
-        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+        let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
 
         #expect(outcome.filed == 1)
@@ -435,7 +437,7 @@ final class InboxTests {
 
         let project = try fixture.load()
         #expect(throws: ContentWriteError.self) {
-            try Inbox.file(Inbox.plan(in: project), version: "1.0", in: project)
+            try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         }
         #expect(try Inbox.waiting(in: project).map(\.fileName) == ["01-hero-iPhone-6.9-en_US.png"])
     }

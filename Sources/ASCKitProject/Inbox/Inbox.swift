@@ -248,6 +248,10 @@ public enum Inbox {
     /// The inbox copy goes to the Trash rather than being deleted. The file
     /// somebody dropped there may be the only copy of that artwork anybody has.
     ///
+    /// The listing is what App Store Connect says about the version. A version
+    /// it locked is refused with a `ScreenshotLock` before anything moves. With
+    /// no listing, filing goes ahead, and the push refuses later.
+    ///
     /// A caller can allow matching screenshots to replace local files. This is
     /// for the App Store Connect version that still accepts screenshot changes.
     /// Without that permission, a matching screenshot is added as another file.
@@ -261,9 +265,11 @@ public enum Inbox {
     public static func file(
         _ plan: Plan,
         version: String,
+        listing: RemoteListing?,
         in project: Project,
         replacingExisting: Bool = false
     ) throws -> Outcome {
+        try ScreenshotLock.refuse(version: version, listing: listing)
         var outcome = Outcome(filed: 0, locales: [], trashed: [])
 
         for group in plan.groups {

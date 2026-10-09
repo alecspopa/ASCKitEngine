@@ -3636,6 +3636,28 @@
         }
       }
     },
+    "Version %@ is %@ and does not accept screenshots. Add a new version in App Store Connect first." : {
+      "comment" : "Reason that the inbox files no screenshots, in the window, the terminal and the MCP tools. The first value is a version number. The second is a state name from App Store Connect, such as READY_FOR_DISTRIBUTION, or the text an unknown state. Do not translate the state name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ is %2$@ and does not accept screenshots. Add a new version in App Store Connect first."
+          }
+        }
+      }
+    },
+    "Version %@ is %@ and does not accept screenshots. Make the folder for version %@ first." : {
+      "comment" : "Reason that the inbox files no screenshots, when the newest folder is the released version and App Store Connect already has a newer version. The first value is the released version number. The second is a state name from App Store Connect, such as READY_FOR_DISTRIBUTION. Do not translate the state name. The third is the newer version number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ is %2$@ and does not accept screenshots. Make the folder for version %3$@ first."
+          }
+        }
+      }
+    },
     "Version %@ is %@ and does not accept text changes." : {
       "comment" : "Reason in the publish plan that text cannot change. The first value is a version number. The second is a state name from App Store Connect, such as IN_REVIEW, or the text an unknown state.",
       "localizations" : {

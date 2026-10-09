@@ -1,4 +1,5 @@
 import ArgumentParser
+import ASCKitAPI
 import ASCKitProject
 import Foundation
 
@@ -7,7 +8,7 @@ import Foundation
 /// Both go through `Inbox`, which reads every name through
 /// `ScreenshotNaming`, so a file that lands in `de-DE` here lands in `de-DE`
 /// in the window as well.
-struct InboxCommand: ParsableCommand {
+struct InboxCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "inbox",
         abstract: "Show what is waiting in inbox/, and file it.",
@@ -18,6 +19,9 @@ struct InboxCommand: ParsableCommand {
 
         Shows what would happen and writes nothing. Pass --file to move the images in. \
         The inbox copy goes to the Trash rather than being deleted.
+
+        --file reads App Store Connect first. A version that takes no screenshots, such as \
+        the version on sale, is refused and nothing moves.
 
         A file for a device class this project does not list is refused. \
         --adopt-devices puts that device class in the list first, so screenshots for a \
@@ -45,7 +49,7 @@ struct InboxCommand: ParsableCommand {
     @Flag(name: .long, help: "Write waiting files that carry an alpha channel again without one.")
     var clearAlpha = false
 
-    func run() throws {
+    func run() async throws {
         var project = try options.loadProject()
         var plan = Inbox.plan(in: project)
 
@@ -84,7 +88,7 @@ struct InboxCommand: ParsableCommand {
         }
 
         if file, plan.arrivals.isEmpty == false {
-            try fileEverything(plan, project: project)
+            try await fileEverything(plan, project: project)
         } else if file == false, plan.arrivals.isEmpty == false {
             print("")
             print("Nothing has moved. Run it again with --file to move these in.")
@@ -187,7 +191,7 @@ struct InboxCommand: ParsableCommand {
         print("Run it again with --adopt-devices to add \(names) to this project.")
     }
 
-    private func fileEverything(_ plan: Inbox.Plan, project: Project) throws {
+    private func fileEverything(_ plan: Inbox.Plan, project: Project) async throws {
         // The same version the rest of the tool works on, so a screenshot and
         // the text beside it cannot land in two different version folders.
         guard let version = try Checker.check(project: project, version: options.appVersion)
@@ -198,7 +202,15 @@ struct InboxCommand: ParsableCommand {
             throw ExitCode.failure
         }
 
-        let outcome = try Inbox.file(plan, version: version, in: project)
+        let outcome: Inbox.Outcome
+        do {
+            outcome = try await Inbox.file(plan, version: version, listing: readListing(project), in: project)
+        } catch let lock as ScreenshotLock {
+            print("")
+            print(lock.description)
+            print("Nothing has moved.")
+            throw ExitCode.failure
+        }
         let locales = outcome.locales.joined(separator: ", ")
 
         print("")
@@ -213,6 +225,22 @@ struct InboxCommand: ParsableCommand {
         }
         if outcome.copied.contains(where: { $0.trashed > 0 }) {
             print("The files that were there are in the Trash.")
+        }
+    }
+
+    /// What App Store Connect says about the version, so a version it locked
+    /// is refused. Nil when it cannot be read: filing then goes ahead, as it
+    /// does in the window with no connection, and the push refuses later.
+    private func readListing(_ project: Project) async -> RemoteListing? {
+        do {
+            return try await makeClient(for: project).listing(
+                bundleID: project.config.bundleID,
+                platform: project.config.resolvedPlatform,
+                includeScreenshots: false
+            )
+        } catch {
+            print("warning: could not read App Store Connect, so the version state is not checked. \(error)")
+            return nil
         }
     }
 }
