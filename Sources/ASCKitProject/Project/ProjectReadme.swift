@@ -224,6 +224,11 @@ enum ProjectReadme {
     The name stays with the file, so a later import replaces it rather than
     filing the same picture twice.
 
+    A header or search results image has no device class, because one file
+    shows on every device. Name it with the role, then the language:
+    `header-en_US.png` or `search-results-en_US.png`. It is filed as
+    `creative/en-US/header.png`, in place of the file that role has.
+
     An open project window watches this folder. Drop images in, and the window
     shows where each one is going. Nothing is asked. In the terminal the same
     thing is `asckit inbox`, which prints where each file goes, and
