@@ -69,13 +69,9 @@ public struct CreativeFolder: Sendable {
 
     public static func load(from root: URL) -> CreativeFolder {
         var folder = CreativeFolder()
-        let manager = FileManager.default
-        let locales = (try? manager.contentsOfDirectory(at: root, includingPropertiesForKeys: [.isDirectoryKey],
-                                                        options: [.skipsHiddenFiles])) ?? []
-        for localeURL in locales where (try? localeURL.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
+        for localeURL in DirectoryListing.directories(in: root) {
             let locale = localeURL.lastPathComponent
-            let entries = (try? manager.contentsOfDirectory(at: localeURL, includingPropertiesForKeys: nil,
-                                                            options: [.skipsHiddenFiles])) ?? []
+            let entries = DirectoryListing.entries(in: localeURL, keys: [])
             for url in entries.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
                 guard let role = CreativeRole(rawValue: url.deletingPathExtension().lastPathComponent) else {
                     folder.strays[locale, default: []].append(url.lastPathComponent)

@@ -95,7 +95,7 @@ public enum AppIcon {
         for _ in 0 ..< maximumDepth {
             var next: [URL] = []
             for folder in level {
-                for entry in directories(in: folder) {
+                for entry in DirectoryListing.directories(in: folder) {
                     let name = entry.lastPathComponent
                     if wanted.contains(name) {
                         // Built from the name rather than handed back as found.
@@ -118,31 +118,13 @@ public enum AppIcon {
         return found
     }
 
-    private static func directories(in folder: URL) -> [URL] {
-        let entries = (try? FileManager.default.contentsOfDirectory(
-            at: folder,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
-        )) ?? []
-
-        return entries
-            .filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false }
-            .sorted { $0.lastPathComponent < $1.lastPathComponent }
-    }
-
     /// The largest image in an icon set, because an icon set holds the same
     /// artwork at every size a device asks for.
     ///
     /// Measured rather than weighed. A dark variant of the same icon can be the
     /// larger file while being the smaller picture.
     private static func largestImage(in iconSet: URL) -> URL? {
-        let entries = (try? FileManager.default.contentsOfDirectory(
-            at: iconSet,
-            includingPropertiesForKeys: [.fileSizeKey],
-            options: [.skipsHiddenFiles]
-        )) ?? []
-
-        return entries
+        DirectoryListing.entries(in: iconSet, keys: [.fileSizeKey])
             .filter { $0.pathExtension.lowercased() == "png" }
             .map { (url: $0, size: ImageInspector.inspect(url: $0)) }
             .filter { $0.size.pixelWidth != nil }

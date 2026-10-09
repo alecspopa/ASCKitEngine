@@ -71,15 +71,15 @@ public struct PreviewFolder: Sendable {
 
     public static func load(from root: URL) -> PreviewFolder {
         var folder = PreviewFolder()
-        for localeDirectory in directories(in: root) {
-            for deviceDirectory in directories(in: localeDirectory) {
+        for localeDirectory in DirectoryListing.directories(in: root) {
+            for deviceDirectory in DirectoryListing.directories(in: localeDirectory) {
                 let slot = ScreenshotSlot(locale: localeDirectory.lastPathComponent,
                                           deviceClassID: deviceDirectory.lastPathComponent)
                 let frames = PosterFrames.load(in: deviceDirectory)
                 if frames == nil { folder.unreadablePosterFrames.insert(slot) }
                 if let frames, frames.isEmpty == false { folder.posterFrames[slot] = frames }
 
-                folder.previews[slot] = files(in: deviceDirectory).map { url in
+                folder.previews[slot] = DirectoryListing.files(in: deviceDirectory, keys: fileKeys, ignoring: ignoredFileNames).map { url in
                     var file = VideoInspector.inspect(url: url)
                     file.posterFrame = frames?[url.lastPathComponent]
                     return file
@@ -93,29 +93,8 @@ public struct PreviewFolder: Sendable {
         previews[ScreenshotSlot(locale: locale, deviceClassID: deviceClassID)] ?? []
     }
 
-    private static let ignoredFileNames: Set = [".DS_Store", "Thumbs.db", PosterFrames.fileName]
-
-    private static func entries(in directory: URL) -> [URL] {
-        (try? FileManager.default.contentsOfDirectory(
-            at: directory, includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey], options: [.skipsHiddenFiles]
-        )) ?? []
-    }
-
-    private static func isDirectory(_ url: URL) -> Bool {
-        (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
-    }
-
-    private static func directories(in directory: URL) -> [URL] {
-        entries(in: directory).filter(isDirectory).sorted { $0.lastPathComponent < $1.lastPathComponent }
-    }
-
-    /// A file of another kind is kept, so the check reports it rather than
-    /// something else uploading it.
-    private static func files(in directory: URL) -> [URL] {
-        entries(in: directory)
-            .filter { isDirectory($0) == false && ignoredFileNames.contains($0.lastPathComponent) == false }
-            .sorted { $0.lastPathComponent.compare($1.lastPathComponent, options: .numeric) == .orderedAscending }
-    }
+    private static let ignoredFileNames: Set = [PosterFrames.fileName]
+    private static let fileKeys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey]
 }
 
 public extension Project {

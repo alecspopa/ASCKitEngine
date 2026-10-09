@@ -507,16 +507,7 @@ public enum ContentWriter {
 
     /// What is in a slot now, in the order the file names put it in.
     private static func slot(at directory: URL) -> [ScreenshotFile] {
-        let entries = (try? FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey],
-            options: [.skipsHiddenFiles]
-        )) ?? []
-
-        return entries
-            .filter { ((try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false) == false }
-            .filter { $0.lastPathComponent != ".DS_Store" && $0.lastPathComponent != "Thumbs.db" }
-            .sorted { $0.lastPathComponent.compare($1.lastPathComponent, options: .numeric) == .orderedAscending }
+        DirectoryListing.files(in: directory, keys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey])
             .map(ImageInspector.inspect)
     }
 

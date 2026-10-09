@@ -3,9 +3,6 @@ import Foundation
 /// Reads a version folder into memory. It reports what is there and judges
 /// nothing; that is the validator's job.
 public enum ContentStore {
-    /// Files that are not screenshots but turn up in screenshot folders anyway.
-    private static let ignoredFileNames: Set<String> = [".DS_Store", "Thumbs.db"]
-
     public static func load(version: String, in project: Project) throws -> VersionContent {
         let versionURL = project.versionsURL.appending(path: version)
         guard FileManager.default.fileExists(atPath: versionURL.path) else {
@@ -62,16 +59,16 @@ public enum ContentStore {
         var screenshots: [ScreenshotSlot: [ScreenshotFile]] = [:]
         var locales: Set<String> = []
 
-        for localeDirectory in directories(in: root) {
+        for localeDirectory in DirectoryListing.directories(in: root) {
             let locale = localeDirectory.lastPathComponent
             locales.insert(locale)
 
-            for deviceDirectory in directories(in: localeDirectory) {
+            for deviceDirectory in DirectoryListing.directories(in: localeDirectory) {
                 let slot = ScreenshotSlot(
                     locale: locale,
                     deviceClassID: deviceDirectory.lastPathComponent
                 )
-                screenshots[slot] = imageFiles(in: deviceDirectory).map(ImageInspector.inspect)
+                screenshots[slot] = DirectoryListing.files(in: deviceDirectory, keys: imageKeys).map(ImageInspector.inspect)
             }
         }
         return (screenshots, locales)
@@ -79,39 +76,11 @@ public enum ContentStore {
 
     // MARK: - Directory reading
 
-    private static func entries(in directory: URL) -> [URL] {
-        (try? FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey],
-            options: [.skipsHiddenFiles]
-        )) ?? []
-    }
-
-    /// `hasDirectoryPath` only looks for a trailing slash on the string, so it
-    /// is not a reliable answer. Ask the file system.
-    private static func isDirectory(_ url: URL) -> Bool {
-        (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
-    }
-
-    private static func directories(in directory: URL) -> [URL] {
-        entries(in: directory)
-            .filter(isDirectory)
-            .sorted { $0.lastPathComponent < $1.lastPathComponent }
-    }
+    private static let imageKeys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey]
 
     private static func jsonFiles(in directory: URL) -> [URL] {
-        entries(in: directory)
-            .filter { isDirectory($0) == false && $0.pathExtension.lowercased() == "json" }
+        DirectoryListing.entries(in: directory)
+            .filter { DirectoryListing.isDirectory($0) == false && $0.pathExtension.lowercased() == "json" }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
-    }
-
-    /// Everything that is not a directory and not a known stray file. A file
-    /// with the wrong extension is returned on purpose, so it can be reported
-    /// rather than quietly skipped and then uploaded by something else.
-    private static func imageFiles(in directory: URL) -> [URL] {
-        entries(in: directory)
-            .filter { isDirectory($0) == false }
-            .filter { ignoredFileNames.contains($0.lastPathComponent) == false }
-            .sorted { $0.lastPathComponent.compare($1.lastPathComponent, options: .numeric) == .orderedAscending }
     }
 }

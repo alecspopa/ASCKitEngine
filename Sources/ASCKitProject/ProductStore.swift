@@ -80,8 +80,6 @@ public enum ProductStore {
     /// subscription group. The product files never read a folder.
     public static let groupsFolderName = "groups"
 
-    private static let ignoredFileNames: Set<String> = [".DS_Store"]
-
     /// Never throws. A missing folder is a project with no products yet, which
     /// is every project until somebody adds one.
     public static func load(in project: Project) -> ProductCatalog {
@@ -179,15 +177,8 @@ public enum ProductStore {
     }
 
     private static func jsonFiles(in directory: URL) -> [URL] {
-        let entries = (try? FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        )) ?? []
-
-        return entries
+        DirectoryListing.files(in: directory)
             .filter { $0.pathExtension.lowercased() == "json" }
-            .filter { ignoredFileNames.contains($0.lastPathComponent) == false }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 }

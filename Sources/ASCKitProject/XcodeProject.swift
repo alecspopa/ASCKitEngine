@@ -87,13 +87,7 @@ public struct XcodeProject: Sendable {
     /// Xcode projects has no obvious answer, and picking wrong would scaffold a
     /// listing for the wrong app.
     public static func find(in folderURL: URL) -> URL? {
-        let entries = (try? FileManager.default.contentsOfDirectory(
-            at: folderURL,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        )) ?? []
-
-        let names = entries
+        let names = DirectoryListing.entries(in: folderURL, keys: [])
             .map(\.lastPathComponent)
             .filter { $0.hasSuffix(".xcodeproj") }
             .sorted()

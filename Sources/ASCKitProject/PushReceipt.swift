@@ -222,13 +222,7 @@ public enum PushHistory {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let entries = (try? FileManager.default.contentsOfDirectory(
-            at: project.historyURL,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        )) ?? []
-
-        return entries
+        return DirectoryListing.files(in: project.historyURL)
             .filter { $0.pathExtension.lowercased() == "json" }
             .compactMap { try? decoder.decode(PushReceipt.self, from: try Data(contentsOf: $0)) }
             .sorted { $0.pushedAt > $1.pushedAt }

@@ -169,7 +169,6 @@ public struct ExperimentContent: Sendable {
 }
 
 public enum ExperimentContentStore {
-    private static let ignoredFileNames: Set<String> = [".DS_Store", "Thumbs.db"]
     public static let previewsFolderName = "previews"
 
     public static func load(in project: Project) -> ExperimentContent {
@@ -177,8 +176,8 @@ public enum ExperimentContentStore {
         var previews: [ExperimentSlot: [PreviewFile]] = [:]
         var creative: [String: CreativeFolder] = [:]
 
-        for experiment in directories(in: project.experimentsURL) {
-            for treatment in directories(in: experiment) {
+        for experiment in DirectoryListing.directories(in: project.experimentsURL) {
+            for treatment in DirectoryListing.directories(in: experiment) {
                 let folder = PreviewFolder.load(from: treatment.appending(path: previewsFolderName))
                 for (slot, files) in folder.previews {
                     previews[ExperimentSlot(
@@ -196,44 +195,20 @@ public enum ExperimentContentStore {
 
                 // No language code is `previews` or `creative`, so the names are free.
                 let reserved: Set = [previewsFolderName, CreativeFolder.folderName]
-                for locale in directories(in: treatment) where reserved.contains(locale.lastPathComponent) == false {
-                    for device in directories(in: locale) {
+                for locale in DirectoryListing.directories(in: treatment) where reserved.contains(locale.lastPathComponent) == false {
+                    for device in DirectoryListing.directories(in: locale) {
                         let slot = ExperimentSlot(
                             experiment: experiment.lastPathComponent,
                             treatment: treatment.lastPathComponent,
                             locale: locale.lastPathComponent,
                             deviceClassID: device.lastPathComponent
                         )
-                        screenshots[slot] = files(in: device).map(ImageInspector.inspect)
+                        screenshots[slot] = DirectoryListing.files(in: device).map(ImageInspector.inspect)
                     }
                 }
             }
         }
         return ExperimentContent(screenshots: screenshots, previews: previews, creative: creative)
-    }
-
-    private static func entries(in directory: URL) -> [URL] {
-        (try? FileManager.default.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
-        )) ?? []
-    }
-
-    private static func isDirectory(_ url: URL) -> Bool {
-        (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
-    }
-
-    private static func directories(in directory: URL) -> [URL] {
-        entries(in: directory).filter(isDirectory).sorted { $0.lastPathComponent < $1.lastPathComponent }
-    }
-
-    /// A file with the wrong extension is kept on purpose, so the validator
-    /// reports it rather than something else uploading it.
-    private static func files(in directory: URL) -> [URL] {
-        entries(in: directory)
-            .filter { isDirectory($0) == false && ignoredFileNames.contains($0.lastPathComponent) == false }
-            .sorted { $0.lastPathComponent.compare($1.lastPathComponent, options: .numeric) == .orderedAscending }
     }
 }
 
