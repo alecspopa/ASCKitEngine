@@ -49,50 +49,7 @@ public struct Validator: Sendable {
     /// Whether a test still exists is a question for App Store Connect, and
     /// the plan answers it.
     public func validate(_ experiments: ExperimentContent) -> [Problem] {
-        var problems: [Problem] = []
-        let deviceClasses = Dictionary(uniqueKeysWithValues: config.resolvedDeviceClasses.map { ($0.id, $0) })
-
-        for (slot, files) in experiments.screenshots where files.isEmpty == false {
-            let folder = "\(ExperimentFolders.folderName)/\(slot.path)"
-
-            guard let deviceClass = deviceClasses[slot.deviceClassID] else {
-                problems.append(Problem(
-                    severity: .warning,
-                    area: .screenshots,
-                    message: LocalizedStringResource("""
-                    \(folder) holds \(files.count) images for a device class this project \
-                    does not list.
-                    """, bundle: .here),
-                    fix: LocalizedStringResource(
-                        "Nothing uploads them. List the device class in asckit.json, or remove the folder.",
-                        bundle: .here
-                    ),
-                    locale: slot.locale,
-                    deviceClassID: slot.deviceClassID,
-                    path: folder,
-                    kind: .deviceClassNotKnown
-                ))
-                continue
-            }
-
-            if files.count > DeviceClass.maximumScreenshotsPerSet {
-                problems.append(Problem(
-                    severity: .error,
-                    area: .screenshots,
-                    message: LocalizedStringResource("""
-                    \(folder) has \(files.count) screenshots, and the limit is \
-                    \(DeviceClass.maximumScreenshotsPerSet).
-                    """, bundle: .here),
-                    locale: slot.locale,
-                    deviceClassID: deviceClass.id,
-                    path: folder,
-                    kind: .screenshotsOverLimit
-                ))
-            }
-            for file in files {
-                problems += validateFile(file, deviceClass: deviceClass, locale: slot.locale, folder: folder)
-            }
-        }
+        var problems = validateScreenshotSets(experiments.screenshots.map { $0.key.placed($0.value) })
         problems += validateExperimentPreviews(experiments)
         problems += validateExperimentCreative(experiments)
         return problems.sortedForDisplay

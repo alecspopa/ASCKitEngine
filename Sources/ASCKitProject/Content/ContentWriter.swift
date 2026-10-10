@@ -85,100 +85,34 @@ public enum ContentWriter {
 
     // MARK: - Screenshots
 
-    /// Puts images into a slot and renumbers it.
+    /// Puts images into one set of a version, a treatment or a custom product
+    /// page, and renumbers it.
     ///
-    /// `position` is where the first new image lands, counting from 1. Nil puts
-    /// them at the end.
+    /// Named and numbered by one rule in every place, so the name App Store
+    /// Connect holds is the name on disk. `position` is where the first new
+    /// image lands, counting from 1. Nil puts them at the end.
+    ///
+    /// With `replacingExisting`, an image that shows the same thing as one in
+    /// the set takes its place, and the old file goes to the Trash. Two files
+    /// show the same thing when their names match with the number, device
+    /// class and language taken off.
     @discardableResult
     public static func addScreenshots(
         from sourceURLs: [URL],
         locale: String,
         deviceClass: DeviceClass,
-        version: String,
-        at position: Int? = nil,
-        in project: Project
-    ) throws -> [ScreenshotFile] {
-        try writeScreenshots(ScreenshotWriteRequest(
-            sourceURLs: sourceURLs,
-            locale: locale,
-            deviceClass: deviceClass,
-            version: version,
-            position: position,
-            replacingExisting: false
-        ), in: project).files
-    }
-
-    /// Adds images to one language of one treatment of a draft test.
-    ///
-    /// Named and numbered by the same rule as a version's screenshots, so the
-    /// name App Store Connect holds is the name on disk.
-    @discardableResult
-    public static func addExperimentScreenshots(
-        from sourceURLs: [URL],
-        slot: ExperimentSlot,
-        deviceClass: DeviceClass,
-        at position: Int? = nil,
+        at place: LibraryContentPlace,
+        position: Int? = nil,
         replacingExisting: Bool = false,
-        in project: Project
-    ) throws -> ScreenshotWriteOutcome {
-        try writeScreenshots(ScreenshotWriteRequest(
-            sourceURLs: sourceURLs,
-            locale: slot.locale,
-            deviceClass: deviceClass,
-            version: "",
-            position: position,
-            replacingExisting: replacingExisting,
-            directory: project.experimentURL(
-                experiment: slot.experiment,
-                treatment: slot.treatment,
-                locale: slot.locale,
-                deviceClassID: deviceClass.id
-            )
-        ), in: project)
-    }
-
-    /// Adds images to one language of a custom product page, named and
-    /// numbered by the same rule as a version's screenshots.
-    @discardableResult
-    public static func addCustomPageScreenshots(
-        from sourceURLs: [URL],
-        slot: CustomPageSlot,
-        deviceClass: DeviceClass,
-        at position: Int? = nil,
-        replacingExisting: Bool = false,
-        in project: Project
-    ) throws -> ScreenshotWriteOutcome {
-        try writeScreenshots(ScreenshotWriteRequest(
-            sourceURLs: sourceURLs,
-            locale: slot.locale,
-            deviceClass: deviceClass,
-            version: "",
-            position: position,
-            replacingExisting: replacingExisting,
-            directory: project.customPageURL(page: slot.page, locale: slot.locale, deviceClassID: deviceClass.id)
-        ), in: project)
-    }
-
-    /// Replaces screenshots with matching names, and keeps the rest of the set.
-    ///
-    /// Replaced files go to the Trash. Two files match when they show the same
-    /// thing, which is the name with its number, device class, and language
-    /// taken off.
-    @discardableResult
-    public static func replaceScreenshots(
-        from sourceURLs: [URL],
-        locale: String,
-        deviceClass: DeviceClass,
-        version: String,
         in project: Project
     ) throws -> ScreenshotWriteOutcome {
         try writeScreenshots(ScreenshotWriteRequest(
             sourceURLs: sourceURLs,
             locale: locale,
             deviceClass: deviceClass,
-            version: version,
-            position: nil,
-            replacingExisting: true
+            place: place,
+            position: position,
+            replacingExisting: replacingExisting
         ), in: project)
     }
 
@@ -196,14 +130,10 @@ public enum ContentWriter {
         with sourceURLs: [URL],
         locale: String,
         deviceClass: DeviceClass,
-        version: String,
+        at place: LibraryContentPlace,
         in project: Project
     ) throws -> ScreenshotWriteOutcome {
-        let directory = project.screenshotsURL(
-            version: version,
-            locale: locale,
-            deviceClassID: deviceClass.id
-        )
+        let directory = project.screenshotsURL(place, locale: locale, deviceClassID: deviceClass.id)
         let slotName = SlotName(locale: locale, deviceClass: deviceClass)
 
         // Counted against an empty slot, because the whole set is going.
@@ -239,6 +169,7 @@ public enum ContentWriter {
         }
 
         try ScreenshotRenumbering.apply(ordered: arriving)
+        if arriving.isEmpty == false { try setEmptied(false, in: directory) }
         return ScreenshotWriteOutcome(files: slot(at: directory), trashed: trashed)
     }
 
@@ -252,22 +183,17 @@ public enum ContentWriter {
         let sourceURLs: [URL]
         let locale: String
         let deviceClass: DeviceClass
-        let version: String
+        let place: LibraryContentPlace
         let position: Int?
         let replacingExisting: Bool
-
-        /// The folder to write into, when it is not a version's own.
-        var directory: URL?
     }
 
     private static func writeScreenshots(
         _ request: ScreenshotWriteRequest,
         in project: Project
     ) throws -> ScreenshotWriteOutcome {
-        let directory = request.directory ?? project.screenshotsURL(
-            version: request.version,
-            locale: request.locale,
-            deviceClassID: request.deviceClass.id
+        let directory = project.screenshotsURL(
+            request.place, locale: request.locale, deviceClassID: request.deviceClass.id
         )
 
         let slotName = SlotName(locale: request.locale, deviceClass: request.deviceClass)
@@ -333,27 +259,43 @@ public enum ContentWriter {
         }
 
         try ScreenshotRenumbering.apply(ordered: ordered)
+        if ordered.isEmpty == false { try setEmptied(false, in: directory) }
         return ScreenshotWriteOutcome(files: slot(at: directory), trashed: trashed)
     }
 
-    /// Puts a slot in the given order, named file by file.
+    /// Puts one set in the given order, named file by file, and names every
+    /// file by the rule again.
+    ///
+    /// Every file of the set has to be named once. A short order is refused
+    /// rather than moving the rest to the end.
     @discardableResult
     public static func reorderScreenshots(
         order: [String],
         locale: String,
         deviceClass: DeviceClass,
-        version: String,
+        at place: LibraryContentPlace,
         in project: Project
     ) throws -> [ScreenshotFile] {
-        try reorderScreenshots(
-            order: order,
-            locale: locale,
-            deviceClass: deviceClass,
-            directory: project.screenshotsURL(version: version, locale: locale, deviceClassID: deviceClass.id)
-        )
+        let directory = project.screenshotsURL(place, locale: locale, deviceClassID: deviceClass.id)
+        var remaining = slot(at: directory)
+        var ordered: [ScreenshotFile] = []
+        for name in order {
+            guard let index = remaining.firstIndex(where: { matches($0, name: name) }) else {
+                throw ContentWriteError.noSuchScreenshot(name: name, locale: locale, deviceClassID: deviceClass.id)
+            }
+            ordered.append(remaining.remove(at: index))
+        }
+
+        guard remaining.isEmpty else {
+            throw ContentWriteError.incompleteOrder(missing: remaining.map(\.fileName))
+        }
+
+        try rename(ordered, locale: locale, deviceClass: deviceClass)
+        return slot(at: directory)
     }
 
-    /// Moves images to the Trash, then renumbers what is left.
+    /// Moves images to the Trash, then renumbers what is left and names it by
+    /// the rule again.
     ///
     /// The Trash rather than a delete, because the caller may be a machine and
     /// the file may be the only copy of that artwork anybody has.
@@ -362,14 +304,10 @@ public enum ContentWriter {
         named names: [String],
         locale: String,
         deviceClass: DeviceClass,
-        version: String,
+        at place: LibraryContentPlace,
         in project: Project
     ) throws -> [ScreenshotFile] {
-        let directory = project.screenshotsURL(
-            version: version,
-            locale: locale,
-            deviceClassID: deviceClass.id
-        )
+        let directory = project.screenshotsURL(place, locale: locale, deviceClassID: deviceClass.id)
         let existing = slot(at: directory)
 
         var doomed: [ScreenshotFile] = []
@@ -386,42 +324,86 @@ public enum ContentWriter {
 
         let kept = existing.filter { file in doomed.contains(file) == false }
         try rename(kept, locale: locale, deviceClass: deviceClass)
+        // Taking the last image off says the set is meant to be empty.
+        if doomed.isEmpty == false, kept.isEmpty { try setEmptied(true, in: directory) }
         return slot(at: directory)
+    }
+
+    /// Moves every image of one set to the Trash, and marks the set as emptied
+    /// on purpose, so a push takes App Store Connect's images off it too.
+    ///
+    /// On a set with no file, it only marks the set. That is the way to take
+    /// off the images a read showed and never wrote to disk.
+    @discardableResult
+    public static func removeAllScreenshots(
+        locale: String,
+        deviceClass: DeviceClass,
+        at place: LibraryContentPlace,
+        in project: Project
+    ) throws -> [URL] {
+        let directory = project.screenshotsURL(place, locale: locale, deviceClassID: deviceClass.id)
+        var trashed: [URL] = []
+        for file in slot(at: directory) {
+            var landed: NSURL?
+            try FileManager.default.trashItem(at: file.url, resultingItemURL: &landed)
+            if let landed = landed as URL? { trashed.append(landed) }
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try setEmptied(true, in: directory)
+        return trashed
+    }
+
+    /// Takes the mark off an emptied set, so a push leaves App Store
+    /// Connect's images on it alone.
+    public static func keepRemoteScreenshots(
+        locale: String,
+        deviceClass: DeviceClass,
+        at place: LibraryContentPlace,
+        in project: Project
+    ) throws {
+        try setEmptied(false, in: project.screenshotsURL(place, locale: locale, deviceClassID: deviceClass.id))
+    }
+
+    /// The mark lives in the set's own folder, so it moves and goes with it.
+    private static func setEmptied(_ emptied: Bool, in directory: URL) throws {
+        let marker = directory.appending(path: ScreenshotFolder.emptiedMarkerName)
+        let exists = FileManager.default.fileExists(atPath: marker.path)
+        if emptied, exists == false {
+            try Data().write(to: marker)
+        } else if emptied == false, exists {
+            try FileManager.default.removeItem(at: marker)
+        }
     }
 
     // MARK: - Putting old names right
 
-    /// Renames every screenshot in a version so that each one follows the
+    /// Renames every screenshot of a place so that each one follows the
     /// naming rule, and says which files moved.
     ///
-    /// A folder written before the rule holds shorter names. Adding or removing
-    /// one image puts that whole set right, and this is for the sets nobody has
-    /// touched since. Run it before a push: the name goes to App Store Connect
-    /// with the image, and a set uploaded under the old names is a set the next
-    /// push cannot match.
+    /// A folder written before the rule holds shorter names. Adding, removing
+    /// or moving one image puts that whole set right, and this is for the sets
+    /// nobody has touched since. Run it before a push: the name goes to App
+    /// Store Connect with the image, and a set uploaded under the old names is
+    /// a set the next push cannot match.
     @discardableResult
     public static func repairNames(
-        version: String,
+        at place: LibraryContentPlace,
         in project: Project
     ) throws -> [(from: String, to: String)] {
         var moved: [(from: String, to: String)] = []
+        let deviceClasses = Dictionary(uniqueKeysWithValues: project.config.resolvedDeviceClasses.map { ($0.id, $0) })
 
-        for locale in project.config.writtenLocales {
-            for deviceClass in project.config.resolvedDeviceClasses {
-                let directory = project.screenshotsURL(
-                    version: version,
-                    locale: locale,
-                    deviceClassID: deviceClass.id
-                )
-                let files = slot(at: directory)
-                guard files.isEmpty == false else { continue }
+        // A folder for a device class the project does not list keeps its
+        // names, because the rule needs the device class.
+        let sets = project.screenshotFolder(place).screenshots
+            .sorted { ($0.key.locale, $0.key.deviceClassID) < ($1.key.locale, $1.key.deviceClassID) }
+        for (slot, files) in sets where files.isEmpty == false {
+            guard let deviceClass = deviceClasses[slot.deviceClassID] else { continue }
+            try rename(files, locale: slot.locale, deviceClass: deviceClass)
 
-                try rename(files, locale: locale, deviceClass: deviceClass)
-
-                let after = slot(at: directory)
-                for (before, now) in zip(files, after) where before.fileName != now.fileName {
-                    moved.append((before.fileName, now.fileName))
-                }
+            let after = self.slot(at: project.screenshotsURL(place, locale: slot.locale, deviceClassID: slot.deviceClassID))
+            for (before, now) in zip(files, after) where before.fileName != now.fileName {
+                moved.append((before.fileName, now.fileName))
             }
         }
         return moved
@@ -515,59 +497,6 @@ public enum ContentWriter {
     /// shortened forms also count.
     private static func matches(_ file: ScreenshotFile, name: String) -> Bool {
         file.fileName == name
-    }
-}
-
-// MARK: - Order
-
-public extension ContentWriter {
-    /// Puts one language of one treatment in the given order, named file by
-    /// file.
-    @discardableResult
-    static func reorderExperimentScreenshots(
-        order: [String],
-        slot: ExperimentSlot,
-        deviceClass: DeviceClass,
-        in project: Project
-    ) throws -> [ScreenshotFile] {
-        try reorderScreenshots(
-            order: order,
-            locale: slot.locale,
-            deviceClass: deviceClass,
-            directory: project.experimentURL(
-                experiment: slot.experiment,
-                treatment: slot.treatment,
-                locale: slot.locale,
-                deviceClassID: deviceClass.id
-            )
-        )
-    }
-}
-
-extension ContentWriter {
-    /// Every file of the folder has to be named once. A short order is
-    /// refused rather than moving the rest to the end.
-    static func reorderScreenshots(
-        order: [String],
-        locale: String,
-        deviceClass: DeviceClass,
-        directory: URL
-    ) throws -> [ScreenshotFile] {
-        var remaining = slot(at: directory)
-        var ordered: [ScreenshotFile] = []
-        for name in order {
-            guard let index = remaining.firstIndex(where: { matches($0, name: name) }) else {
-                throw ContentWriteError.noSuchScreenshot(name: name, locale: locale, deviceClassID: deviceClass.id)
-            }
-            ordered.append(remaining.remove(at: index))
-        }
-
-        guard remaining.isEmpty else {
-            throw ContentWriteError.incompleteOrder(missing: remaining.map(\.fileName))
-        }
-
-        try rename(ordered, locale: locale, deviceClass: deviceClass)
-        return slot(at: directory)
     }
 }
 

@@ -200,17 +200,22 @@ extension Validator {
 }
 
 extension Validator {
-    /// The previews of every treatment, one treatment folder at a time.
-    func validateExperimentPreviews(_ experiments: ExperimentContent) -> [Problem] {
-        let byTreatment = Dictionary(grouping: experiments.previews.keys, by: \.treatmentKey)
-        return byTreatment.keys.sorted().flatMap { treatment in
+    /// The previews of a treatment or a custom product page, one place at a
+    /// time.
+    func validatePreviewSets(_ sets: [PlacedFiles<PreviewFile>]) -> [Problem] {
+        let byPlace = Dictionary(grouping: sets, by: \.place)
+        let places = byPlace.keys.sorted { $0.screenshotsPath(config: config) < $1.screenshotsPath(config: config) }
+        return places.flatMap { place in
             var folder = PreviewFolder()
-            for slot in byTreatment[treatment] ?? [] {
-                folder.previews[ScreenshotSlot(locale: slot.locale, deviceClassID: slot.deviceClassID)]
-                    = experiments.previews(in: slot)
+            for set in byPlace[place] ?? [] {
+                folder.previews[set.slot] = set.files
             }
-            let root = "\(ExperimentFolders.folderName)/\(treatment)/\(ExperimentContentStore.previewsFolderName)"
+            let root = "\(place.screenshotsPath(config: config))/\(Project.previewsFolderName)"
             return validatePreviewFolder(folder, root: root)
         }
+    }
+
+    func validateExperimentPreviews(_ experiments: ExperimentContent) -> [Problem] {
+        validatePreviewSets(experiments.previews.map { $0.key.placed($0.value) })
     }
 }

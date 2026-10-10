@@ -175,10 +175,11 @@ public enum CustomPageInbox {
         var outcome = Outcome(filed: 0, slots: [], trashed: [])
 
         for group in plan.groups {
-            let written = try ContentWriter.addCustomPageScreenshots(
+            let written = try ContentWriter.addScreenshots(
                 from: group.arrivals.map(\.file.url),
-                slot: group.slot,
+                locale: group.slot.locale,
                 deviceClass: group.deviceClass,
+                at: group.slot.place,
                 replacingExisting: replacingExisting,
                 in: project
             )

@@ -196,6 +196,9 @@ public struct CustomPageContent: Sendable {
     /// Files that are there and could not be read, with the reason.
     public var unreadable: [URL: String] = [:]
 
+    /// Sets somebody emptied on purpose, as `ScreenshotFolder.emptied` says.
+    public var emptied: Set<CustomPageSlot> = []
+
     public init() {}
 
     public func screenshots(in slot: CustomPageSlot) -> [ScreenshotFile] {
@@ -259,15 +262,14 @@ public enum CustomPageContentStore {
             content.creative[folder] = art
         }
 
-        for locale in DirectoryListing.directories(in: page)
-            where CustomPageFolders.reservedNames.contains(locale.lastPathComponent) == false {
-            for device in DirectoryListing.directories(in: locale) {
-                let slot = CustomPageSlot(
-                    page: folder, locale: locale.lastPathComponent, deviceClassID: device.lastPathComponent
-                )
-                content.screenshots[slot] = DirectoryListing.files(in: device).map(ImageInspector.inspect)
-            }
+        let sets = ScreenshotFolder.load(from: page, skipping: LibraryContentPlace.customPage(folder).reservedFolderNames)
+        let slot = { (set: ScreenshotSlot) in
+            CustomPageSlot(page: folder, locale: set.locale, deviceClassID: set.deviceClassID)
         }
+        for (set, files) in sets.screenshots {
+            content.screenshots[slot(set)] = files
+        }
+        content.emptied.formUnion(sets.emptied.map(slot))
     }
 
     private static func read<Value: Decodable>(_ type: Value.Type, from url: URL) throws -> Value {

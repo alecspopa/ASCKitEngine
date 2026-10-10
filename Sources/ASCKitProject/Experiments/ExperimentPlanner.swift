@@ -14,7 +14,6 @@ public enum ExperimentPlanner {
         var previewSets: [ExperimentPlan.PreviewSetPlan] = []
         var creativeSets: [ExperimentPlan.CreativeSetPlan] = []
         var placed: Set<ExperimentSlot> = []
-        let deviceClasses = config.resolvedDeviceClasses
         let experimentNames = ExperimentFolders.folderNames(for: remote)
 
         // App Store Connect refuses a change to a locked test.
@@ -24,6 +23,10 @@ public enum ExperimentPlanner {
 
             for treatment in experiment.treatments {
                 let treatmentFolder = treatmentNames[treatment.id] ?? treatment.name
+                let deviceClasses = config.screenshotDeviceClasses(
+                    for: .treatment(experiment: experimentFolder, treatment: treatmentFolder),
+                    platform: experiment.platform
+                )
 
                 for localization in treatment.localizations.sorted(by: { $0.locale < $1.locale }) {
                     do {
@@ -49,21 +52,11 @@ public enum ExperimentPlanner {
                             deviceClassID: deviceClass.id
                         )
                         let files = local.screenshots(in: slot)
-                        let library = LibraryPlanner.slot(
-                            files: files.map(\.libraryFile),
-                            current: LibraryPlanner.current(
-                                in: localization.placements,
-                                locale: localization.locale,
-                                group: deviceClass.placementGroup,
-                                type: deviceClass.screenshotPlacementType
-                            ),
-                            record: record,
-                            group: deviceClass.placementGroup,
-                            type: deviceClass.screenshotPlacementType
-                        )
-
-                        guard files.isEmpty == false || library.current.isEmpty == false else { continue }
-                        placed.insert(slot)
+                        if files.isEmpty == false { placed.insert(slot) }
+                        guard let library = LibraryPlanner.screenshotSet(
+                            files: files, placements: localization.placements, locale: localization.locale,
+                            deviceClass: deviceClass, emptied: local.emptied.contains(slot), record: record
+                        ) else { continue }
 
                         sets.append(.init(
                             experimentID: experiment.id,

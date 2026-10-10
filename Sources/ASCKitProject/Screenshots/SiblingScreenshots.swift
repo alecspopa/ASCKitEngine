@@ -294,7 +294,7 @@ public enum SiblingScreenshots {
             with: donorFiles.map(\.url),
             locale: locale,
             deviceClass: deviceClass,
-            version: version,
+            at: .version(version),
             in: project
         ).files
 
@@ -417,7 +417,7 @@ public enum SiblingScreenshots {
                 with: theirs.map(\.url),
                 locale: follower.locale,
                 deviceClass: follower.deviceClass,
-                version: version,
+                at: .version(version),
                 in: project
             )
             guard let landed else { continue }

@@ -39,28 +39,7 @@ extension Validator {
                 continue
             }
 
-            if files.count > DeviceClass.maximumScreenshotsPerSet {
-                problems.append(Problem(
-                    severity: .error,
-                    area: .screenshots,
-                    message: LocalizedStringResource("""
-                    \(locale) has \(files.count) \(deviceClass.displayName) screenshots, \
-                    and the limit is \(DeviceClass.maximumScreenshotsPerSet).
-                    """, bundle: .here),
-                    locale: locale,
-                    deviceClassID: deviceClass.id,
-                    path: folder,
-                    kind: .screenshotsOverLimit
-                ))
-            }
-
-            for file in files {
-                problems += validateFile(file, deviceClass: deviceClass, locale: locale, folder: folder)
-            }
-
-            problems += validateNames(
-                files, deviceClass: deviceClass, locale: locale, folder: folder
-            )
+            problems += validateScreenshotSet(files, deviceClass: deviceClass, locale: locale, folder: folder)
 
             problems += validateCopiesOfSource(
                 files,
@@ -227,6 +206,70 @@ extension Validator {
         guard let made = try? FileChecksum.md5(of: url) else { return nil }
         digests[url] = made
         return made
+    }
+
+    /// What every set is checked for, in a version, a treatment or a custom
+    /// product page: the count, each file, and the names.
+    func validateScreenshotSet(
+        _ files: [ScreenshotFile],
+        deviceClass: DeviceClass,
+        locale: String,
+        folder: String
+    ) -> [Problem] {
+        var problems: [Problem] = []
+        if files.count > DeviceClass.maximumScreenshotsPerSet {
+            problems.append(Problem(
+                severity: .error,
+                area: .screenshots,
+                message: LocalizedStringResource("""
+                \(locale) has \(files.count) \(deviceClass.displayName) screenshots, \
+                and the limit is \(DeviceClass.maximumScreenshotsPerSet).
+                """, bundle: .here),
+                locale: locale,
+                deviceClassID: deviceClass.id,
+                path: folder,
+                kind: .screenshotsOverLimit
+            ))
+        }
+        for file in files {
+            problems += validateFile(file, deviceClass: deviceClass, locale: locale, folder: folder)
+        }
+        problems += validateNames(files, deviceClass: deviceClass, locale: locale, folder: folder)
+        return problems
+    }
+
+    /// The sets of a treatment or a custom product page. Only what App Store
+    /// Connect refuses, and the names. Whether the place still exists is a
+    /// question for App Store Connect, and the plan answers it.
+    func validateScreenshotSets(_ sets: [PlacedFiles<ScreenshotFile>]) -> [Problem] {
+        var problems: [Problem] = []
+        let deviceClasses = Dictionary(uniqueKeysWithValues: config.resolvedDeviceClasses.map { ($0.id, $0) })
+
+        for set in sets where set.files.isEmpty == false {
+            let (slot, files) = (set.slot, set.files)
+            let folder = set.place.screenshotsPath(config: config, locale: slot.locale, deviceClassID: slot.deviceClassID)
+            guard let deviceClass = deviceClasses[slot.deviceClassID] else {
+                problems.append(Problem(
+                    severity: .warning,
+                    area: .screenshots,
+                    message: LocalizedStringResource("""
+                    \(folder) holds \(files.count) images for a device class this project \
+                    does not list.
+                    """, bundle: .here),
+                    fix: LocalizedStringResource(
+                        "Nothing uploads them. List the device class in asckit.json, or remove the folder.",
+                        bundle: .here
+                    ),
+                    locale: slot.locale,
+                    deviceClassID: slot.deviceClassID,
+                    path: folder,
+                    kind: .deviceClassNotKnown
+                ))
+                continue
+            }
+            problems += validateScreenshotSet(files, deviceClass: deviceClass, locale: slot.locale, folder: folder)
+        }
+        return problems
     }
 
     /// Files whose names do not follow the rule.

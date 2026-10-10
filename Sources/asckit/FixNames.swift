@@ -42,7 +42,7 @@ struct FixNames: ParsableCommand {
             return
         }
 
-        let moved = try ContentWriter.repairNames(version: version, in: project)
+        let moved = try ContentWriter.repairNames(at: .version(version), in: project)
         guard moved.isEmpty == false else {
             print("Every screenshot in \(version) is already named the way ASCKit names them.")
             return

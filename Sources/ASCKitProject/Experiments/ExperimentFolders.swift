@@ -138,6 +138,9 @@ public struct ExperimentContent: Sendable {
     /// From `<test>/<treatment>/creative/<locale>/`, by `<test>/<treatment>`.
     public let creative: [String: CreativeFolder]
 
+    /// Sets somebody emptied on purpose, as `ScreenshotFolder.emptied` says.
+    public let emptied: Set<ExperimentSlot>
+
     /// The key of `creative` for one treatment.
     public static func creativeKey(experiment: String, treatment: String) -> String {
         "\(experiment)/\(treatment)"
@@ -146,11 +149,13 @@ public struct ExperimentContent: Sendable {
     public init(
         screenshots: [ExperimentSlot: [ScreenshotFile]] = [:],
         previews: [ExperimentSlot: [PreviewFile]] = [:],
-        creative: [String: CreativeFolder] = [:]
+        creative: [String: CreativeFolder] = [:],
+        emptied: Set<ExperimentSlot> = []
     ) {
         self.screenshots = screenshots
         self.previews = previews
         self.creative = creative
+        self.emptied = emptied
     }
 
     public func screenshots(in slot: ExperimentSlot) -> [ScreenshotFile] {
@@ -179,6 +184,7 @@ public enum ExperimentContentStore {
         var screenshots: [ExperimentSlot: [ScreenshotFile]] = [:]
         var previews: [ExperimentSlot: [PreviewFile]] = [:]
         var creative: [String: CreativeFolder] = [:]
+        var emptied: Set<ExperimentSlot> = []
 
         for experiment in DirectoryListing.directories(in: project.experimentsURL) {
             for treatment in DirectoryListing.directories(in: experiment) {
@@ -200,21 +206,24 @@ public enum ExperimentContentStore {
                     )] = art
                 }
 
-                // No language code is `previews` or `creative`, so the names are free.
-                let reserved: Set = [previewsFolderName, CreativeFolder.folderName]
-                for locale in DirectoryListing.directories(in: treatment) where reserved.contains(locale.lastPathComponent) == false {
-                    for device in DirectoryListing.directories(in: locale) {
-                        let slot = ExperimentSlot(
-                            experiment: experiment.lastPathComponent,
-                            treatment: treatment.lastPathComponent,
-                            locale: locale.lastPathComponent,
-                            deviceClassID: device.lastPathComponent
-                        )
-                        screenshots[slot] = DirectoryListing.files(in: device).map(ImageInspector.inspect)
-                    }
+                let place = LibraryContentPlace.treatment(
+                    experiment: experiment.lastPathComponent, treatment: treatment.lastPathComponent
+                )
+                let sets = ScreenshotFolder.load(from: treatment, skipping: place.reservedFolderNames)
+                let slot = { (set: ScreenshotSlot) in
+                    ExperimentSlot(
+                        experiment: experiment.lastPathComponent,
+                        treatment: treatment.lastPathComponent,
+                        locale: set.locale,
+                        deviceClassID: set.deviceClassID
+                    )
                 }
+                for (set, files) in sets.screenshots {
+                    screenshots[slot(set)] = files
+                }
+                emptied.formUnion(sets.emptied.map(slot))
             }
         }
-        return ExperimentContent(screenshots: screenshots, previews: previews, creative: creative)
+        return ExperimentContent(screenshots: screenshots, previews: previews, creative: creative, emptied: emptied)
     }
 }

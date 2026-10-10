@@ -31,6 +31,10 @@ public struct VersionContent: Sendable {
     /// Locale folders found under screenshots, whatever the configuration says.
     public let screenshotLocales: Set<String>
 
+    /// Sets somebody emptied on purpose, so a push takes App Store Connect's
+    /// images off them.
+    public let emptiedScreenshotSets: Set<ScreenshotSlot>
+
     /// What the folder holding the text is called here: `version-data`, or the
     /// `app-information` an older project has. Carried so a problem names the
     /// path a person will find rather than the one ASCKit would write.
@@ -48,6 +52,7 @@ public struct VersionContent: Sendable {
         unreadableInformation: [String: String],
         screenshots: [ScreenshotSlot: [ScreenshotFile]],
         screenshotLocales: Set<String>,
+        emptiedScreenshotSets: Set<ScreenshotSlot> = [],
         informationFolderName: String = Project.informationFolderName,
         previewFolder: PreviewFolder = PreviewFolder(),
         creativeFolder: CreativeFolder = CreativeFolder()
@@ -57,6 +62,7 @@ public struct VersionContent: Sendable {
         self.unreadableInformation = unreadableInformation
         self.screenshots = screenshots
         self.screenshotLocales = screenshotLocales
+        self.emptiedScreenshotSets = emptiedScreenshotSets
         self.informationFolderName = informationFolderName
         self.previewFolder = previewFolder
         self.creativeFolder = creativeFolder

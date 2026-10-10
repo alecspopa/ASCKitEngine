@@ -286,24 +286,15 @@ public enum Inbox {
         var outcome = Outcome(filed: 0, locales: [], trashed: [])
 
         for group in plan.groups {
-            if replacingExisting {
-                let write = try ContentWriter.replaceScreenshots(
-                    from: group.arrivals.map(\.file.url),
-                    locale: group.locale,
-                    deviceClass: group.deviceClass,
-                    version: version,
-                    in: project
-                )
-                outcome.trashed.append(contentsOf: write.trashed)
-            } else {
-                try ContentWriter.addScreenshots(
-                    from: group.arrivals.map(\.file.url),
-                    locale: group.locale,
-                    deviceClass: group.deviceClass,
-                    version: version,
-                    in: project
-                )
-            }
+            let write = try ContentWriter.addScreenshots(
+                from: group.arrivals.map(\.file.url),
+                locale: group.locale,
+                deviceClass: group.deviceClass,
+                at: .version(version),
+                replacingExisting: replacingExisting,
+                in: project
+            )
+            outcome.trashed.append(contentsOf: write.trashed)
 
             // Only once the copy is in the set. An image trashed with nothing
             // to show for it is the one outcome worth taking care over.

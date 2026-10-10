@@ -97,61 +97,8 @@ extension Validator {
     /// The same checks as the images of a test: what App Store Connect
     /// refuses, and nothing about whether the page exists.
     private func validateCustomPageImages(_ pages: CustomPageContent) -> [Problem] {
-        var problems: [Problem] = []
-        let deviceClasses = Dictionary(uniqueKeysWithValues: config.resolvedDeviceClasses.map { ($0.id, $0) })
-
-        for (slot, files) in pages.screenshots where files.isEmpty == false {
-            let folder = "\(CustomPageFolders.folderName)/\(slot.path)"
-            guard let deviceClass = deviceClasses[slot.deviceClassID] else {
-                problems.append(Problem(
-                    severity: .warning,
-                    area: .screenshots,
-                    message: LocalizedStringResource("""
-                    \(folder) holds \(files.count) images for a device class this project \
-                    does not list.
-                    """, bundle: .here),
-                    fix: LocalizedStringResource(
-                        "Nothing uploads them. List the device class in asckit.json, or remove the folder.",
-                        bundle: .here
-                    ),
-                    locale: slot.locale,
-                    deviceClassID: slot.deviceClassID,
-                    path: folder,
-                    kind: .deviceClassNotKnown
-                ))
-                continue
-            }
-
-            if files.count > DeviceClass.maximumScreenshotsPerSet {
-                problems.append(Problem(
-                    severity: .error,
-                    area: .screenshots,
-                    message: LocalizedStringResource("""
-                    \(folder) has \(files.count) screenshots, and the limit is \
-                    \(DeviceClass.maximumScreenshotsPerSet).
-                    """, bundle: .here),
-                    locale: slot.locale,
-                    deviceClassID: deviceClass.id,
-                    path: folder,
-                    kind: .screenshotsOverLimit
-                ))
-            }
-            for file in files {
-                problems += validateFile(file, deviceClass: deviceClass, locale: slot.locale, folder: folder)
-            }
-        }
-
-        let byPage = Dictionary(grouping: pages.previews.keys, by: \.page)
-        for page in byPage.keys.sorted() {
-            var folder = PreviewFolder()
-            for slot in byPage[page] ?? [] {
-                folder.previews[ScreenshotSlot(locale: slot.locale, deviceClassID: slot.deviceClassID)]
-                    = pages.previews(in: slot)
-            }
-            problems += validatePreviewFolder(
-                folder, root: "\(CustomPageFolders.folderName)/\(page)/\(Project.previewsFolderName)"
-            )
-        }
+        var problems = validateScreenshotSets(pages.screenshots.map { $0.key.placed($0.value) })
+        problems += validatePreviewSets(pages.previews.map { $0.key.placed($0.value) })
 
         for page in pages.creative.keys.sorted() {
             problems += validateCreativeFolder(

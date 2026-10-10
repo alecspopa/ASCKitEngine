@@ -237,8 +237,8 @@ public enum LibraryContentPlace: Sendable, Hashable {
 }
 
 public extension Project {
-    func previewsURL(_ place: LibraryContentPlace, locale: String, deviceClassID: String) -> URL {
-        let previews = switch place {
+    func previewsURL(_ place: LibraryContentPlace) -> URL {
+        switch place {
         case let .version(version):
             previewsURL(version: version)
         case let .treatment(experiment, treatment):
@@ -247,7 +247,10 @@ public extension Project {
         case let .customPage(page):
             customPageURL(page: page).appending(path: Project.previewsFolderName)
         }
-        return previews.appending(path: locale).appending(path: deviceClassID)
+    }
+
+    func previewsURL(_ place: LibraryContentPlace, locale: String, deviceClassID: String) -> URL {
+        previewsURL(place).appending(path: locale).appending(path: deviceClassID)
     }
 
     func creativeURL(_ place: LibraryContentPlace, locale: String) -> URL {

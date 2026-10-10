@@ -111,7 +111,7 @@ public enum VersionSeed {
         var outcome = outcome
         do {
             try ContentWriter.replaceSlot(
-                with: sources, locale: slot.locale, deviceClass: slot.deviceClass, version: version, in: project
+                with: sources, locale: slot.locale, deviceClass: slot.deviceClass, at: .version(version), in: project
             )
             outcome.copied.append(slot)
         } catch {

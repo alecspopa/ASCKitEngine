@@ -10,14 +10,15 @@ public enum ContentStore {
         }
 
         let (information, unreadable) = loadAppInformation(version: version, in: project)
-        let (screenshots, locales) = loadScreenshots(version: version, in: project)
+        let screenshots = ScreenshotFolder.load(from: project.screenshotsURL(.version(version)))
 
         return VersionContent(
             versionString: version,
             appInformation: information,
             unreadableInformation: unreadable,
-            screenshots: screenshots,
-            screenshotLocales: locales,
+            screenshots: screenshots.screenshots,
+            screenshotLocales: screenshots.locales,
+            emptiedScreenshotSets: screenshots.emptied,
             informationFolderName: project.informationURL(version: version).lastPathComponent,
             previewFolder: PreviewFolder.load(from: project.previewsURL(version: version)),
             creativeFolder: CreativeFolder.load(from: project.creativeURL(version: version))
@@ -49,34 +50,7 @@ public enum ContentStore {
         return (copy, unreadable)
     }
 
-    // MARK: - Screenshots
-
-    private static func loadScreenshots(
-        version: String,
-        in project: Project
-    ) -> (screenshots: [ScreenshotSlot: [ScreenshotFile]], locales: Set<String>) {
-        let root = project.screenshotsURL(version: version)
-        var screenshots: [ScreenshotSlot: [ScreenshotFile]] = [:]
-        var locales: Set<String> = []
-
-        for localeDirectory in DirectoryListing.directories(in: root) {
-            let locale = localeDirectory.lastPathComponent
-            locales.insert(locale)
-
-            for deviceDirectory in DirectoryListing.directories(in: localeDirectory) {
-                let slot = ScreenshotSlot(
-                    locale: locale,
-                    deviceClassID: deviceDirectory.lastPathComponent
-                )
-                screenshots[slot] = DirectoryListing.files(in: deviceDirectory, keys: imageKeys).map(ImageInspector.inspect)
-            }
-        }
-        return (screenshots, locales)
-    }
-
     // MARK: - Directory reading
-
-    private static let imageKeys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey]
 
     private static func jsonFiles(in directory: URL) -> [URL] {
         DirectoryListing.entries(in: directory)

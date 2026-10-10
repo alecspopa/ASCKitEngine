@@ -3,10 +3,8 @@ import Foundation
 
 /// Works out what a push of the custom product pages would change.
 ///
-/// Only a page whose version takes changes gets a plan. A folder that is empty
-/// leaves what App Store Connect holds alone. A read makes no image files, so
-/// images placed in App Store Connect have no file here, and a first read must
-/// not plan to take them all off.
+/// Only a page whose version takes changes gets a plan. The screenshots follow
+/// `LibraryPlanner.screenshotSet`, the rule of every place.
 public enum CustomPagePlanner {
     public static func plan(
         local: CustomPageContent,
@@ -20,12 +18,12 @@ public enum CustomPagePlanner {
         var previewSets: [CustomPagePlan.PreviewSetPlan] = []
         var creativeSets: [CustomPagePlan.CreativeSetPlan] = []
         var placed: Set<CustomPageSlot> = []
-        let deviceClasses = config.resolvedDeviceClasses.filter { $0.platform == .ios }
         let names = CustomPageFolders.folderNames(for: remote)
 
         for page in remote.pages where page.isEditable {
             guard let version = page.version else { continue }
             let folder = names[page.id] ?? page.name
+            let deviceClasses = config.screenshotDeviceClasses(for: .customPage(folder))
 
             if let change = deepLinkChange(page: page, version: version, settings: local.settings[folder]) {
                 deepLinks.append(change)
@@ -43,8 +41,11 @@ public enum CustomPagePlanner {
                 for deviceClass in deviceClasses {
                     let slot = CustomPageSlot(page: folder, locale: localization.locale, deviceClassID: deviceClass.id)
                     let files = local.screenshots(in: slot)
-                    guard files.isEmpty == false else { continue }
-                    placed.insert(slot)
+                    if files.isEmpty == false { placed.insert(slot) }
+                    guard let library = LibraryPlanner.screenshotSet(
+                        files: files, placements: localization.placements, locale: localization.locale,
+                        deviceClass: deviceClass, emptied: local.emptied.contains(slot), record: record
+                    ) else { continue }
 
                     sets.append(.init(
                         pageID: page.id,
@@ -53,18 +54,7 @@ public enum CustomPagePlanner {
                         localizationID: localization.id,
                         deviceClass: deviceClass,
                         localFiles: files,
-                        library: LibraryPlanner.slot(
-                            files: files.map(\.libraryFile),
-                            current: LibraryPlanner.current(
-                                in: localization.placements,
-                                locale: localization.locale,
-                                group: deviceClass.placementGroup,
-                                type: deviceClass.screenshotPlacementType
-                            ),
-                            record: record,
-                            group: deviceClass.placementGroup,
-                            type: deviceClass.screenshotPlacementType
-                        )
+                        library: library
                     ))
                 }
             }

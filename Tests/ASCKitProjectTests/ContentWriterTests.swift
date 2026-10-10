@@ -98,7 +98,7 @@ final class ContentWriterTests {
             from: [incoming.appending(path: "hero.png"), incoming.appending(path: "shared.png")],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -113,7 +113,7 @@ final class ContentWriterTests {
             from: [incoming.appending(path: "07-running-low.png")],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -130,7 +130,7 @@ final class ContentWriterTests {
             from: [incoming.appending(path: "03-shopping-iPhone-6.9-en_US.png")],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -154,8 +154,8 @@ final class ContentWriterTests {
             from: [incoming.appending(path: "widgets.png")],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
-            at: 1,
+            at: .version("1.0"),
+            position: 1,
             in: fixture.load()
         )
 
@@ -179,7 +179,7 @@ final class ContentWriterTests {
             from: [incoming.appending(path: "shared.png")],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -197,7 +197,7 @@ final class ContentWriterTests {
                 from: [incoming.appending(path: "small.png")],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }
@@ -212,7 +212,7 @@ final class ContentWriterTests {
                 from: [incoming.appending(path: "clear.png")],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }
@@ -236,7 +236,7 @@ final class ContentWriterTests {
                 from: [incoming.appending(path: "good.png"), incoming.appending(path: "bad.png")],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }
@@ -260,7 +260,7 @@ final class ContentWriterTests {
                 from: [incoming.appending(path: "one-more.png")],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }
@@ -275,7 +275,7 @@ final class ContentWriterTests {
                 from: [incoming.appending(path: "nothing.png")],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }
@@ -295,7 +295,7 @@ final class ContentWriterTests {
             order: ["03-widgets.png", "01-hero.png", "02-shared.png"],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -320,7 +320,7 @@ final class ContentWriterTests {
             order: ["02-shared.png", "01-hero.png"],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -344,7 +344,7 @@ final class ContentWriterTests {
                 order: ["01-hero.png"],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }
@@ -362,7 +362,7 @@ final class ContentWriterTests {
                 order: ["01-nothing.png"],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }
@@ -382,7 +382,7 @@ final class ContentWriterTests {
             named: ["02-shared.png"],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -400,7 +400,7 @@ final class ContentWriterTests {
                 named: ["shared"],
                 locale: "en-US",
                 deviceClass: .iPhone69,
-                version: "1.0",
+                at: .version("1.0"),
                 in: self.fixture.load()
             )
         }

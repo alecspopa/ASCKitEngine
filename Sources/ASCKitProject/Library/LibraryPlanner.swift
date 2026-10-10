@@ -163,6 +163,32 @@ public enum LibraryPlanner {
         )
     }
 
+    // swiftlint:disable function_parameter_count
+    /// One screenshot set of a version, a treatment or a custom product page,
+    /// or nil when a push leaves it alone.
+    ///
+    /// The same rule in every place. A set with files goes up. An empty set
+    /// takes App Store Connect's images off only when `emptied` says somebody
+    /// emptied it on purpose. A read writes no image files, so a set that is
+    /// only empty since a read keeps what App Store Connect holds.
+    public static func screenshotSet(
+        files: [ScreenshotFile],
+        placements: [RemotePlacement],
+        locale: String,
+        deviceClass: DeviceClass,
+        emptied: Bool,
+        record: AssetRecord
+    ) -> LibrarySlot? {
+        let type = deviceClass.screenshotPlacementType
+        let current = current(in: placements, locale: locale, group: deviceClass.placementGroup, type: type)
+        guard files.isEmpty == false || (emptied && current.isEmpty == false) else { return nil }
+        return slot(
+            files: files.map(\.libraryFile), current: current, record: record,
+            group: deviceClass.placementGroup, type: type
+        )
+    }
+    // swiftlint:enable function_parameter_count
+
     /// The placements of one slot, from all the placements of one language.
     public static func current(
         in placements: [RemotePlacement],

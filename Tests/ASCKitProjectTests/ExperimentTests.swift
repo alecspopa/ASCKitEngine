@@ -193,9 +193,9 @@ final class ExperimentTests {
         try writeImage("02-b-iPhone-6.9-en_US.png", in: slot())
         try writeImage("03-c-iPhone-6.9-en_US.png", in: slot())
 
-        let files = try ContentWriter.reorderExperimentScreenshots(
+        let files = try ContentWriter.reorderScreenshots(
             order: ["03-c-iPhone-6.9-en_US.png", "01-a-iPhone-6.9-en_US.png", "02-b-iPhone-6.9-en_US.png"],
-            slot: slot(), deviceClass: deviceClass, in: project
+            locale: "en-US", deviceClass: deviceClass, at: slot().place, in: project
         )
 
         #expect(files.map(\.fileName) == [
@@ -208,12 +208,84 @@ final class ExperimentTests {
         try writeImage("02-b-iPhone-6.9-en_US.png", in: slot())
 
         #expect(throws: ContentWriteError.self) {
-            try ContentWriter.reorderExperimentScreenshots(
-                order: ["02-b-iPhone-6.9-en_US.png"], slot: self.slot(), deviceClass: self.deviceClass, in: self.project
+            try ContentWriter.reorderScreenshots(
+                order: ["02-b-iPhone-6.9-en_US.png"], locale: "en-US", deviceClass: self.deviceClass,
+                at: self.slot().place, in: self.project
             )
         }
         let files = ExperimentContentStore.load(in: project).screenshots(in: slot())
         #expect(files.map(\.fileName) == ["01-a-iPhone-6.9-en_US.png", "02-b-iPhone-6.9-en_US.png"])
+    }
+
+    /// A file named under an older rule gets its name put right by a reorder,
+    /// the same as in a version.
+    @Test func namesATreatmentSetByTheRuleWhenItMoves() throws {
+        try writeImage("01-a.png", in: slot())
+        try writeImage("02-b.png", in: slot())
+
+        let files = try ContentWriter.reorderScreenshots(
+            order: ["02-b.png", "01-a.png"], locale: "en-US", deviceClass: deviceClass, at: slot().place, in: project
+        )
+
+        #expect(files.map(\.fileName) == ["01-b-iPhone-6.9-en_US.png", "02-a-iPhone-6.9-en_US.png"])
+    }
+
+    // MARK: - Emptied on purpose
+
+    @Test func marksASetEmptiedWhenTheLastImageGoes() throws {
+        try writeImage("01-a-iPhone-6.9-en_US.png", in: slot())
+
+        try ContentWriter.removeScreenshots(
+            named: ["01-a-iPhone-6.9-en_US.png"], locale: "en-US", deviceClass: deviceClass, at: slot().place, in: project
+        )
+
+        #expect(ExperimentContentStore.load(in: project).emptied == [slot()])
+    }
+
+    @Test func takesTheMarkOffWhenAnImageArrives() throws {
+        try ContentWriter.removeAllScreenshots(locale: "en-US", deviceClass: deviceClass, at: slot().place, in: project)
+        #expect(ExperimentContentStore.load(in: project).emptied == [slot()])
+
+        let incoming = fixture.rootURL.appending(path: "incoming")
+        try FileManager.default.createDirectory(at: incoming, withIntermediateDirectories: true)
+        try PNGWriter.write(
+            to: incoming.appending(path: "hero.png"), width: 1320, height: 2868, hasAlpha: false, seed: "h"
+        )
+        try ContentWriter.addScreenshots(
+            from: [incoming.appending(path: "hero.png")], locale: "en-US", deviceClass: deviceClass,
+            at: slot().place, in: project
+        )
+
+        #expect(ExperimentContentStore.load(in: project).emptied.isEmpty)
+    }
+
+    /// A read writes no image files. The empty folder it makes must not take
+    /// App Store Connect's images off.
+    @Test func leavesTheImagesOfAnEmptySetAloneUntilItIsEmptiedOnPurpose() throws {
+        try ExperimentFolders.scaffold(remote, in: project)
+        let placement = RemotePlacement(
+            id: "p1", locale: "en-US", type: .appScreenshot, group: deviceClass.placementGroup,
+            state: .parentPrepareForSubmission,
+            asset: RemoteLibraryAsset(id: "a1", media: .image, fileName: "01-a.png", state: .approved)
+        )
+        let treatment = remote.experiments[0].treatments[0]
+        let held = RemoteExperiments(appID: "app1", experiments: [RemoteExperiment(
+            id: "e1", name: "Bigger buttons", state: .prepareForSubmission, platform: .ios,
+            treatments: [RemoteTreatment(id: "t1", name: treatment.name, localizations: [
+                RemoteTreatmentLocalization(id: "tloc-en", locale: "en-US", placements: [placement])
+            ])]
+        )])
+
+        let before = ExperimentPlanner.plan(
+            local: ExperimentContentStore.load(in: project), config: project.config, remote: held
+        )
+        #expect(before.sets.isEmpty)
+
+        try ContentWriter.removeAllScreenshots(locale: "en-US", deviceClass: deviceClass, at: slot().place, in: project)
+        let after = ExperimentPlanner.plan(
+            local: ExperimentContentStore.load(in: project), config: project.config, remote: held
+        )
+        #expect(after.sets.map(\.action) == [.replace(removing: 1, adding: 0)])
     }
 
     // MARK: - Checking

@@ -72,7 +72,7 @@ final class ScreenshotNameRuleTests {
             from: [incoming.appending(path: "03-shopping-iPhone-6.9-de_DE.png")],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -94,7 +94,7 @@ final class ScreenshotNameRuleTests {
             from: [incoming.appending(path: "02-widgets-iPhone-6.9-en_US.png")],
             locale: "en-US",
             deviceClass: .iPhone69,
-            version: "1.0",
+            at: .version("1.0"),
             in: fixture.load()
         )
 
@@ -113,7 +113,7 @@ final class ScreenshotNameRuleTests {
             )
         }
 
-        let moved = try ContentWriter.repairNames(version: "1.0", in: fixture.load())
+        let moved = try ContentWriter.repairNames(at: .version("1.0"), in: fixture.load())
 
         #expect(try slot() == [
             "01-hero-iPhone-6.9-en_US.png", "02-shared-iPhone-6.9-en_US.png"
@@ -129,7 +129,7 @@ final class ScreenshotNameRuleTests {
             named: "01-hero-iPhone-6.9-en_US.png", width: 1290, height: 2796
         )
 
-        #expect(try ContentWriter.repairNames(version: "1.0", in: fixture.load()).isEmpty)
+        #expect(try ContentWriter.repairNames(at: .version("1.0"), in: fixture.load()).isEmpty)
         #expect(try slot() == ["01-hero-iPhone-6.9-en_US.png"])
     }
 

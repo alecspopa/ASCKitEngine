@@ -163,26 +163,21 @@ public enum Planner {
             guard local.appInformation[locale]?.status.canPublish == true else { continue }
             guard remote.versionLocalizations[locale] != nil else { continue }
 
-            for deviceClass in config.resolvedDeviceClasses {
+            for deviceClass in config.screenshotDeviceClasses(for: .version(local.versionString)) {
                 // The tick wins over files in the folder. App Store Connect
-                // shows the source language's on a language with none.
-                let files = config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id)
-                    ? []
-                    : local.screenshots(locale: locale, deviceClassID: deviceClass.id)
-                let type = deviceClass.screenshotPlacementType
-                let current = LibraryPlanner.current(
-                    in: remote.placements, locale: locale, group: deviceClass.placementGroup, type: type
-                )
-                guard files.isEmpty == false || current.isEmpty == false else { continue }
+                // shows the source language's on a language with none, so the
+                // language's own images come off.
+                let ticked = config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id)
+                let files = ticked ? [] : local.screenshots(locale: locale, deviceClassID: deviceClass.id)
+                let emptied = ticked
+                    || local.emptiedScreenshotSets.contains(ScreenshotSlot(locale: locale, deviceClassID: deviceClass.id))
+                guard let library = LibraryPlanner.screenshotSet(
+                    files: files, placements: remote.placements, locale: locale, deviceClass: deviceClass,
+                    emptied: emptied, record: record
+                ) else { continue }
 
                 plans.append(ChangePlan.ScreenshotPlan(
-                    locale: locale,
-                    deviceClass: deviceClass,
-                    localFiles: files,
-                    library: LibraryPlanner.slot(
-                        files: files.map(\.libraryFile), current: current, record: record,
-                        group: deviceClass.placementGroup, type: type
-                    )
+                    locale: locale, deviceClass: deviceClass, localFiles: files, library: library
                 ))
             }
         }
