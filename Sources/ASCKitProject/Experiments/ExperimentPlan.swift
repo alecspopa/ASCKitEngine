@@ -106,7 +106,7 @@ public struct ExperimentPlan: Sendable {
         let art = creativeSets.filter { $0.treatmentID == treatmentID && $0.plan.changesAnything }.map { item in
             let locale = item.plan.locale
             return switch (item.plan.file, item.plan.usesHeader) {
-            case (nil, _): "\(locale) \(item.plan.role.rawValue): take it off"
+            case (nil, _): "\(locale) \(item.plan.role.rawValue): will be removed"
             case (_?, true): "\(locale) \(item.plan.role.rawValue): show the header"
             case let (file?, false): "\(locale) \(item.plan.role.rawValue): put up \(file.fileName)"
             }

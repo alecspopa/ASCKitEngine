@@ -418,7 +418,7 @@ struct CreativeSummaryTests {
 
         #expect(ChangePlanFormatter.lines(for: plan) == [
             "Header and search results:",
-            "  en-GB, header: take it off",
+            "  en-GB, header: will be removed",
             "  en-US, header: put up header.png",
             "  en-US, search results: show the header, header.png",
             ""

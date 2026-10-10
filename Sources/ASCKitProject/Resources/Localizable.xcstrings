@@ -4168,9 +4168,6 @@
     "show the header, %@" : {
       "comment" : "Short text in the publish plan: search results show the header art. The value is its file name."
     },
-    "take it off" : {
-      "comment" : "Short text in the publish plan: App Store Connect stops showing this art."
-    },
     "the base price" : {
       "comment" : "Short label at the end of a price line in the publish plan, shown as fixed-width text. This country uses the base price of the product."
     },
@@ -4227,6 +4224,9 @@
           }
         }
       }
+    },
+    "will be removed" : {
+      "comment" : "Short text in the publish plan: a push removes this art from App Store Connect for the language."
     }
   },
   "version" : "1.0"

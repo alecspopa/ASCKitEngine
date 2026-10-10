@@ -534,7 +534,7 @@ private extension ChangePlanFormatter {
             } else if let file = item.file {
                 String(localized: "put up \(file.fileName)", bundle: .module)
             } else {
-                String(localized: "take it off", bundle: .module)
+                String(localized: "will be removed", bundle: .module)
             }
             lines.append("  \(item.locale), \(role): \(words)")
         }

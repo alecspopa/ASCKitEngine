@@ -185,7 +185,7 @@ public struct CustomPagePlan: Sendable {
         let art = changingCreativeSets.filter { $0.pageID == pageID }.map { item in
             let locale = item.plan.locale
             return switch (item.plan.file, item.plan.usesHeader) {
-            case (nil, _): "\(locale) \(item.plan.role.rawValue): take it off"
+            case (nil, _): "\(locale) \(item.plan.role.rawValue): will be removed"
             case (_?, true): "\(locale) \(item.plan.role.rawValue): show the header"
             case let (file?, false): "\(locale) \(item.plan.role.rawValue): put up \(file.fileName)"
             }
