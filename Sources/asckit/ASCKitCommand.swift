@@ -7,7 +7,7 @@ struct ASCKitCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "asckit",
         abstract: "Check and publish App Store Connect listings from files on disk.",
-        version: "0.3.8",
+        version: "0.3.9",
         subcommands: [
             Init.self, Check.self, Silence.self, Ignore.self, CopyScreenshots.self, FixNames.self, Pull.self,
             Diff.self, InboxCommand.self, Price.self, Push.self, Experiments.self,
