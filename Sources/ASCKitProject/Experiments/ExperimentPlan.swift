@@ -32,8 +32,12 @@ public struct ExperimentPlan: Sendable {
     /// A folder of images with no place to go.
     public struct Unplaced: Sendable, Hashable, Identifiable {
         public enum Reason: Sendable, Hashable {
-            /// No draft test has this name. It is finished, or never existed.
+            /// No test that is not over has this name. It is finished, or
+            /// never existed.
             case noDraftExperiment
+            /// The test is in review, running, or another state that takes
+            /// no change.
+            case locked(state: ExperimentState?)
             case noTreatment
             /// The treatment has no page for this language on App Store
             /// Connect, and ASCKit never makes one.

@@ -3,9 +3,9 @@ import ASCKitAPI
 import ASCKitProject
 import Foundation
 
-private let noDraftTest = """
-There is no draft test on App Store Connect. Make a test in App Store Connect first. \
-ASCKit never makes one.
+private let noTest = """
+There is no test on App Store Connect that is not over. Make a test in App Store Connect \
+first. ASCKit never makes one.
 """
 
 // MARK: - Read
@@ -13,10 +13,12 @@ ASCKit never makes one.
 struct Experiments: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "experiments",
-        abstract: "Read the draft Product Page Optimization tests, and make a folder for each.",
+        abstract: "Read the Product Page Optimization tests, and make a folder for each editable one.",
         discussion: """
-        Reads the draft tests from App Store Connect and writes nothing to it. It makes an \
-        empty folder in \(ExperimentFolders.folderName)/ for each language of each treatment.
+        Reads the tests that are not over from App Store Connect and writes nothing to it. It \
+        makes an empty folder in \(ExperimentFolders.folderName)/ for each language of each \
+        treatment of an editable test. Only a test in PREPARE_FOR_SUBMISSION or REJECTED is \
+        editable.
 
         To change the images of a treatment, drop the images in its folder and run \
         asckit push-experiment-images. Or drop them in \
@@ -35,7 +37,7 @@ struct Experiments: AsyncParsableCommand {
         let reading = try await session.readExperiments()
 
         guard reading.remote.experiments.isEmpty == false else {
-            print(noDraftTest)
+            print(noTest)
             return
         }
 
@@ -54,6 +56,11 @@ enum ExperimentReport {
 
         for experiment in reading.remote.experiments {
             Swift.print("\(experiment.name), \(experiment.state?.rawValue ?? unknownState)")
+            guard experiment.isEditable else {
+                Swift.print("  locked: a test in this state takes no images")
+                Swift.print("")
+                continue
+            }
 
             for treatment in experiment.treatments {
                 Swift.print("  \(treatment.name)")
@@ -109,6 +116,9 @@ enum ExperimentReport {
     static func reason(_ reason: ExperimentPlan.Unplaced.Reason) -> String {
         switch reason {
         case .noDraftExperiment: "no draft test has this name. It is finished, or it never existed."
+        case let .locked(state):
+            "the test is \(state?.rawValue ?? unknownState). Only a test in "
+                + "PREPARE_FOR_SUBMISSION or REJECTED takes images."
         case .noTreatment: "the test has no treatment with this name."
         case .noLanguage: "the treatment has no page for this language. Add it in App Store Connect."
         case .deviceClassNotListed: "this project does not list the device class."
@@ -121,7 +131,7 @@ enum ExperimentReport {
 struct PushExperimentImages: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "push-experiment-images",
-        abstract: "Upload the images of the draft Product Page Optimization tests.",
+        abstract: "Upload the images of the editable Product Page Optimization tests.",
         discussion: """
         Drop the images in \(ExperimentFolders.folderName)/<test>/<treatment>/<language>/<device class>/, \
         then run this command. Run asckit experiments first to make the folders.
@@ -144,7 +154,7 @@ struct PushExperimentImages: AsyncParsableCommand {
         let reading = try await session.readExperiments()
 
         guard reading.remote.experiments.isEmpty == false else {
-            print(noDraftTest)
+            print(noTest)
             return
         }
 

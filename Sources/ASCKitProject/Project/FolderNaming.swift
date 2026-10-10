@@ -20,10 +20,14 @@ public enum FolderNaming {
     ///
     /// Two items can share a name, and one folder must not hold both. The
     /// second in id order gets the end of its id, so the same two items are
-    /// named the same way on every read.
-    public static func folderNames(for items: [(id: String, name: String)]) -> [String: String] {
+    /// named the same way on every read. A name in `taken`, in any case, is
+    /// already used.
+    public static func folderNames(
+        for items: [(id: String, name: String)],
+        taken: Set<String> = []
+    ) -> [String: String] {
         var result: [String: String] = [:]
-        var taken: Set<String> = []
+        var taken = Set(taken.map { $0.lowercased() })
         for item in items.sorted(by: { $0.id < $1.id }) {
             var candidate = folderName(for: item.name)
             if taken.contains(candidate.lowercased()) {

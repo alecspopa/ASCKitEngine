@@ -20,9 +20,19 @@ public struct ExperimentState: RawRepresentable, Sendable, Hashable, Codable {
     public static let completed = Self(rawValue: "COMPLETED")
     public static let stopped = Self(rawValue: "STOPPED")
 
-    /// A test made in App Store Connect that nobody has sent to review yet.
-    /// Its treatments take images. Every other state refuses them.
-    public var isDraft: Bool { self == .prepareForSubmission }
+    /// The states whose treatments take images: a test nobody has sent to
+    /// review yet, and a test review sent back. Every other state refuses them.
+    public static let editable: Set<Self> = [.prepareForSubmission, .rejected]
+
+    /// Every state a read asks for. A completed or stopped test is over, so a
+    /// read leaves it out. A state Apple adds later is left out until it is
+    /// named here.
+    static let unfinished: [Self] = [
+        .prepareForSubmission, .readyForReview, .waitingForReview, .inReview,
+        .accepted, .approved, .rejected
+    ]
+
+    public var isEditable: Bool { Self.editable.contains(self) }
 }
 
 public struct ExperimentAttributes: Decodable, Sendable {
@@ -41,16 +51,16 @@ public struct TreatmentLocalizationAttributes: Decodable, Sendable {
 }
 
 public extension ASCClient {
-    /// Every test of an app that is still a draft.
+    /// Every test of an app that is not over yet.
     ///
     /// Asked of App Store Connect with a filter, so a long history of finished
-    /// tests is not read for the one draft.
-    func draftExperiments(appID: String) async throws -> [Resource<ExperimentAttributes>] {
+    /// tests is not read for the few that are not.
+    func experiments(appID: String) async throws -> [Resource<ExperimentAttributes>] {
         try await list(
             "/v1/apps/\(appID)/appStoreVersionExperimentsV2",
             query: [URLQueryItem(
                 name: "filter[state]",
-                value: ExperimentState.prepareForSubmission.rawValue
+                value: ExperimentState.unfinished.map(\.rawValue).joined(separator: ",")
             )],
             as: ExperimentAttributes.self
         )
@@ -75,8 +85,8 @@ public extension ASCClient {
 
 // MARK: - What App Store Connect holds
 
-/// The draft tests of one app, with everything a push needs to write into
-/// them.
+/// The tests of one app that are not over, with everything a push needs to
+/// write into the editable ones.
 public struct RemoteExperiments: Sendable {
     public let appID: String
     public let experiments: [RemoteExperiment]
@@ -107,6 +117,9 @@ public struct RemoteExperiment: Sendable, Identifiable {
         self.platform = platform
         self.treatments = treatments
     }
+
+    /// Whether its treatments take images. A test with no state is locked.
+    public var isEditable: Bool { state?.isEditable == true }
 }
 
 public struct RemoteTreatment: Sendable, Identifiable {
@@ -139,18 +152,24 @@ public struct RemoteTreatmentLocalization: Sendable, Identifiable {
 }
 
 public extension ASCClient {
-    /// Reads the draft tests of an app: each one's treatments, their
-    /// languages and the library assets placed on them.
+    /// Reads the tests of an app that are not over: each one's treatments,
+    /// their languages and the library assets placed on them. A locked test
+    /// is read too, so a page can show what App Store Connect holds.
     ///
     /// Nothing is made. A test, a treatment and a language of a treatment all
     /// come from App Store Connect, and ASCKit only places assets on them.
-    func draftExperiments(bundleID: String) async throws -> RemoteExperiments {
+    func experiments(bundleID: String) async throws -> RemoteExperiments {
         guard let app = try await app(bundleID: bundleID) else {
             throw ListingError.noSuchApp(bundleID: bundleID)
         }
 
         var experiments: [RemoteExperiment] = []
-        for experiment in try await draftExperiments(appID: app.id) {
+        // App Store Connect answered a COMPLETED test to the state filter on
+        // 2026-10-10, so the state is checked here as well.
+        let unfinished = try await self.experiments(appID: app.id).filter { experiment in
+            experiment.attributes?.state.map(ExperimentState.unfinished.contains) == true
+        }
+        for experiment in unfinished {
             var treatments: [RemoteTreatment] = []
             for treatment in try await self.treatments(experimentID: experiment.id) {
                 let localizations = try await readTreatmentLocalizations(treatmentID: treatment.id)

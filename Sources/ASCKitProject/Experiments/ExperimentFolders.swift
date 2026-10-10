@@ -28,8 +28,23 @@ public enum ExperimentFolders {
         FolderNaming.folderNames(for: items)
     }
 
+    /// The folder name of each test, keyed by its id.
+    ///
+    /// The editable tests are named first, so a locked test with the same name
+    /// never takes the folder that holds an editable test's images.
+    public static func folderNames(for remote: RemoteExperiments) -> [String: String] {
+        let editable = FolderNaming.folderNames(
+            for: remote.experiments.filter(\.isEditable).map { ($0.id, $0.name) }
+        )
+        let locked = FolderNaming.folderNames(
+            for: remote.experiments.filter { $0.isEditable == false }.map { ($0.id, $0.name) },
+            taken: Set(editable.values)
+        )
+        return editable.merging(locked) { first, _ in first }
+    }
+
     /// Makes the empty folders a person drops images into, for every language
-    /// of every treatment of every draft test.
+    /// of every treatment of every editable test.
     ///
     /// Only the device classes of the platform the test is for. Returns the
     /// folders it made.
@@ -40,9 +55,9 @@ public enum ExperimentFolders {
     ) throws -> [URL] {
         var made: [URL] = []
         let deviceClasses = project.config.resolvedDeviceClasses
-        let experimentNames = folderNames(for: remote.experiments.map { ($0.id, $0.name) })
+        let experimentNames = folderNames(for: remote)
 
-        for experiment in remote.experiments {
+        for experiment in remote.experiments where experiment.isEditable {
             let treatmentNames = folderNames(for: experiment.treatments.map { ($0.id, $0.name) })
             let fitting = deviceClasses.filter { experiment.platform == nil || $0.platform == experiment.platform }
 

@@ -1,8 +1,8 @@
 import ASCKitAPI
 import Foundation
 
-/// What the last read of App Store Connect found in the draft tests, kept in
-/// `cache/`.
+/// What the last read of App Store Connect found in the tests that are not
+/// over, kept in `cache/`.
 ///
 /// A caller with no network and no key reads this to know that a test and
 /// its treatments exist. Never in the repository, like the rest of the
@@ -13,6 +13,10 @@ public struct ExperimentSnapshot: Codable, Sendable, Equatable {
         /// The folder under `product-page-optimization`.
         public let folder: String
         public let platform: String?
+        /// The raw state, such as `PREPARE_FOR_SUBMISSION`.
+        public let state: String?
+        /// Whether its treatments take images.
+        public let isEditable: Bool
         public let treatments: [Treatment]
     }
 
@@ -27,7 +31,7 @@ public struct ExperimentSnapshot: Codable, Sendable, Equatable {
     public let experiments: [Experiment]
 
     public init(_ remote: RemoteExperiments, readOn: Date = .now) {
-        let experimentNames = ExperimentFolders.folderNames(for: remote.experiments.map { ($0.id, $0.name) })
+        let experimentNames = ExperimentFolders.folderNames(for: remote)
         self.readOn = readOn
         experiments = remote.experiments.map { experiment in
             let treatmentNames = ExperimentFolders.folderNames(for: experiment.treatments.map { ($0.id, $0.name) })
@@ -35,6 +39,8 @@ public struct ExperimentSnapshot: Codable, Sendable, Equatable {
                 name: experiment.name,
                 folder: experimentNames[experiment.id] ?? experiment.name,
                 platform: experiment.platform?.rawValue,
+                state: experiment.state?.rawValue,
+                isEditable: experiment.isEditable,
                 treatments: experiment.treatments.map {
                     Treatment(
                         name: $0.name,
@@ -44,6 +50,22 @@ public struct ExperimentSnapshot: Codable, Sendable, Equatable {
                 }
             )
         }
+    }
+}
+
+public extension ExperimentSnapshot.Experiment {
+    /// A cache from before 0.4.0 holds no state and only draft tests, so a
+    /// test with no `isEditable` is editable.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(
+            name: container.decode(String.self, forKey: .name),
+            folder: container.decode(String.self, forKey: .folder),
+            platform: container.decodeIfPresent(String.self, forKey: .platform),
+            state: container.decodeIfPresent(String.self, forKey: .state),
+            isEditable: container.decodeIfPresent(Bool.self, forKey: .isEditable) ?? true,
+            treatments: container.decode([ExperimentSnapshot.Treatment].self, forKey: .treatments)
+        )
     }
 }
 

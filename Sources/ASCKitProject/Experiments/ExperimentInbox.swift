@@ -89,20 +89,25 @@ public enum ExperimentInbox {
     /// exist.
     public static func plan(in project: Project, remote: RemoteExperiments? = nil) -> Plan {
         var known: [String: Set<String>] = [:]
+        var locked: [String: String] = [:]
         let onDisk = ExperimentContentStore.load(in: project)
         for slot in onDisk.screenshots.keys {
             known[slot.experiment, default: []].insert(slot.treatment)
         }
         if let remote {
-            let experimentNames = ExperimentFolders.folderNames(for: remote.experiments.map { ($0.id, $0.name) })
+            let experimentNames = ExperimentFolders.folderNames(for: remote)
             for experiment in remote.experiments {
+                let folder = experimentNames[experiment.id] ?? experiment.name
+                guard experiment.isEditable else {
+                    locked[folder] = experiment.state?.rawValue ?? ""
+                    continue
+                }
                 let names = ExperimentFolders.folderNames(for: experiment.treatments.map { ($0.id, $0.name) })
-                known[experimentNames[experiment.id] ?? experiment.name, default: []]
-                    .formUnion(names.values)
+                known[folder, default: []].formUnion(names.values)
             }
         }
-        return plan(waiting(in: project), root: url(in: project), known: known, config: project.config,
-                    refData: RefDataCache.load(in: project))
+        return plan(waiting(in: project), root: url(in: project), known: known, locked: locked,
+                    config: project.config, refData: RefDataCache.load(in: project))
     }
 
     /// The same, with the treatments the last read of App Store Connect found.
@@ -110,20 +115,28 @@ public enum ExperimentInbox {
     /// For a caller with no network and no key, whose cache holds the names. A treatment with no folder yet still takes images.
     public static func plan(in project: Project, snapshot: ExperimentSnapshot?) -> Plan {
         var known: [String: Set<String>] = [:]
+        var locked: [String: String] = [:]
         for slot in ExperimentContentStore.load(in: project).screenshots.keys {
             known[slot.experiment, default: []].insert(slot.treatment)
         }
         for experiment in snapshot?.experiments ?? [] {
+            guard experiment.isEditable else {
+                locked[experiment.folder] = experiment.state ?? ""
+                continue
+            }
             known[experiment.folder, default: []].formUnion(experiment.treatments.map(\.folder))
         }
-        return plan(waiting(in: project), root: url(in: project), known: known, config: project.config,
-                    refData: RefDataCache.load(in: project))
+        return plan(waiting(in: project), root: url(in: project), known: known, locked: locked,
+                    config: project.config, refData: RefDataCache.load(in: project))
     }
 
+    /// `locked` holds the folder and the raw state of each test that takes no
+    /// images. Its folder can exist on disk, so it is refused before `known`.
     static func plan(
         _ files: [ScreenshotFile],
         root: URL,
         known: [String: Set<String>],
+        locked: [String: String] = [:],
         config: ProjectConfig,
         refData: AssetLibraryRefData? = nil
     ) -> Plan {
@@ -143,6 +156,16 @@ public enum ExperimentInbox {
                 continue
             }
             let experiment = parts[0], treatment = parts[1]
+
+            if let state = locked[experiment] {
+                plan.refusals.append(Refusal(file: file, reason: String(
+                    localized: """
+                    The test \(experiment) is \(state) on App Store Connect. Only a test in \
+                    Prepare for Submission or Rejected takes images.
+                    """, bundle: .module
+                )))
+                continue
+            }
 
             guard let treatments = known[experiment], treatments.contains(treatment) else {
                 let names = known.flatMap { test, items in items.map { "\(test)/\($0)" } }.sorted()

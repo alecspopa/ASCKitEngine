@@ -38,6 +38,18 @@ final class ExperimentTests {
         ])
     }
 
+    /// The draft, and a test in review that has a lower id and the same name.
+    var remoteWithLockedTest: RemoteExperiments {
+        RemoteExperiments(appID: "app1", experiments: remote.experiments + [
+            RemoteExperiment(
+                id: "a0", name: "Bigger buttons", state: .inReview, platform: .ios,
+                treatments: [RemoteTreatment(id: "t0", name: "Treatment A", localizations: [
+                    RemoteTreatmentLocalization(id: "tloc-old", locale: "en-US")
+                ])]
+            )
+        ])
+    }
+
     func slot(_ locale: String = "en-US") -> ExperimentSlot {
         ExperimentSlot(
             experiment: "Bigger buttons", treatment: "Treatment A",
@@ -71,6 +83,14 @@ final class ExperimentTests {
         #expect(names["id-bbbb2"] == "Same (bbb2)")
     }
 
+    /// The locked test has the lower id, and it still does not take the
+    /// folder that holds the draft's images.
+    @Test func namesTheEditableTestFirst() {
+        let names = ExperimentFolders.folderNames(for: remoteWithLockedTest)
+        #expect(names["e1"] == "Bigger buttons")
+        #expect(names["a0"] == "Bigger buttons (a0)")
+    }
+
     // MARK: - Reading
 
     @Test func makesAFolderForEachLanguageOfEachTreatment() throws {
@@ -84,6 +104,13 @@ final class ExperimentTests {
             ).path
         ))
         #expect(try ExperimentFolders.scaffold(remote, in: project).isEmpty)
+    }
+
+    @Test func makesNoFolderForALockedTest() throws {
+        let made = try ExperimentFolders.scaffold(remoteWithLockedTest, in: project)
+
+        #expect(made.count == 2)
+        #expect(made.allSatisfy { $0.path.contains("Bigger buttons (a0)") == false })
     }
 
     // MARK: - Planning
@@ -145,6 +172,50 @@ final class ExperimentTests {
         #expect(reasons["Old testen-US"] == .noDraftExperiment)
     }
 
+    @Test func plansNothingForALockedTest() throws {
+        let locked = ExperimentSlot(
+            experiment: "Bigger buttons (a0)", treatment: "Treatment A", locale: "en-US", deviceClassID: deviceClass.id
+        )
+        try writeImage("01-a-iPhone-6.9-en_US.png", in: locked)
+        try writeImage("01-a-iPhone-6.9-en_US.png", in: slot())
+        let content = ExperimentContentStore.load(in: project)
+
+        let plan = ExperimentPlanner.plan(local: content, config: project.config, remote: remoteWithLockedTest)
+
+        #expect(plan.sets.map(\.experimentID) == ["e1"])
+        #expect(plan.unplaced.map(\.reason) == [.locked(state: .inReview)])
+    }
+
+    // MARK: - Writing
+
+    @Test func putsATreatmentSetInTheOrderItWasGiven() throws {
+        try writeImage("01-a-iPhone-6.9-en_US.png", in: slot())
+        try writeImage("02-b-iPhone-6.9-en_US.png", in: slot())
+        try writeImage("03-c-iPhone-6.9-en_US.png", in: slot())
+
+        let files = try ContentWriter.reorderExperimentScreenshots(
+            order: ["03-c-iPhone-6.9-en_US.png", "01-a-iPhone-6.9-en_US.png", "02-b-iPhone-6.9-en_US.png"],
+            slot: slot(), deviceClass: deviceClass, in: project
+        )
+
+        #expect(files.map(\.fileName) == [
+            "01-c-iPhone-6.9-en_US.png", "02-a-iPhone-6.9-en_US.png", "03-b-iPhone-6.9-en_US.png"
+        ])
+    }
+
+    @Test func refusesATreatmentOrderThatLeavesAnImageOut() throws {
+        try writeImage("01-a-iPhone-6.9-en_US.png", in: slot())
+        try writeImage("02-b-iPhone-6.9-en_US.png", in: slot())
+
+        #expect(throws: ContentWriteError.self) {
+            try ContentWriter.reorderExperimentScreenshots(
+                order: ["02-b-iPhone-6.9-en_US.png"], slot: self.slot(), deviceClass: self.deviceClass, in: self.project
+            )
+        }
+        let files = ExperimentContentStore.load(in: project).screenshots(in: slot())
+        #expect(files.map(\.fileName) == ["01-a-iPhone-6.9-en_US.png", "02-b-iPhone-6.9-en_US.png"])
+    }
+
     // MARK: - Checking
 
     @Test func refusesAnAlphaChannel() throws {
@@ -193,10 +264,52 @@ final class ExperimentTests {
         #expect(plan.refusals.count == 1)
     }
 
+    /// The folder of the locked test exists on disk, and it is still refused.
+    @Test func refusesAnInboxImageForALockedTest() throws {
+        try writeImage("01-a-iPhone-6.9-en_US.png", in: ExperimentSlot(
+            experiment: "Bigger buttons (a0)", treatment: "Treatment A", locale: "en-US", deviceClassID: deviceClass.id
+        ))
+        let waiting = ExperimentInbox.url(in: project)
+            .appending(path: "Bigger buttons (a0)").appending(path: "Treatment A")
+        try FileManager.default.createDirectory(at: waiting, withIntermediateDirectories: true)
+        try PNGWriter.write(
+            to: waiting.appending(path: "03-shopping-iPhone-6.9-en_US.png"),
+            width: 1320, height: 2868, hasAlpha: false, seed: "z"
+        )
+
+        let fromRemote = ExperimentInbox.plan(in: project, remote: remoteWithLockedTest)
+        let fromSnapshot = ExperimentInbox.plan(in: project, snapshot: ExperimentSnapshot(remoteWithLockedTest))
+
+        for plan in [fromRemote, fromSnapshot] {
+            #expect(plan.arrivals.isEmpty)
+            #expect(plan.refusals.first?.reason.contains("IN_REVIEW") == true)
+        }
+    }
+
     @Test func keepsWhatTheReadFoundInACache() throws {
-        try ExperimentSnapshotStore.save(ExperimentSnapshot(remote), in: project)
+        try ExperimentSnapshotStore.save(ExperimentSnapshot(remoteWithLockedTest), in: project)
         let loaded = try #require(ExperimentSnapshotStore.load(in: project))
-        #expect(loaded.experiments.first?.treatments.first?.locales == ["de-DE", "en-US"])
-        #expect(loaded.experiments.first?.folder == "Bigger buttons")
+        let draft = try #require(loaded.experiments.first { $0.folder == "Bigger buttons" })
+        #expect(draft.treatments.first?.locales == ["de-DE", "en-US"])
+        #expect(draft.state == "PREPARE_FOR_SUBMISSION")
+        #expect(draft.isEditable)
+        let locked = try #require(loaded.experiments.first { $0.folder == "Bigger buttons (a0)" })
+        #expect(locked.state == "IN_REVIEW")
+        #expect(locked.isEditable == false)
+    }
+
+    /// A cache from before 0.4.0 held only draft tests and no state.
+    @Test func readsAnOldCacheAsEditable() throws {
+        let json = """
+        {"readOn":"2026-10-01T10:00:00Z","experiments":[{"name":"Bigger buttons","folder":"Bigger buttons",
+          "platform":"IOS","treatments":[{"name":"Treatment A","folder":"Treatment A","locales":["en-US"]}]}]}
+        """
+        let url = ExperimentSnapshotStore.url(in: project)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(json.utf8).write(to: url)
+
+        let loaded = try #require(ExperimentSnapshotStore.load(in: project))
+        #expect(loaded.experiments.first?.isEditable == true)
+        #expect(loaded.experiments.first?.state == nil)
     }
 }

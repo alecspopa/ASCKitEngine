@@ -38,7 +38,7 @@ struct LibraryShow: AsyncParsableCommand {
             versionString: options.appVersion,
             platform: project.config.resolvedPlatform
         )
-        async let experiments = client.draftExperiments(
+        async let experiments = client.experiments(
             bundleID: project.config.bundleID
         )
         async let customPages = client.customPages(bundleID: project.config.bundleID)

@@ -3589,6 +3589,17 @@
         }
       }
     },
+    "The test %@ is %@ on App Store Connect. Only a test in Prepare for Submission or Rejected takes images." : {
+      "comment" : "Refusal for a waiting image. The first value is a test folder name. The second value is the raw state of the test, such as IN_REVIEW.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The test %1$@ is %2$@ on App Store Connect. Only a test in Prepare for Submission or Rejected takes images."
+          }
+        }
+      }
+    },
     "The words of %@ are in a version that is %@, so App Store Connect refuses a change to them now." : {
       "comment" : "Reason in the publish plan for words that cannot go. The first value is an in-app purchase product id or a subscription group name, and it stays as it is. The second is a state such as in review.",
       "localizations" : {

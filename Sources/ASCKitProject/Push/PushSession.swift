@@ -466,7 +466,7 @@ public struct PushSession: Sendable {
     /// Writes nothing to App Store Connect. Makes only empty folders on disk,
     /// and only when `makeFolders` is true.
     public func readExperiments(makeFolders: Bool = true) async throws -> ExperimentReading {
-        let remote = try await client.draftExperiments(bundleID: project.config.bundleID)
+        let remote = try await client.experiments(bundleID: project.config.bundleID)
         guard let library = try await readLibrary(appID: remote.appID, listing: nil) else {
             throw LibraryReadError.noLibrary
         }

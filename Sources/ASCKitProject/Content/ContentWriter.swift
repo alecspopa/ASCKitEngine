@@ -345,28 +345,12 @@ public enum ContentWriter {
         version: String,
         in project: Project
     ) throws -> [ScreenshotFile] {
-        let directory = project.screenshotsURL(
-            version: version,
+        try reorderScreenshots(
+            order: order,
             locale: locale,
-            deviceClassID: deviceClass.id
+            deviceClass: deviceClass,
+            directory: project.screenshotsURL(version: version, locale: locale, deviceClassID: deviceClass.id)
         )
-        let existing = slot(at: directory)
-
-        var remaining = existing
-        var ordered: [ScreenshotFile] = []
-        for name in order {
-            guard let index = remaining.firstIndex(where: { matches($0, name: name) }) else {
-                throw ContentWriteError.noSuchScreenshot(name: name, locale: locale, deviceClassID: deviceClass.id)
-            }
-            ordered.append(remaining.remove(at: index))
-        }
-
-        guard remaining.isEmpty else {
-            throw ContentWriteError.incompleteOrder(missing: remaining.map(\.fileName))
-        }
-
-        try rename(ordered, locale: locale, deviceClass: deviceClass)
-        return slot(at: directory)
     }
 
     /// Moves images to the Trash, then renumbers what is left.
@@ -531,6 +515,59 @@ public enum ContentWriter {
     /// shortened forms also count.
     private static func matches(_ file: ScreenshotFile, name: String) -> Bool {
         file.fileName == name
+    }
+}
+
+// MARK: - Order
+
+public extension ContentWriter {
+    /// Puts one language of one treatment in the given order, named file by
+    /// file.
+    @discardableResult
+    static func reorderExperimentScreenshots(
+        order: [String],
+        slot: ExperimentSlot,
+        deviceClass: DeviceClass,
+        in project: Project
+    ) throws -> [ScreenshotFile] {
+        try reorderScreenshots(
+            order: order,
+            locale: slot.locale,
+            deviceClass: deviceClass,
+            directory: project.experimentURL(
+                experiment: slot.experiment,
+                treatment: slot.treatment,
+                locale: slot.locale,
+                deviceClassID: deviceClass.id
+            )
+        )
+    }
+}
+
+extension ContentWriter {
+    /// Every file of the folder has to be named once. A short order is
+    /// refused rather than moving the rest to the end.
+    static func reorderScreenshots(
+        order: [String],
+        locale: String,
+        deviceClass: DeviceClass,
+        directory: URL
+    ) throws -> [ScreenshotFile] {
+        var remaining = slot(at: directory)
+        var ordered: [ScreenshotFile] = []
+        for name in order {
+            guard let index = remaining.firstIndex(where: { matches($0, name: name) }) else {
+                throw ContentWriteError.noSuchScreenshot(name: name, locale: locale, deviceClassID: deviceClass.id)
+            }
+            ordered.append(remaining.remove(at: index))
+        }
+
+        guard remaining.isEmpty else {
+            throw ContentWriteError.incompleteOrder(missing: remaining.map(\.fileName))
+        }
+
+        try rename(ordered, locale: locale, deviceClass: deviceClass)
+        return slot(at: directory)
     }
 }
 

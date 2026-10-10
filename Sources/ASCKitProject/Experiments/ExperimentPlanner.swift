@@ -15,9 +15,10 @@ public enum ExperimentPlanner {
         var creativeSets: [ExperimentPlan.CreativeSetPlan] = []
         var placed: Set<ExperimentSlot> = []
         let deviceClasses = config.resolvedDeviceClasses
-        let experimentNames = ExperimentFolders.folderNames(for: remote.experiments.map { ($0.id, $0.name) })
+        let experimentNames = ExperimentFolders.folderNames(for: remote)
 
-        for experiment in remote.experiments {
+        // App Store Connect refuses a change to a locked test.
+        for experiment in remote.experiments where experiment.isEditable {
             let experimentFolder = experimentNames[experiment.id] ?? experiment.name
             let treatmentNames = ExperimentFolders.folderNames(for: experiment.treatments.map { ($0.id, $0.name) })
 
@@ -150,13 +151,15 @@ public enum ExperimentPlanner {
         placed: Set<ExperimentSlot>,
         remote: RemoteExperiments
     ) -> [ExperimentPlan.Unplaced] {
-        let experimentNames = ExperimentFolders.folderNames(for: remote.experiments.map { ($0.id, $0.name) })
+        let experimentNames = ExperimentFolders.folderNames(for: remote)
         var result: [ExperimentPlan.Unplaced] = []
 
         for (slot, files) in local.screenshots where files.isEmpty == false && placed.contains(slot) == false {
             let reason: ExperimentPlan.Unplaced.Reason
             let experiment = remote.experiments.first { experimentNames[$0.id] == slot.experiment }
-            if let experiment {
+            if let experiment, experiment.isEditable == false {
+                reason = .locked(state: experiment.state)
+            } else if let experiment {
                 let names = ExperimentFolders.folderNames(for: experiment.treatments.map { ($0.id, $0.name) })
                 if let treatment = experiment.treatments.first(where: { names[$0.id] == slot.treatment }) {
                     reason = treatment.localization(slot.locale) == nil ? .noLanguage : .deviceClassNotListed
