@@ -20,21 +20,12 @@ import UniformTypeIdentifiers
 /// transparent has to land on some colour once the channel goes, and white is
 /// what the store shows behind a listing.
 public enum AlphaRemoval {
-    /// The waiting images that an alpha channel alone keeps out.
+    /// The waiting images that an alpha channel alone keeps out, in every
+    /// place.
     ///
     /// Reads no files, so a view can ask on every redraw and a button can carry
     /// the count of what it would clear.
     public static func clearable(in plan: Inbox.Plan) -> [ScreenshotFile] {
-        plan.refusals.filter(\.hasClearableAlpha).map(\.file)
-    }
-
-    /// The same, for the images waiting for a Product Page Optimization test.
-    public static func clearable(in plan: ExperimentInbox.Plan) -> [ScreenshotFile] {
-        plan.refusals.filter(\.hasClearableAlpha).map(\.file)
-    }
-
-    /// The same, for the images waiting for a custom product page.
-    public static func clearable(in plan: CustomPageInbox.Plan) -> [ScreenshotFile] {
         plan.refusals.filter(\.hasClearableAlpha).map(\.file)
     }
 

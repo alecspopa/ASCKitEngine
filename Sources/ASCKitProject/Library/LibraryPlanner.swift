@@ -187,6 +187,7 @@ public enum LibraryPlanner {
             group: deviceClass.placementGroup, type: type
         )
     }
+
     // swiftlint:enable function_parameter_count
 
     /// The placements of one slot, from all the placements of one language.

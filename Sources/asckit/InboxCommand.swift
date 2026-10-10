@@ -55,7 +55,7 @@ struct InboxCommand: AsyncParsableCommand {
 
     func run() async throws {
         var project = try options.loadProject()
-        var plan = Inbox.plan(in: project)
+        var plan = Inbox.plan(in: project, places: .cached(version: nil, listing: nil, in: project))
 
         if adoptDevices, DeviceClassAdoption.unlisted(in: plan).isEmpty == false {
             try adoptDeviceClasses(plan, project: project)
@@ -63,40 +63,34 @@ struct InboxCommand: AsyncParsableCommand {
             // Read again, so the rest of this run says where the images go now
             // rather than why they could not go anywhere a moment ago.
             project = try options.loadProject()
-            plan = Inbox.plan(in: project)
+            plan = Inbox.plan(in: project, places: .cached(version: nil, listing: nil, in: project))
         }
 
         // After the device classes, because a file for a device class nobody
         // has listed is refused on its name, and what its pixels carry is only
         // read once that name leads somewhere.
-        var experimentPlan = ExperimentInbox.plan(in: project, remote: nil)
-        var customPagePlan = CustomPageInbox.plan(in: project, snapshot: CustomPageSnapshotStore.load(in: project))
-
         if clearAlpha {
             let files = AlphaRemoval.clearable(in: plan)
-                + AlphaRemoval.clearable(in: experimentPlan)
-                + AlphaRemoval.clearable(in: customPagePlan)
             if files.isEmpty == false {
                 clearTheAlphaChannels(files)
-                plan = Inbox.plan(in: project)
-                experimentPlan = ExperimentInbox.plan(in: project, remote: nil)
-                customPagePlan = CustomPageInbox.plan(in: project, snapshot: CustomPageSnapshotStore.load(in: project))
+                plan = Inbox.plan(in: project, places: .cached(version: nil, listing: nil, in: project))
             }
         }
 
-        guard plan.isEmpty == false || experimentPlan.isEmpty == false || customPagePlan.isEmpty == false else {
+        guard plan.isEmpty == false else {
             print("Nothing is waiting in \(ProjectScaffold.inboxName)/.")
             return
         }
 
         // What the screenshot shows rather than the whole filed name, because
-        // the number in front of it is decided by what is in the slot already.
+        // the number in front of it is decided by what is in the set already.
         for arrival in plan.arrivals {
-            print("\(arrival.file.fileName) -> \(arrival.locale)/\(arrival.deviceClass.id), "
-                + "as \(arrival.imageName)")
+            print("\(arrival.file.fileName) -> \(destination(arrival.place, project: project))"
+                + "\(arrival.locale)/\(arrival.deviceClass.id), as \(arrival.imageName)")
         }
         for arrival in plan.creative {
-            print("\(arrival.file.fileName) -> \(arrival.locale) \(arrival.role.rawValue)")
+            print("\(arrival.file.fileName) -> \(destination(arrival.place, project: project))"
+                + "\(arrival.locale) \(arrival.role.rawValue)")
         }
         for refusal in plan.refusals {
             print("refused: \(refusal.reason)")
@@ -110,71 +104,14 @@ struct InboxCommand: AsyncParsableCommand {
         }
 
         offerTheDeviceClasses(plan)
-        offerToClearTheAlphaChannels(
-            AlphaRemoval.clearable(in: plan)
-                + AlphaRemoval.clearable(in: experimentPlan)
-                + AlphaRemoval.clearable(in: customPagePlan)
-        )
+        offerToClearTheAlphaChannels(AlphaRemoval.clearable(in: plan))
 
-        let experimentsRefused = try handleExperiments(experimentPlan, project: project)
-        let customPagesRefused = try handleCustomPages(customPagePlan, project: project)
-
-        if plan.refusals.isEmpty == false || experimentsRefused || customPagesRefused { throw ExitCode.failure }
+        if plan.refusals.isEmpty == false { throw ExitCode.failure }
     }
 
-    /// The images waiting for a custom product page. Returns true when one
-    /// was refused.
-    private func handleCustomPages(_ plan: CustomPageInbox.Plan, project: Project) throws -> Bool {
-        guard plan.isEmpty == false else { return false }
-
-        print("")
-        print("Custom product pages, \(CustomPageFolders.folderName)/:")
-        for arrival in plan.arrivals {
-            print("\(arrival.file.fileName) -> \(arrival.slot.path), as \(arrival.imageName)")
-        }
-        for refusal in plan.refusals {
-            print("refused: \(refusal.reason)")
-        }
-
-        if file, plan.arrivals.isEmpty == false {
-            let outcome = try CustomPageInbox.file(plan, in: project)
-            print("")
-            print("Filed \(countedNoun(outcome.filed, "image")) into "
-                + "\(countedNoun(outcome.slots.count, "page folder")).")
-            print("The inbox copies are in the Trash. Run asckit push-custom-pages to upload them.")
-        } else if plan.arrivals.isEmpty == false {
-            print("")
-            print("Nothing has moved. Run it again with --file to move these in.")
-        }
-        return plan.refusals.isEmpty == false
-    }
-
-    /// The images waiting for a Product Page Optimization test. Returns true
-    /// when one was refused.
-    private func handleExperiments(_ plan: ExperimentInbox.Plan, project: Project) throws -> Bool {
-        guard plan.isEmpty == false else { return false }
-
-        print("")
-        print("Product Page Optimization, \(ExperimentFolders.folderName)/:")
-        for arrival in plan.arrivals {
-            print("\(arrival.file.fileName) -> \(arrival.slot.experiment)/\(arrival.slot.treatment)/"
-                + "\(arrival.slot.locale)/\(arrival.deviceClass.id), as \(arrival.imageName)")
-        }
-        for refusal in plan.refusals {
-            print("refused: \(refusal.reason)")
-        }
-
-        if file, plan.arrivals.isEmpty == false {
-            let outcome = try ExperimentInbox.file(plan, in: project)
-            print("")
-            print("Filed \(countedNoun(outcome.filed, "image")) into "
-                + "\(countedNoun(outcome.slots.count, "test folder")).")
-            print("The inbox copies are in the Trash. Run asckit push-experiment-images to upload them.")
-        } else if plan.arrivals.isEmpty == false {
-            print("")
-            print("Nothing has moved. Run it again with --file to move these in.")
-        }
-        return plan.refusals.isEmpty == false
+    /// The folder of a treatment or a page, and nothing for the version.
+    private func destination(_ place: LibraryContentPlace?, project: Project) -> String {
+        place.map { "\($0.screenshotsPath(config: project.config))/" } ?? ""
     }
 
     /// Writes the waiting files that carry an alpha channel again without one.
@@ -240,18 +177,27 @@ struct InboxCommand: AsyncParsableCommand {
     private func fileEverything(_ plan: Inbox.Plan, project: Project) async throws {
         // The same version the rest of the tool works on, so a screenshot and
         // the text beside it cannot land in two different version folders.
-        guard let version = try Checker.check(project: project, version: options.appVersion)
-            .versionString
-        else {
-            print("")
-            print("This project has no version folder yet, so there is nowhere to file these.")
-            throw ExitCode.failure
+        var version: String?
+        var listing: RemoteListing?
+        if plan.hasVersionArrivals {
+            guard let named = try Checker.check(project: project, version: options.appVersion).versionString else {
+                print("")
+                print("This project has no version folder yet, so there is nowhere to file these.")
+                throw ExitCode.failure
+            }
+            version = named
+            listing = await readListing(project)
         }
 
         let outcome: Inbox.Outcome
         do {
-            outcome = try await Inbox.file(plan, version: version, listing: readListing(project), in: project)
+            outcome = try Inbox.file(plan, version: version, listing: listing, in: project)
         } catch let lock as ScreenshotLock {
+            print("")
+            print(lock.description)
+            print("Nothing has moved.")
+            throw ExitCode.failure
+        } catch let lock as ScreenshotPlaceLock {
             print("")
             print(lock.description)
             print("Nothing has moved.")
@@ -260,15 +206,17 @@ struct InboxCommand: AsyncParsableCommand {
         let locales = outcome.locales.joined(separator: ", ")
 
         print("")
-        if outcome.filed > 0 {
-            print("Filed \(countedNoun(outcome.filed, "screenshot")) into \(locales), "
-                + "version \(version).")
+        if outcome.locales.isEmpty == false, let version {
+            print("Filed screenshots into \(locales), version \(version).")
+        }
+        for place in outcome.places {
+            print("Filed screenshots into \(place.screenshotsPath(config: project.config)).")
         }
         for arrival in outcome.creative {
-            print("Filed \(arrival.file.fileName) as the \(arrival.locale) \(arrival.role.rawValue), "
-                + "version \(version).")
+            let place = arrival.place.map { $0.screenshotsPath(config: project.config) } ?? "version \(version ?? "")"
+            print("Filed \(arrival.file.fileName) as the \(arrival.locale) \(arrival.role.rawValue) of \(place).")
         }
-        print("The inbox copies are in the Trash.")
+        print("The inbox copies are in the Trash. Images: \(outcome.filed).")
 
         // copiesScreenshotsFrom made these with nothing asked, so each is named.
         for copy in outcome.copied {

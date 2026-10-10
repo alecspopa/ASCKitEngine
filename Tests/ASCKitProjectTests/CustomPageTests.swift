@@ -234,29 +234,56 @@ final class CustomPageTests {
 
     @Test func filesAWaitingImageIntoItsPage() throws {
         let snapshot = CustomPageSnapshot(remote())
-        let inbox = CustomPageInbox.url(in: project).appending(path: "Night sky")
+        let inbox = Inbox.url(in: project).appending(path: CustomPageFolders.folderName).appending(path: "Night sky")
         try FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
         try PNGWriter.write(
             to: inbox.appending(path: "01-a-iPhone-6.9-en_US.png"), width: 1320, height: 2868, hasAlpha: false,
             seed: "a"
         )
 
-        let plan = CustomPageInbox.plan(in: project, snapshot: snapshot)
+        let plan = Inbox.plan(in: project, places: Inbox.Places(pages: snapshot))
         #expect(plan.refusals.isEmpty)
-        #expect(plan.arrivals.map(\.slot) == [slot()])
-        #expect(Inbox.waiting(in: project).isEmpty)
+        #expect(plan.arrivals.map(\.place) == [.customPage("Night sky")])
+
+        let outcome = try Inbox.file(plan, places: Inbox.Places(pages: snapshot), in: project)
+        #expect(outcome.places == [.customPage("Night sky")])
+        #expect(CustomPageContentStore.load(in: project).screenshots(in: slot()).map(\.fileName)
+            == ["01-a-iPhone-6.9-en_US.png"])
     }
 
     @Test func refusesAWaitingImageForAnApprovedPage() throws {
         let snapshot = CustomPageSnapshot(remote(state: .approved))
-        let inbox = CustomPageInbox.url(in: project).appending(path: "Night sky")
+        let inbox = Inbox.url(in: project).appending(path: CustomPageFolders.folderName).appending(path: "Night sky")
         try FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
         try PNGWriter.write(
             to: inbox.appending(path: "01-a-iPhone-6.9-en_US.png"), width: 1320, height: 2868, hasAlpha: false,
             seed: "a"
         )
 
-        #expect(CustomPageInbox.plan(in: project, snapshot: snapshot).refusals.count == 1)
+        #expect(Inbox.plan(in: project, places: Inbox.Places(pages: snapshot)).refusals.count == 1)
+    }
+
+    /// The page holds no German page on App Store Connect, and ASCKit never
+    /// makes one, so a German image waits with the reason.
+    @Test func refusesAWaitingImageForALanguageThePageLacks() throws {
+        let url = CustomPageSnapshotStore.url(in: project)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("""
+        {"readOn": "2026-10-09T10:00:00Z", "keywords": {},
+         "pages": [{"id": "page1", "name": "Night sky", "folder": "Night sky", "state": "PREPARE_FOR_SUBMISSION",
+                    "isEditable": true, "visible": true, "locales": ["en-US"]}]}
+        """.utf8).write(to: url)
+        let snapshot = try #require(CustomPageSnapshotStore.load(in: project))
+        let inbox = Inbox.url(in: project).appending(path: CustomPageFolders.folderName).appending(path: "Night sky")
+        try FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
+        try PNGWriter.write(
+            to: inbox.appending(path: "01-a-iPhone-6.9-de_DE.png"), width: 1320, height: 2868, hasAlpha: false,
+            seed: "d"
+        )
+
+        let plan = Inbox.plan(in: project, places: Inbox.Places(pages: snapshot))
+        #expect(plan.arrivals.isEmpty)
+        #expect(plan.refusals.first?.reason.contains("de-DE") == true)
     }
 
     @Test func keepsWhatTheReadFoundInTheCache() throws {

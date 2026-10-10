@@ -96,18 +96,16 @@ final class AlphaRemovalTests {
         #expect(try AlphaRemoval.clearable(in: plan()).isEmpty)
     }
 
-    /// The test and custom page inboxes offer the same clear, so a channel
-    /// there is not a dead end.
+    /// A treatment and a custom page wait in the same inbox, so the same clear
+    /// is offered there and a channel is not a dead end.
     @Test func offersTheClearForAProductPageOptimizationImage() throws {
         let url = try putInInbox(named: "product-page-optimization/test/blue/01-overview-iPhone-6.9-en_US.png")
         let project = try fixture.load()
-
-        let plan = ExperimentInbox.plan(
-            [ImageInspector.inspect(url: url)],
-            root: ExperimentInbox.url(in: project),
-            known: ["test": ["blue"]],
-            config: project.config
+        try FileManager.default.createDirectory(
+            at: project.experimentURL(experiment: "test", treatment: "blue"), withIntermediateDirectories: true
         )
+
+        let plan = Inbox.plan(in: project)
         #expect(plan.refusals.first?.reason == "01-overview-iPhone-6.9-en_US.png has an alpha channel.")
         #expect(AlphaRemoval.clearable(in: plan).map(\.url) == [url])
     }
@@ -115,13 +113,11 @@ final class AlphaRemovalTests {
     @Test func offersTheClearForACustomPageImage() throws {
         let url = try putInInbox(named: "custom-product-pages/spring/01-overview-iPhone-6.9-en_US.png")
         let project = try fixture.load()
-
-        let plan = CustomPageInbox.plan(
-            [ImageInspector.inspect(url: url)],
-            root: CustomPageInbox.url(in: project),
-            editable: ["spring"],
-            config: project.config
+        try FileManager.default.createDirectory(
+            at: project.customPageURL(page: "spring"), withIntermediateDirectories: true
         )
+
+        let plan = Inbox.plan(in: project)
         #expect(AlphaRemoval.clearable(in: plan).map(\.url) == [url])
     }
 

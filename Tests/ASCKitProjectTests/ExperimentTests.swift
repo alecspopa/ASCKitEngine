@@ -301,37 +301,38 @@ final class ExperimentTests {
 
     // MARK: - The inbox
 
+    var testsInbox: URL {
+        Inbox.url(in: project).appending(path: ExperimentFolders.folderName)
+    }
+
     @Test func filesAnInboxImageIntoItsTreatment() throws {
         try ExperimentFolders.scaffold(remote, in: project)
-        let waiting = ExperimentInbox.url(in: project)
-            .appending(path: "Bigger buttons").appending(path: "Treatment A")
+        let waiting = testsInbox.appending(path: "Bigger buttons").appending(path: "Treatment A")
         try FileManager.default.createDirectory(at: waiting, withIntermediateDirectories: true)
         try PNGWriter.write(
             to: waiting.appending(path: "03-shopping-iPhone-6.9-de_DE.png"),
             width: 1320, height: 2868, hasAlpha: false, seed: "x"
         )
 
-        let plan = ExperimentInbox.plan(in: project)
+        let plan = Inbox.plan(in: project)
         #expect(plan.refusals.isEmpty)
-        #expect(plan.arrivals.first?.slot == slot("de-DE"))
+        #expect(plan.arrivals.first?.place == slot("de-DE").place)
+        #expect(plan.hasVersionArrivals == false)
 
-        // The version inbox leaves it alone.
-        #expect(Inbox.waiting(in: project).isEmpty)
-
-        let outcome = try ExperimentInbox.file(plan, in: project)
+        // No version folder is needed for a treatment.
+        let outcome = try Inbox.file(plan, places: Inbox.Places(), in: project)
         #expect(outcome.filed == 1)
         let filed = ExperimentContentStore.load(in: project).screenshots(in: slot("de-DE"))
         #expect(filed.map(\.fileName) == ["01-shopping-iPhone-6.9-de_DE.png"])
     }
 
     @Test func refusesAnInboxImageOutsideATreatment() throws {
-        let waiting = ExperimentInbox.url(in: project)
-        try FileManager.default.createDirectory(at: waiting, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: testsInbox, withIntermediateDirectories: true)
         try PNGWriter.write(
-            to: waiting.appending(path: "03-shopping-iPhone-6.9-en_US.png"),
+            to: testsInbox.appending(path: "03-shopping-iPhone-6.9-en_US.png"),
             width: 1320, height: 2868, hasAlpha: false, seed: "y"
         )
-        let plan = ExperimentInbox.plan(in: project)
+        let plan = Inbox.plan(in: project)
         #expect(plan.arrivals.isEmpty)
         #expect(plan.refusals.count == 1)
     }
@@ -341,21 +342,34 @@ final class ExperimentTests {
         try writeImage("01-a-iPhone-6.9-en_US.png", in: ExperimentSlot(
             experiment: "Bigger buttons (a0)", treatment: "Treatment A", locale: "en-US", deviceClassID: deviceClass.id
         ))
-        let waiting = ExperimentInbox.url(in: project)
-            .appending(path: "Bigger buttons (a0)").appending(path: "Treatment A")
+        let waiting = testsInbox.appending(path: "Bigger buttons (a0)").appending(path: "Treatment A")
         try FileManager.default.createDirectory(at: waiting, withIntermediateDirectories: true)
         try PNGWriter.write(
             to: waiting.appending(path: "03-shopping-iPhone-6.9-en_US.png"),
             width: 1320, height: 2868, hasAlpha: false, seed: "z"
         )
 
-        let fromRemote = ExperimentInbox.plan(in: project, remote: remoteWithLockedTest)
-        let fromSnapshot = ExperimentInbox.plan(in: project, snapshot: ExperimentSnapshot(remoteWithLockedTest))
+        let plan = Inbox.plan(in: project, places: Inbox.Places(experiments: ExperimentSnapshot(remoteWithLockedTest)))
 
-        for plan in [fromRemote, fromSnapshot] {
-            #expect(plan.arrivals.isEmpty)
-            #expect(plan.refusals.first?.reason.contains("IN_REVIEW") == true)
-        }
+        #expect(plan.arrivals.isEmpty)
+        #expect(plan.refusals.first?.reason.contains("IN_REVIEW") == true)
+    }
+
+    /// The same inbox reads a folder named for a language and a header image,
+    /// for a treatment as for the version.
+    @Test func readsTheFolderLanguageAndTheArtOfATreatment() throws {
+        try ExperimentFolders.scaffold(remote, in: project)
+        let waiting = testsInbox.appending(path: "Bigger buttons").appending(path: "Treatment A")
+            .appending(path: "de-DE")
+        try FileManager.default.createDirectory(at: waiting, withIntermediateDirectories: true)
+        try PNGWriter.write(
+            to: waiting.appending(path: "03-shopping-iPhone-6.9.png"), width: 1320, height: 2868, hasAlpha: false, seed: "f"
+        )
+
+        let plan = Inbox.plan(in: project, places: Inbox.Places(experiments: ExperimentSnapshot(remote)))
+
+        #expect(plan.arrivals.map(\.locale) == ["de-DE"])
+        #expect(plan.arrivals.first?.place == slot("de-DE").place)
     }
 
     @Test func keepsWhatTheReadFoundInACache() throws {

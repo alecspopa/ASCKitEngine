@@ -1,11 +1,18 @@
 import ASCKitAPI
 import Foundation
 
-/// The folder a screenshot waits in before it goes into a set.
+/// The folder a screenshot waits in before it goes into a set, for every
+/// place: the version, a treatment of a test, and a custom product page.
 ///
-/// Reads the folder and works out where each image belongs. The name of a
-/// waiting file says which language and which device class it is for, so
-/// nothing is left to ask a person. `ScreenshotNaming` is what reads it.
+///     inbox/03-shopping-iPhone-6.9-en_US.png                       the version
+///     inbox/product-page-optimization/<test>/<treatment>/…png      a treatment
+///     inbox/custom-product-pages/<page>/…png                       a custom product page
+///
+/// The folder says the place. The name of a waiting file says which language
+/// and which device class it is for, so nothing is left to ask a person.
+/// `ScreenshotNaming` is what reads it. One plan and one filing for every
+/// place, so a folder language, an alpha channel and a header image are read
+/// the same way wherever they wait.
 public enum Inbox {
     /// Where images wait, for one project.
     public static func url(in project: Project) -> URL {
@@ -30,15 +37,7 @@ public enum Inbox {
             options: [.skipsHiddenFiles, .skipsPackageDescendants]
         )?.compactMap { $0 as? URL } ?? []
 
-        // What waits in the Product Page Optimization folder goes to a
-        // treatment, and `ExperimentInbox` files it. What waits in the custom
-        // product pages folder goes to a page, and `CustomPageInbox` files it.
-        let experiments = ExperimentInbox.url(in: project).standardizedFileURL.path + "/"
-        let customPages = CustomPageInbox.url(in: project).standardizedFileURL.path + "/"
-
         return entries
-            .filter { $0.standardizedFileURL.path.hasPrefix(experiments) == false }
-            .filter { $0.standardizedFileURL.path.hasPrefix(customPages) == false }
             .filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false }
             .sorted {
                 let (lhs, rhs) = ($0.lastPathComponent, $1.lastPathComponent)
@@ -52,9 +51,13 @@ public enum Inbox {
 
     // MARK: - Where it would go
 
-    /// One waiting image, and the slot its name sends it to.
+    /// One waiting image, and the set its folder and its name send it to.
     public struct Arrival: Sendable, Hashable, Identifiable {
         public let file: ScreenshotFile
+
+        /// A treatment or a custom product page. Nil for the version, whose
+        /// folder is named when the image is filed.
+        public let place: LibraryContentPlace?
         public let locale: String
         public let deviceClass: DeviceClass
 
@@ -66,11 +69,13 @@ public enum Inbox {
 
         public init(
             file: ScreenshotFile,
+            place: LibraryContentPlace? = nil,
             locale: String,
             deviceClass: DeviceClass,
             imageName: String
         ) {
             self.file = file
+            self.place = place
             self.locale = locale
             self.deviceClass = deviceClass
             self.imageName = imageName
@@ -81,6 +86,10 @@ public enum Inbox {
     public struct Refusal: Sendable, Hashable, Identifiable {
         public let file: ScreenshotFile
         public let reason: String
+
+        /// The treatment or the custom product page the folder names, or nil
+        /// for the version and for a folder that names none.
+        public let place: LibraryContentPlace?
 
         /// Whether the file name cannot say where its image goes.
         public let hasInvalidName: Bool
@@ -101,21 +110,24 @@ public enum Inbox {
         public init(
             file: ScreenshotFile,
             reason: String,
+            place: LibraryContentPlace? = nil,
             hasInvalidName: Bool = false,
             unlistedDeviceClass: DeviceClass? = nil,
             hasClearableAlpha: Bool = false
         ) {
             self.file = file
             self.reason = reason
+            self.place = place
             self.hasInvalidName = hasInvalidName
             self.unlistedDeviceClass = unlistedDeviceClass
             self.hasClearableAlpha = hasClearableAlpha
         }
     }
 
-    /// The arrivals that go into one slot, which is one language and one device
-    /// class.
+    /// The arrivals that go into one set: one place, one language and one
+    /// device class.
     public struct Group: Sendable, Hashable {
+        public let place: LibraryContentPlace?
         public let locale: String
         public let deviceClass: DeviceClass
         public var arrivals: [Arrival]
@@ -142,6 +154,11 @@ public enum Inbox {
         /// Whether anything waiting can be filed.
         public var hasArrivals: Bool { arrivals.isEmpty == false || creative.isEmpty == false }
 
+        /// Whether anything waiting goes to the version.
+        public var hasVersionArrivals: Bool {
+            arrivals.contains { $0.place == nil } || creative.contains { $0.place == nil }
+        }
+
         /// Every waiting image, whatever is going to happen to it.
         public var files: [ScreenshotFile] {
             arrivals.map(\.file) + creative.map(\.file) + refusals.map(\.file)
@@ -152,196 +169,36 @@ public enum Inbox {
             refusals.contains { $0.hasInvalidName }
         }
 
-        /// The languages the arrivals go to, in the order they arrived.
+        /// The languages of the version the arrivals go to, in the order they
+        /// arrived.
         public var locales: [String] {
             var seen: [String] = []
-            for arrival in arrivals where seen.contains(arrival.locale) == false {
+            for arrival in arrivals where arrival.place == nil && seen.contains(arrival.locale) == false {
                 seen.append(arrival.locale)
             }
             return seen
         }
 
-        /// The arrivals gathered by slot, in the order they arrived.
+        /// The arrivals gathered by set, in the order they arrived.
         ///
-        /// One slot is written at a time, because the limit of ten screenshots
-        /// is counted per slot.
+        /// One set is written at a time, because the limit of ten screenshots
+        /// is counted per set.
         public var groups: [Group] {
             var groups: [Group] = []
             for arrival in arrivals {
                 let index = groups.firstIndex {
-                    $0.locale == arrival.locale && $0.deviceClass == arrival.deviceClass
+                    $0.place == arrival.place && $0.locale == arrival.locale && $0.deviceClass == arrival.deviceClass
                 }
                 if let index {
                     groups[index].arrivals.append(arrival)
                 } else {
                     groups.append(Group(
-                        locale: arrival.locale,
-                        deviceClass: arrival.deviceClass,
+                        place: arrival.place, locale: arrival.locale, deviceClass: arrival.deviceClass,
                         arrivals: [arrival]
                     ))
                 }
             }
             return groups
-        }
-    }
-
-    /// Reads the inbox and works out where each image would go.
-    public static func plan(in project: Project) -> Plan {
-        plan(waiting(in: project), config: project.config, refData: RefDataCache.load(in: project))
-    }
-
-    /// Where each of these images goes, read off its name.
-    ///
-    /// The name says the language and the device class. The image itself has
-    /// to agree: a file the named device class would refuse is refused here,
-    /// with the pixel sizes that device class does take.
-    public static func plan(
-        _ files: [ScreenshotFile], config: ProjectConfig, refData: AssetLibraryRefData? = nil
-    ) -> Plan {
-        var plan = Plan()
-        for file in files {
-            let folderLocale = ScreenshotNaming.folderLocale(of: file.url, config: config)
-            if let creative = ScreenshotNaming.readCreative(file.fileName, config: config, folderLocale: folderLocale) {
-                plan.addCreative(file, named: creative, config: config, refData: refData)
-                continue
-            }
-
-            switch ScreenshotNaming.read(file.fileName, config: config, folderLocale: folderLocale) {
-            case let .success(parts):
-                if let refused = ContentWriter.inboxRefusal(file, for: parts.deviceClass, refData: refData) {
-                    plan.refusals.append(Refusal(
-                        file: file, reason: refused.reason, hasClearableAlpha: refused.hasClearableAlpha
-                    ))
-                } else {
-                    plan.arrivals.append(Arrival(
-                        file: file,
-                        locale: parts.locale,
-                        deviceClass: parts.deviceClass,
-                        imageName: parts.imageName
-                    ))
-                }
-
-            case let .failure(refusal):
-                plan.refusals.append(Refusal(
-                    file: file,
-                    reason: refusal.description,
-                    hasInvalidName: refusal.hasInvalidName,
-                    unlistedDeviceClass: refusal.unlistedDeviceClass
-                ))
-            }
-        }
-        return plan
-    }
-
-    // MARK: - Filing it
-
-    /// What filing did.
-    public struct Outcome: Sendable {
-        /// How many images went into a set.
-        public var filed: Int
-
-        /// The languages they went into, in the order they arrived.
-        public var locales: [String]
-
-        /// Where inbox copies and replaced files went, so a caller can point
-        /// at them rather than claiming they are gone.
-        public var trashed: [URL]
-
-        /// Languages that took the new pictures of the language beside them,
-        /// because `copiesScreenshotsFrom` says they do.
-        public var copied: [SiblingScreenshots.Remembered] = []
-
-        /// The header and search results images that went in.
-        public var creative: [CreativeArrival] = []
-    }
-
-    /// Puts every image the plan accepts into the language its name names, and
-    /// takes the inbox copy away.
-    ///
-    /// The inbox copy goes to the Trash rather than being deleted. The file
-    /// somebody dropped there may be the only copy of that artwork anybody has.
-    ///
-    /// The listing is what App Store Connect says about the version. A version
-    /// it locked is refused with a `ScreenshotLock` before anything moves. With
-    /// no listing, filing goes ahead, and the push refuses later.
-    ///
-    /// A caller can allow matching screenshots to replace local files. This is
-    /// for the App Store Connect version that still accepts screenshot changes.
-    /// Without that permission, a matching screenshot is added as another file.
-    ///
-    /// One slot at a time. A set that would pass the limit of ten stops there,
-    /// and the images already filed stay filed.
-    ///
-    /// A language that copies one of these sets takes the new pictures too, so
-    /// an export that lands in `es-MX` is in `es-ES` when this returns.
-    @discardableResult
-    public static func file(
-        _ plan: Plan,
-        version: String,
-        listing: RemoteListing?,
-        in project: Project,
-        replacingExisting: Bool = false
-    ) throws -> Outcome {
-        try ScreenshotLock.refuse(version: version, listing: listing)
-        var outcome = Outcome(filed: 0, locales: [], trashed: [])
-
-        for group in plan.groups {
-            let write = try ContentWriter.addScreenshots(
-                from: group.arrivals.map(\.file.url),
-                locale: group.locale,
-                deviceClass: group.deviceClass,
-                at: .version(version),
-                replacingExisting: replacingExisting,
-                in: project
-            )
-            outcome.trashed.append(contentsOf: write.trashed)
-
-            // Only once the copy is in the set. An image trashed with nothing
-            // to show for it is the one outcome worth taking care over.
-            for arrival in group.arrivals {
-                var landed: NSURL?
-                try FileManager.default.trashItem(at: arrival.file.url, resultingItemURL: &landed)
-                if let landed = landed as URL? { outcome.trashed.append(landed) }
-            }
-            outcome.filed += group.arrivals.count
-            if outcome.locales.contains(group.locale) == false {
-                outcome.locales.append(group.locale)
-            }
-        }
-
-        try fileCreative(plan.creative, version: version, in: project, into: &outcome)
-
-        removeEmptiedFolders(plan.arrivals.map(\.file.url) + plan.creative.map(\.file.url), in: project)
-
-        let changed = Set(plan.groups.map {
-            ScreenshotSlot(locale: $0.locale, deviceClassID: $0.deviceClass.id)
-        })
-        outcome.copied = try SiblingScreenshots.copyRemembered(
-            version: version, in: project, after: changed
-        )
-        return outcome
-    }
-
-    /// Removes the subfolders that filing these files left empty, up to the
-    /// inbox itself.
-    ///
-    /// Only the folders these files were in. An empty folder a person made
-    /// for the next export stays. A folder that holds only hidden files, such
-    /// as the `.DS_Store` the Finder writes, counts as empty.
-    private static func removeEmptiedFolders(_ filed: [URL], in project: Project) {
-        let inbox = url(in: project).standardizedFileURL.path
-        var folders = Set(filed.map { $0.deletingLastPathComponent().standardizedFileURL })
-
-        while let folder = folders.popFirst() {
-            guard folder.path.hasPrefix(inbox + "/") else { continue }
-            guard let names = try? FileManager.default.contentsOfDirectory(atPath: folder.path),
-                  names.allSatisfy({ $0.hasPrefix(".") })
-            else { continue }
-
-            // Nothing a person can see is lost, so this removes rather than
-            // trashes, and a failure leaves only an empty folder behind.
-            guard (try? FileManager.default.removeItem(at: folder)) != nil else { continue }
-            folders.insert(folder.deletingLastPathComponent().standardizedFileURL)
         }
     }
 }

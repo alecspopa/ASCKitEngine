@@ -544,6 +544,17 @@
     "%@ has no name, and App Store Connect needs one to make a language." : {
       "comment" : "Error sentence when a push of in-app purchase text fails. The value is a language code. Do not translate App Store Connect."
     },
+    "%@ has no page for %@ on App Store Connect, and ASCKit never makes one." : {
+      "comment" : "Refusal for a waiting image. The first value is the folder of a treatment or a custom product page. The second is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no page for %2$@ on App Store Connect, and ASCKit never makes one."
+          }
+        }
+      }
+    },
     "%@ has no price point %@ in %@." : {
       "comment" : "Problem message in the problem list. The first value is a product id. The second is a price point id, which is the id of one fixed price. The third is a country code.",
       "localizations" : {
@@ -1139,6 +1150,17 @@
     },
     "%@ starts or ends with a space." : {
       "comment" : "Problem message in the problem list. The value is a JSON field name such as subtitle, and it stays in English."
+    },
+    "%@ takes no %@ screenshots." : {
+      "comment" : "Refusal for a waiting image. The first value is the folder of a treatment or a custom product page, such as custom-product-pages/Night sky. The second is a device class name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ takes no %2$@ screenshots."
+          }
+        }
+      }
     },
     "%@, %@, from %@" : {
       "comment" : "Line in the report after the app makes a folder for a new version, shown as fixed-width text. The first value is the language code that took the screenshots. The second is a device class name. The third is the language code they come from.",
@@ -3670,6 +3692,9 @@
           }
         }
       }
+    },
+    "This project has no version folder yet, so there is nowhere to file these." : {
+      "comment" : "Refusal when the inbox holds images for the version and the project has no version folder."
     },
     "This project has no versions yet." : {
       "comment" : "Problem message in the problem list. A version is a version folder in the project."

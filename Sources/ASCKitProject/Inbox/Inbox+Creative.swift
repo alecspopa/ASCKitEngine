@@ -8,13 +8,17 @@ public extension Inbox {
     /// One waiting header or search results image, and the language it goes to.
     struct CreativeArrival: Sendable, Hashable, Identifiable {
         public let file: ScreenshotFile
+
+        /// A treatment or a custom product page. Nil for the version.
+        public let place: LibraryContentPlace?
         public let locale: String
         public let role: CreativeRole
 
         public var id: URL { file.url }
 
-        public init(file: ScreenshotFile, locale: String, role: CreativeRole) {
+        public init(file: ScreenshotFile, place: LibraryContentPlace? = nil, locale: String, role: CreativeRole) {
             self.file = file
+            self.place = place
             self.locale = locale
             self.role = role
         }
@@ -23,19 +27,20 @@ public extension Inbox {
     // MARK: - Filing it
 
     /// Puts each image in as the art of its role, in place of the file there,
-    /// and moves the inbox copy to the Trash.
+    /// and moves the inbox copy to the Trash. `version` is the version folder
+    /// for an image that waits for the version.
     internal static func fileCreative(
-        _ arrivals: [CreativeArrival], version: String, in project: Project, into outcome: inout Outcome
+        _ arrivals: [CreativeArrival], version: String?, in project: Project, into outcome: inout Outcome
     ) throws {
         for arrival in arrivals {
+            let place = arrival.place ?? .version(version ?? "")
             // Removed first rather than by `setCreative`, so the replaced file
             // is named in the outcome with the rest of the Trash.
             outcome.trashed += try LibraryContentWriter.removeCreative(
-                role: arrival.role, locale: arrival.locale, at: .version(version), in: project
+                role: arrival.role, locale: arrival.locale, at: place, in: project
             )
             _ = try LibraryContentWriter.setCreative(
-                from: arrival.file.url, role: arrival.role, locale: arrival.locale,
-                at: .version(version), in: project
+                from: arrival.file.url, role: arrival.role, locale: arrival.locale, at: place, in: project
             )
 
             // Only once the copy is in the folder, as with a screenshot.
@@ -57,6 +62,7 @@ extension Inbox.Plan {
     mutating func addCreative(
         _ file: ScreenshotFile,
         named name: Result<ScreenshotNaming.CreativeParts, ScreenshotNaming.Refusal>,
+        at place: LibraryContentPlace? = nil,
         config: ProjectConfig,
         refData: AssetLibraryRefData?
     ) {
@@ -65,14 +71,16 @@ extension Inbox.Plan {
         case let .success(read):
             parts = read
         case let .failure(refusal):
-            refusals.append(Inbox.Refusal(file: file, reason: refusal.description, hasInvalidName: refusal.hasInvalidName))
+            refusals.append(Inbox.Refusal(
+                file: file, reason: refusal.description, place: place, hasInvalidName: refusal.hasInvalidName
+            ))
             return
         }
 
         // One file shows in a role, so a second file for it has nowhere to go.
-        if let first = creative.first(where: { $0.locale == parts.locale && $0.role == parts.role }) {
+        if let first = creative.first(where: { $0.place == place && $0.locale == parts.locale && $0.role == parts.role }) {
             let reason = Self.alreadyFilled(by: first.file.fileName, parts: parts)
-            refusals.append(Inbox.Refusal(file: file, reason: String(localized: reason)))
+            refusals.append(Inbox.Refusal(file: file, reason: String(localized: reason), place: place))
             return
         }
 
@@ -93,11 +101,11 @@ extension Inbox.Plan {
                     return "\(message) \(String(localized: fix))"
                 }
                 .joined(separator: " ")
-            refusals.append(Inbox.Refusal(file: file, reason: reason, hasClearableAlpha: alphaOnly))
+            refusals.append(Inbox.Refusal(file: file, reason: reason, place: place, hasClearableAlpha: alphaOnly))
             return
         }
 
-        creative.append(Inbox.CreativeArrival(file: file, locale: parts.locale, role: parts.role))
+        creative.append(Inbox.CreativeArrival(file: file, place: place, locale: parts.locale, role: parts.role))
     }
 
     /// Whole sentences in `if` statements, so the string catalog sees both.
