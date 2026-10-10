@@ -1083,50 +1083,6 @@
         }
       }
     },
-    "%@ is set to show the %@ %@ screenshots, and has %lld of its own." : {
-      "comment" : "Problem message in the problem list. The first value is a language code, and the second is the source language code. The third is a device class name. The count is the screenshots that the language has.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ is set to show the %2$@ %3$@ screenshots, and has %#@arg4@ of its own."
-          },
-          "substitutions" : {
-            "arg4" : {
-              "argNum" : 4,
-              "formatSpecifier" : "lld",
-              "variations" : {
-                "plural" : {
-                  "one" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg"
-                    }
-                  },
-                  "other" : {
-                    "stringUnit" : {
-                      "state" : "translated",
-                      "value" : "%arg"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%@ is set to show the %@ header and search results, and has files of its own." : {
-      "comment" : "Problem message in the problem list. The first value is a language code. The second is the language code of the source language.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ is set to show the %2$@ header and search results, and has files of its own."
-          }
-        }
-      }
-    },
     "%@ is the source language, so it cannot show the source language's screenshots." : {
       "comment" : "Problem message in the problem list. The value is a language code."
     },
@@ -3499,12 +3455,6 @@
     },
     "The files as they arrived are in the Trash." : {
       "comment" : "Line in the report of the action that removes the alpha channel from screenshots. The original files are in the macOS Trash."
-    },
-    "The files are not used, and a push moves them to the Trash. To show them, take %@ out of usesSourceCreative." : {
-      "comment" : "How to fix a problem in the problem list. Do not translate usesSourceCreative. It is a JSON key. The value is a language code. The files are the header and search results art in the folder of the language."
-    },
-    "The files are not used, and a push moves them to the Trash. To show them, take %@ out of usesSourceScreenshots." : {
-      "comment" : "Fix in the problem list. The value is a language code. Do not translate usesSourceScreenshots, which is a JSON key. The files are the screenshots in the folder of the language."
     },
     "The files that were there are in the Trash." : {
       "comment" : "Line in the report after screenshots are filed, shown as fixed-width text. It comes after a list of languages that copied the new screenshots of a related language. The files are the screenshots those languages held before."

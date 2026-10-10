@@ -26,33 +26,11 @@ extension Validator {
             let folder = "\(screenshotsPath(content))/\(locale)/\(deviceClass.id)"
             imageNamesByLocale[locale] = Set(files.map { ScreenshotNaming.imageName(of: $0.fileName) })
 
-            let usesSource = config.usesSourceScreenshots(
-                locale: locale, deviceClassID: deviceClass.id
-            )
-
-            if usesSource {
-                // App Store Connect shows the source language's screenshots for
-                // a language that has none, so an empty folder here is the
-                // decision working. The tick wins over files in the folder.
-                if files.isEmpty == false {
-                    problems.append(Problem(
-                        severity: .warning,
-                        area: .screenshots,
-                        message: LocalizedStringResource("""
-                        \(locale) is set to show the \(config.sourceLocale) \
-                        \(deviceClass.displayName) screenshots, and has \(files.count) \
-                        of its own.
-                        """, bundle: .here),
-                        fix: LocalizedStringResource("""
-                        The files are not used, and a push moves them to the Trash. To show \
-                        them, take \(locale) out of usesSourceScreenshots.
-                        """, bundle: .here),
-                        locale: locale,
-                        deviceClassID: deviceClass.id,
-                        path: folder,
-                        kind: .screenshotsBesideSourceCopy
-                    ))
-                }
+            // App Store Connect shows the source language's screenshots for a
+            // language that has none. The tick is that decision, so it says
+            // nothing. It wins over files in the folder, and the page and the
+            // push plan say those are not used.
+            if config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id) {
                 continue
             }
 

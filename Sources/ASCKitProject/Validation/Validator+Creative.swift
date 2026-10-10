@@ -5,22 +5,9 @@ import Foundation
 
 extension Validator {
     func validateCreative(_ content: VersionContent) -> [Problem] {
-        let root = creativePath(content)
-        var problems = validateCreativeFolder(content.creativeFolder, root: root)
-
-        // The tick wins over files in the folder.
-        for locale in config.creativeSources.keys.sorted() where content.creativeFolder.files[locale]?.isEmpty == false {
-            problems.append(creativeProblem(.warning, .creativeBesideSourceCopy, locale: locale, path: "\(root)/\(locale)",
-                                            LocalizedStringResource("""
-                                            \(locale) is set to show the \(config.sourceLocale) header and \
-                                            search results, and has files of its own.
-                                            """, bundle: .here),
-                                            LocalizedStringResource("""
-                                            The files are not used, and a push moves them to the Trash. \
-                                            To show them, take \(locale) out of usesSourceCreative.
-                                            """, bundle: .here)))
-        }
-        return problems
+        // The tick wins over files in the folder and is a decision, so it says
+        // nothing. The page and the push plan say the files are not used.
+        validateCreativeFolder(content.creativeFolder, root: creativePath(content))
     }
 
     /// The languages that show the source language's art. A name that the

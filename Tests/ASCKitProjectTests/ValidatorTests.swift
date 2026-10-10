@@ -402,16 +402,14 @@ final class ValidatorTests {
         #expect(problems[0].message.english.contains("iPhone 6.9 inch"))
     }
 
-    /// The setting says this language has none of its own, and there they are.
-    /// The push uploads what is on disk, so the files win and the setting is a
-    /// lie somebody should know about.
-    @Test func warnsWhenALanguageShowsTheSourceScreenshotsAndHasItsOwn() throws {
+    /// The tick wins over files of its own, and it is a decision, so the
+    /// check says nothing about either.
+    @Test func saysNothingWhenALanguageShowsTheSourceScreenshotsAndHasItsOwn() throws {
         try makeCleanProject(locales: ["en-US", "en-GB"])
         try useSourceScreenshots(["en-GB": [DeviceClass.iPhone69.id]])
 
-        let problem = try #require(try fixture.problems().first { $0.locale == "en-GB" && $0.area == .screenshots })
-        #expect(problem.severity == .warning)
-        #expect(problem.kind == .screenshotsBesideSourceCopy)
+        let problems = try fixture.problems().filter { $0.locale == "en-GB" && $0.area == .screenshots }
+        #expect(problems.isEmpty)
     }
 
     @Test func reportsTheSourceLanguageShowingItsOwnScreenshots() throws {
