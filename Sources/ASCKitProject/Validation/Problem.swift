@@ -199,6 +199,9 @@ public struct Problem: Sendable, Hashable, Identifiable {
         case screenshotsCopiedFromSource
         /// A set is missing the numbers its source language has.
         case screenshotsMissingSiblings
+        /// A language of a treatment has no screenshots for a device class
+        /// that another language of the treatment has.
+        case treatmentScreenshotsMissing
         /// A screenshot is not named the way ASCKit names one.
         case screenshotsNamedWrong
         /// A file in a screenshot folder could not be read as an image.

@@ -44,12 +44,17 @@ public struct Validator: Sendable {
 
     /// The images of the Product Page Optimization tests.
     ///
-    /// Only what App Store Connect refuses: a file that is not an image, a
-    /// size the device class does not take, an alpha channel, more than ten.
+    /// What App Store Connect refuses: a file that is not an image, a size
+    /// the device class does not take, an alpha channel, more than ten.
     /// Whether a test still exists is a question for App Store Connect, and
     /// the plan answers it.
-    public func validate(_ experiments: ExperimentContent) -> [Problem] {
+    ///
+    /// `snapshot` is the last read of the tests. With it, a language of a
+    /// treatment that has no screenshots where another language has them
+    /// is a warning.
+    public func validate(_ experiments: ExperimentContent, snapshot: ExperimentSnapshot? = nil) -> [Problem] {
         var problems = validateScreenshotSets(experiments.screenshots.map { $0.key.placed($0.value) })
+        problems += validateTreatmentLanguages(experiments, snapshot: snapshot)
         problems += validateExperimentPreviews(experiments)
         problems += validateExperimentCreative(experiments)
         return problems.sortedForDisplay

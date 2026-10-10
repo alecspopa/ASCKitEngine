@@ -475,6 +475,17 @@
         }
       }
     },
+    "%@ has no %@ screenshots in %@." : {
+      "comment" : "Problem message in the problem list of the Product Page Optimization page. The first value is the name of a treatment of a test. The second is a device class name, such as iPhone 6.9 inch. The third is a language code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has no %2$@ screenshots in %3$@."
+          }
+        }
+      }
+    },
     "%@ has no %@ screenshots to copy." : {
       "comment" : "Error sentence when a person copies screenshots between languages. The first value is a language code. The second is a device class id.",
       "localizations" : {
@@ -2737,6 +2748,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "App Store Connect shows the %1$@ ones instead. Put %2$@ screenshots in %3$@."
+          }
+        }
+      }
+    },
+    "App Store Connect shows the screenshots of the original product page there, so this language does not test them. Put %@ screenshots in %@." : {
+      "comment" : "How to fix a treatment language with no screenshots. The first value is a language code. The second is a folder path.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "App Store Connect shows the screenshots of the original product page there, so this language does not test them. Put %1$@ screenshots in %2$@."
           }
         }
       }

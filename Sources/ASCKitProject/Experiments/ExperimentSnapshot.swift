@@ -25,6 +25,27 @@ public struct ExperimentSnapshot: Codable, Sendable, Equatable {
         public let folder: String
         /// The languages App Store Connect holds a page for in this treatment.
         public let locales: [String]
+        /// The screenshot sets that hold an image on App Store Connect, by
+        /// language. A check with no network learns from it that a set with
+        /// no file still shows images.
+        public let heldScreenshots: [String: [HeldSet]]
+
+        public func holdsScreenshots(locale: String, deviceClass: DeviceClass) -> Bool {
+            heldScreenshots[locale]?.contains(HeldSet(
+                type: deviceClass.screenshotPlacementType, group: deviceClass.placementGroup
+            )) == true
+        }
+    }
+
+    /// One screenshot set of one language. The type tells an iMessage set
+    /// from the app set of the same group.
+    public struct HeldSet: Codable, Sendable, Hashable, Comparable {
+        public let type: PlacementType
+        public let group: String
+
+        public static func < (lhs: Self, rhs: Self) -> Bool {
+            (lhs.group, lhs.type.rawValue) < (rhs.group, rhs.type.rawValue)
+        }
     }
 
     public let readOn: Date
@@ -45,11 +66,43 @@ public struct ExperimentSnapshot: Codable, Sendable, Equatable {
                     Treatment(
                         name: $0.name,
                         folder: treatmentNames[$0.id] ?? $0.name,
-                        locales: $0.localizations.map(\.locale).sorted()
+                        locales: $0.localizations.map(\.locale).sorted(),
+                        heldScreenshots: Self.heldScreenshots(in: $0.localizations)
                     )
                 }
             )
         }
+    }
+
+    private static func heldScreenshots(in localizations: [RemoteTreatmentLocalization]) -> [String: [HeldSet]] {
+        var held: [String: [HeldSet]] = [:]
+        for localization in localizations {
+            let sets = localization.placements.compactMap { placement -> HeldSet? in
+                guard let type = placement.type, let group = placement.group,
+                      type == .appScreenshot || type == .iMessageAppScreenshot
+                else { return nil }
+                return HeldSet(type: type, group: group)
+            }
+            if sets.isEmpty == false {
+                held[localization.locale] = Set(sets).sorted()
+            }
+        }
+        return held
+    }
+}
+
+public extension ExperimentSnapshot.Treatment {
+    /// A cache from before 0.3.10 holds no screenshots, so it reads as none.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(
+            name: container.decode(String.self, forKey: .name),
+            folder: container.decode(String.self, forKey: .folder),
+            locales: container.decode([String].self, forKey: .locales),
+            heldScreenshots: container.decodeIfPresent(
+                [String: [ExperimentSnapshot.HeldSet]].self, forKey: .heldScreenshots
+            ) ?? [:]
+        )
     }
 }
 

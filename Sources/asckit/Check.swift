@@ -35,7 +35,10 @@ struct Check: ParsableCommand {
         // Tests and custom pages belong to no version, so their problems come
         // from their own folders.
         let validator = Validator(project: project)
-        var experimentProblems = validator.validate(ExperimentContentStore.load(in: project))
+        var experimentProblems = validator.validate(
+            ExperimentContentStore.load(in: project),
+            snapshot: ExperimentSnapshotStore.load(in: project)
+        )
             + validator.validate(
                 CustomPageContentStore.load(in: project),
                 keywords: CustomPageSnapshotStore.load(in: project)?.keywords
