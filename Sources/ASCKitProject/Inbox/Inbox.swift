@@ -20,8 +20,8 @@ public enum Inbox {
     /// anything else in a folder they can see. A file that does not read as an
     /// image is left where it is and nothing is said about it.
     ///
-    /// A design tool exports one folder per language, and the file name says
-    /// where each image goes, so the folders it sits in say nothing extra.
+    /// A design tool exports one folder per language. A folder named for a
+    /// language says the language of a file whose name leaves it out.
     public static func waiting(in project: Project) -> [ScreenshotFile] {
         let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .contentModificationDateKey]
         let entries = FileManager.default.enumerator(
@@ -200,25 +200,17 @@ public enum Inbox {
     ) -> Plan {
         var plan = Plan()
         for file in files {
-            if let creative = ScreenshotNaming.readCreative(file.fileName, config: config) {
+            let folderLocale = ScreenshotNaming.folderLocale(of: file.url, config: config)
+            if let creative = ScreenshotNaming.readCreative(file.fileName, config: config, folderLocale: folderLocale) {
                 plan.addCreative(file, named: creative, config: config, refData: refData)
                 continue
             }
 
-            switch ScreenshotNaming.read(file.fileName, config: config) {
+            switch ScreenshotNaming.read(file.fileName, config: config, folderLocale: folderLocale) {
             case let .success(parts):
-                let clearable = ContentWriter.onlyTheAlphaChannelRefuses(
-                    file, for: parts.deviceClass, refData: refData
-                )
-                if let reason = ContentWriter.reasonToRefuse(file, for: parts.deviceClass, refData: refData) {
+                if let refused = ContentWriter.inboxRefusal(file, for: parts.deviceClass, refData: refData) {
                     plan.refusals.append(Refusal(
-                        file: file,
-                        // A channel that can be cleared is said in one line.
-                        // What to do about it is offered beside this, in the
-                        // sheet and in the terminal both, so a refusal that
-                        // said it as well would say it twice.
-                        reason: clearable ? "\(file.fileName) has an alpha channel." : reason,
-                        hasClearableAlpha: clearable
+                        file: file, reason: refused.reason, hasClearableAlpha: refused.hasClearableAlpha
                     ))
                 } else {
                     plan.arrivals.append(Arrival(

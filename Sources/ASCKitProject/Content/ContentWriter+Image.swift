@@ -50,4 +50,20 @@ public extension ContentWriter {
         let rules = ImageRules.screenshot(of: deviceClass, refData: refData)
         return file.hasAlpha == true && rules.alphaAllowed == false && rules.accepts(width: width, height: height)
     }
+
+    /// Why an inbox refuses this waiting screenshot, and whether `AlphaRemoval`
+    /// can clear the one reason. Nil when nothing refuses it.
+    ///
+    /// Every inbox asks this, so each one says a clearable channel in the same
+    /// short line and offers the same clear.
+    static func inboxRefusal(
+        _ file: ScreenshotFile, for deviceClass: DeviceClass, refData: AssetLibraryRefData? = nil
+    ) -> (reason: String, hasClearableAlpha: Bool)? {
+        guard let reason = reasonToRefuse(file, for: deviceClass, refData: refData) else { return nil }
+        // The offer beside the refusal says what to do, so the line does not.
+        guard onlyTheAlphaChannelRefuses(file, for: deviceClass, refData: refData) else {
+            return (reason, false)
+        }
+        return (String(localized: "\(file.fileName) has an alpha channel.", bundle: .module), true)
+    }
 }

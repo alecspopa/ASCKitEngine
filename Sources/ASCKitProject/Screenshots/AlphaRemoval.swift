@@ -28,6 +28,16 @@ public enum AlphaRemoval {
         plan.refusals.filter(\.hasClearableAlpha).map(\.file)
     }
 
+    /// The same, for the images waiting for a Product Page Optimization test.
+    public static func clearable(in plan: ExperimentInbox.Plan) -> [ScreenshotFile] {
+        plan.refusals.filter(\.hasClearableAlpha).map(\.file)
+    }
+
+    /// The same, for the images waiting for a custom product page.
+    public static func clearable(in plan: CustomPageInbox.Plan) -> [ScreenshotFile] {
+        plan.refusals.filter(\.hasClearableAlpha).map(\.file)
+    }
+
     // MARK: - Writing it
 
     /// One file nothing could be done about, and why.

@@ -28,6 +28,9 @@ final class InboxCreativeTests {
         let folder = try fixture.load().rootURL.appending(path: ProjectScaffold.inboxName)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let url = folder.appending(path: fileName)
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
+        )
         try PNGWriter.write(to: url, width: width, height: height, hasAlpha: hasAlpha, seed: fileName)
         return url
     }
@@ -103,6 +106,33 @@ final class InboxCreativeTests {
         #expect(plan.hasInvalidNames)
         #expect(plan.refusals[0].reason.contains(ScreenshotNaming.creativeExample))
         #expect(plan.refusals[0].reason.contains(ScreenshotNaming.example) == false)
+    }
+
+    /// A design tool exports one folder per language, with one file name in
+    /// each. The folder says the language.
+    @Test(arguments: ["de-DE", "de_DE", "de", "export/de-DE"])
+    func readsTheLanguageOfTheFolder(folder: String) throws {
+        try putInInbox(named: "\(folder)/header.png", width: 3840, height: 1646)
+        try putInInbox(named: "en-US/header.png", width: 3840, height: 1646)
+
+        let plan = try Inbox.plan(in: fixture.load())
+        #expect(plan.refusals.isEmpty)
+        #expect(Set(plan.creative.map(\.locale)) == ["de-DE", "en-US"])
+    }
+
+    @Test func readsTheLanguageOfTheFolderForAScreenshot() throws {
+        try putInInbox(named: "de-DE/01-overview-iPhone-6.9.png", width: 1290, height: 2796)
+
+        let plan = try Inbox.plan(in: fixture.load())
+        #expect(plan.refusals.isEmpty)
+        #expect(plan.arrivals.map(\.locale) == ["de-DE"])
+    }
+
+    @Test func takesTheLanguageOfTheNameOverTheFolder() throws {
+        try putInInbox(named: "de-DE/header-en_US.png", width: 3840, height: 1646)
+
+        let plan = try Inbox.plan(in: fixture.load())
+        #expect(plan.creative.map(\.locale) == ["en-US"])
     }
 
     @Test func refusesALanguageThisProjectDoesNotShip() throws {

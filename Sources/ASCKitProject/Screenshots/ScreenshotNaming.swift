@@ -138,11 +138,16 @@ public enum ScreenshotNaming {
     // MARK: - Reading a name
 
     /// Works out where one waiting file goes, or why it cannot go anywhere.
-    public static func read(_ fileName: String, config: ProjectConfig) -> Result<Parts, Refusal> {
+    ///
+    /// `folderLocale` is the language of the folder the file waits in, from
+    /// `folderLocale(of:config:)`. It counts only when the name has none.
+    public static func read(
+        _ fileName: String, config: ProjectConfig, folderLocale: String? = nil
+    ) -> Result<Parts, Refusal> {
         var parts = pieces(of: fileName)
 
         let locale: String
-        switch resolveLanguage(&parts, fileName: fileName, config: config) {
+        switch resolveLanguage(&parts, fileName: fileName, config: config, folderLocale: folderLocale) {
         case let .success(code): locale = code
         case let .failure(refusal): return .failure(refusal)
         }
@@ -181,17 +186,42 @@ public enum ScreenshotNaming {
     ///
     /// The role comes right before the language. A number or a word before
     /// the role says nothing and is dropped.
-    public static func readCreative(_ fileName: String, config: ProjectConfig) -> Result<CreativeParts, Refusal>? {
+    public static func readCreative(
+        _ fileName: String, config: ProjectConfig, folderLocale: String? = nil
+    ) -> Result<CreativeParts, Refusal>? {
         var parts = pieces(of: fileName)
 
         var withoutLanguage = parts
         if case .none = readLanguage(&withoutLanguage) {
-            return role(endingAt: parts) == nil ? nil : .failure(.creativeNoLanguage(fileName: fileName))
+            guard let role = role(endingAt: parts) else { return nil }
+            guard let folderLocale else { return .failure(.creativeNoLanguage(fileName: fileName)) }
+            return .success(CreativeParts(locale: folderLocale, role: role))
         }
         guard let role = role(endingAt: withoutLanguage) else { return nil }
 
         return resolveLanguage(&parts, fileName: fileName, config: config)
             .map { CreativeParts(locale: $0, role: role) }
+    }
+
+    /// The language of the nearest folder inside the inbox that names one this
+    /// project ships, such as `de-DE` in `inbox/de-DE/header.png`.
+    ///
+    /// A design tool exports one folder per language, often with the same
+    /// file name in each. The folder then says the language the name leaves
+    /// out. A language in the name wins over the folder.
+    public static func folderLocale(of url: URL, config: ProjectConfig) -> String? {
+        var folder = url.deletingLastPathComponent()
+        while folder.pathComponents.count > 1, folder.lastPathComponent != ProjectScaffold.inboxName {
+            var parts = folder.lastPathComponent
+                .split(separator: "-", omittingEmptySubsequences: false)
+                .map(String.init)
+            if case let .success(locale) = resolveLanguage(&parts, fileName: "", config: config),
+               parts.isEmpty {
+                return locale
+            }
+            folder = folder.deletingLastPathComponent()
+        }
+        return nil
     }
 
     /// The role these pieces end with. `search-results` is two pieces.
@@ -339,7 +369,7 @@ public enum ScreenshotNaming {
     /// Takes the language off the end, and gives the store code this project
     /// ships for it.
     private static func resolveLanguage(
-        _ parts: inout [String], fileName: String, config: ProjectConfig
+        _ parts: inout [String], fileName: String, config: ProjectConfig, folderLocale: String? = nil
     ) -> Result<String, Refusal> {
         switch readLanguage(&parts) {
         case let .code(code):
@@ -369,6 +399,7 @@ public enum ScreenshotNaming {
             }
 
         case let .none(token):
+            if let folderLocale { return .success(folderLocale) }
             return .failure(.noLanguage(fileName: fileName, token: token))
         }
     }

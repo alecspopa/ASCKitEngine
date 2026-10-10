@@ -69,13 +69,20 @@ struct InboxCommand: AsyncParsableCommand {
         // After the device classes, because a file for a device class nobody
         // has listed is refused on its name, and what its pixels carry is only
         // read once that name leads somewhere.
-        if clearAlpha, AlphaRemoval.clearable(in: plan).isEmpty == false {
-            clearTheAlphaChannels(plan)
-            plan = Inbox.plan(in: project)
-        }
+        var experimentPlan = ExperimentInbox.plan(in: project, remote: nil)
+        var customPagePlan = CustomPageInbox.plan(in: project, snapshot: CustomPageSnapshotStore.load(in: project))
 
-        let experimentPlan = ExperimentInbox.plan(in: project, remote: nil)
-        let customPagePlan = CustomPageInbox.plan(in: project, snapshot: CustomPageSnapshotStore.load(in: project))
+        if clearAlpha {
+            let files = AlphaRemoval.clearable(in: plan)
+                + AlphaRemoval.clearable(in: experimentPlan)
+                + AlphaRemoval.clearable(in: customPagePlan)
+            if files.isEmpty == false {
+                clearTheAlphaChannels(files)
+                plan = Inbox.plan(in: project)
+                experimentPlan = ExperimentInbox.plan(in: project, remote: nil)
+                customPagePlan = CustomPageInbox.plan(in: project, snapshot: CustomPageSnapshotStore.load(in: project))
+            }
+        }
 
         guard plan.isEmpty == false || experimentPlan.isEmpty == false || customPagePlan.isEmpty == false else {
             print("Nothing is waiting in \(ProjectScaffold.inboxName)/.")
@@ -103,7 +110,11 @@ struct InboxCommand: AsyncParsableCommand {
         }
 
         offerTheDeviceClasses(plan)
-        offerToClearTheAlphaChannels(plan)
+        offerToClearTheAlphaChannels(
+            AlphaRemoval.clearable(in: plan)
+                + AlphaRemoval.clearable(in: experimentPlan)
+                + AlphaRemoval.clearable(in: customPagePlan)
+        )
 
         let experimentsRefused = try handleExperiments(experimentPlan, project: project)
         let customPagesRefused = try handleCustomPages(customPagePlan, project: project)
@@ -170,8 +181,8 @@ struct InboxCommand: AsyncParsableCommand {
     ///
     /// The same `AlphaRemoval` the window's inbox sheet presses, so a file
     /// cleared here and one cleared there end up the same.
-    private func clearTheAlphaChannels(_ plan: Inbox.Plan) {
-        let outcome = AlphaRemoval.clear(AlphaRemoval.clearable(in: plan).map(\.url))
+    private func clearTheAlphaChannels(_ files: [ScreenshotFile]) {
+        let outcome = AlphaRemoval.clear(files.map(\.url))
 
         for name in outcome.cleared {
             print("cleared: \(name)")
@@ -187,8 +198,7 @@ struct InboxCommand: AsyncParsableCommand {
 
     /// Says how to clear an alpha channel, for somebody reading a refusal about
     /// one.
-    private func offerToClearTheAlphaChannels(_ plan: Inbox.Plan) {
-        let waiting = AlphaRemoval.clearable(in: plan)
+    private func offerToClearTheAlphaChannels(_ waiting: [ScreenshotFile]) {
         guard waiting.isEmpty == false else { return }
 
         print("")

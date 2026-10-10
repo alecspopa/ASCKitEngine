@@ -36,6 +36,9 @@ final class AlphaRemovalTests {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
 
         let url = folder.appending(path: fileName)
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
+        )
         try PNGWriter.write(
             to: url, width: width, height: height, hasAlpha: hasAlpha, seed: fileName
         )
@@ -91,6 +94,35 @@ final class AlphaRemovalTests {
         try putInInbox(named: "screenshot.png")
 
         #expect(try AlphaRemoval.clearable(in: plan()).isEmpty)
+    }
+
+    /// The test and custom page inboxes offer the same clear, so a channel
+    /// there is not a dead end.
+    @Test func offersTheClearForAProductPageOptimizationImage() throws {
+        let url = try putInInbox(named: "product-page-optimization/test/blue/01-overview-iPhone-6.9-en_US.png")
+        let project = try fixture.load()
+
+        let plan = ExperimentInbox.plan(
+            [ImageInspector.inspect(url: url)],
+            root: ExperimentInbox.url(in: project),
+            known: ["test": ["blue"]],
+            config: project.config
+        )
+        #expect(plan.refusals.first?.reason == "01-overview-iPhone-6.9-en_US.png has an alpha channel.")
+        #expect(AlphaRemoval.clearable(in: plan).map(\.url) == [url])
+    }
+
+    @Test func offersTheClearForACustomPageImage() throws {
+        let url = try putInInbox(named: "custom-product-pages/spring/01-overview-iPhone-6.9-en_US.png")
+        let project = try fixture.load()
+
+        let plan = CustomPageInbox.plan(
+            [ImageInspector.inspect(url: url)],
+            root: CustomPageInbox.url(in: project),
+            editable: ["spring"],
+            config: project.config
+        )
+        #expect(AlphaRemoval.clearable(in: plan).map(\.url) == [url])
     }
 
     // MARK: - Clearing it

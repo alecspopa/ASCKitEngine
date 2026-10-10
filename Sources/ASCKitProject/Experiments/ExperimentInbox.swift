@@ -31,6 +31,10 @@ public enum ExperimentInbox {
     public struct Refusal: Sendable, Hashable, Identifiable {
         public let file: ScreenshotFile
         public let reason: String
+
+        /// Whether an alpha channel is the whole reason, as in `Inbox.Refusal`.
+        public var hasClearableAlpha = false
+
         public var id: URL { file.url }
     }
 
@@ -153,8 +157,10 @@ public enum ExperimentInbox {
 
             switch ScreenshotNaming.read(file.fileName, config: config) {
             case let .success(named):
-                if let reason = ContentWriter.reasonToRefuse(file, for: named.deviceClass, refData: refData) {
-                    plan.refusals.append(Refusal(file: file, reason: reason))
+                if let refused = ContentWriter.inboxRefusal(file, for: named.deviceClass, refData: refData) {
+                    plan.refusals.append(Refusal(
+                        file: file, reason: refused.reason, hasClearableAlpha: refused.hasClearableAlpha
+                    ))
                 } else {
                     plan.arrivals.append(Arrival(
                         file: file,
