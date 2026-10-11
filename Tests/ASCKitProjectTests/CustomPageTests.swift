@@ -194,6 +194,25 @@ final class CustomPageTests {
         #expect(plan(remote(english: english)).hasChanges == false)
     }
 
+    /// Previews work as they do for a version and a test: an empty folder
+    /// takes the previews on the store off.
+    @Test func removesThePreviewsOfAnEmptyFolder() throws {
+        let placement = RemotePlacement(
+            id: "p1", locale: "en-US", type: .appPreview, group: deviceClass.placementGroup,
+            state: .parentPrepareForSubmission,
+            asset: RemoteLibraryAsset(id: "a1", media: .video, fileName: "01.mov", state: .approved)
+        )
+        let english = RemoteCustomPageLocalization(
+            id: "cloc-en", locale: "en-US", promotionalText: nil, placements: [placement]
+        )
+
+        let plan = plan(remote(english: english))
+
+        let set = try #require(plan.changingPreviewSets.first)
+        #expect(set.localFiles.isEmpty)
+        #expect(set.action == .replace(removing: 1, adding: 0))
+    }
+
     @Test func plansNothingForAnApprovedPage() throws {
         try writeImage("01-a-iPhone-6.9-en_US.png", in: slot())
         try ContentWriter.writeCustomPageText(

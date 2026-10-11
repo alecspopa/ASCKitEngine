@@ -29,21 +29,19 @@ public enum ExperimentPlanner {
                 )
 
                 for localization in treatment.localizations.sorted(by: { $0.locale < $1.locale }) {
-                    do {
-                        creativeSets += creativePlans(
-                            in: local.creative[ExperimentContent.creativeKey(
-                                experiment: experimentFolder, treatment: treatmentFolder
-                            )] ?? CreativeFolder(),
-                            label: "\(experiment.name) / \(treatment.name) / \(localization.locale)",
-                            treatmentID: treatment.id, localization: localization,
-                            config: config, record: record
-                        )
-                        previewSets += previewPlans(
-                            experiment: experiment, treatment: treatment, localization: localization,
-                            folders: (experimentFolder, treatmentFolder),
-                            local: local, deviceClasses: deviceClasses, record: record
-                        )
-                    }
+                    creativeSets += creativePlans(
+                        in: local.creative[ExperimentContent.creativeKey(
+                            experiment: experimentFolder, treatment: treatmentFolder
+                        )] ?? CreativeFolder(),
+                        label: "\(experiment.name) / \(treatment.name) / \(localization.locale)",
+                        treatmentID: treatment.id, localization: localization,
+                        config: config, record: record
+                    )
+                    previewSets += previewPlans(
+                        experiment: experiment, treatment: treatment, localization: localization,
+                        folders: (experimentFolder, treatmentFolder),
+                        local: local, deviceClasses: deviceClasses, record: record
+                    )
                     for deviceClass in deviceClasses {
                         let slot = ExperimentSlot(
                             experiment: experimentFolder,
