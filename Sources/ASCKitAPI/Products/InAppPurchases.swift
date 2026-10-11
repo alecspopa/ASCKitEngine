@@ -53,6 +53,7 @@ extension ASCClient {
     func inAppPurchases(appID: String) async throws -> [Resource<InAppPurchaseAttributes>] {
         try await list(
             "/v1/apps/\(appID)/inAppPurchasesV2",
+            query: [.maxPageSize],
             as: InAppPurchaseAttributes.self
         )
     }

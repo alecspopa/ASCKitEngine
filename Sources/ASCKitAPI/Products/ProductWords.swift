@@ -125,7 +125,7 @@ extension ASCClient {
         of owner: WordsOwner,
         parentID: String
     ) async throws -> [Resource<ProductVersionAttributes>] {
-        try await list(owner.versionsPath(parentID: parentID), as: ProductVersionAttributes.self)
+        try await list(owner.versionsPath(parentID: parentID), query: [.maxPageSize], as: ProductVersionAttributes.self)
     }
 
     func words(of owner: WordsOwner, versionID: String) async throws -> [Resource<ProductWordsAttributes>] {

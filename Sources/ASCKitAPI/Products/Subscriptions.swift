@@ -35,6 +35,7 @@ extension ASCClient {
     func subscriptionGroups(appID: String) async throws -> [Resource<SubscriptionGroupAttributes>] {
         try await list(
             "/v1/apps/\(appID)/subscriptionGroups",
+            query: [.maxPageSize],
             as: SubscriptionGroupAttributes.self
         )
     }
@@ -42,6 +43,7 @@ extension ASCClient {
     func subscriptions(groupID: String) async throws -> [Resource<SubscriptionAttributes>] {
         try await list(
             "/v1/subscriptionGroups/\(groupID)/subscriptions",
+            query: [.maxPageSize],
             as: SubscriptionAttributes.self
         )
     }
@@ -71,7 +73,8 @@ extension ASCClient {
     }
 
     static let subscriptionPricesQuery = [
-        URLQueryItem(name: "include", value: "subscriptionPricePoint,territory")
+        URLQueryItem(name: "include", value: "subscriptionPricePoint,territory"),
+        .maxPageSize
     ]
 
     /// What each country is charged today.
