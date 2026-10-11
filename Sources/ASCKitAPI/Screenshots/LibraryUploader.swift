@@ -94,6 +94,12 @@ public struct LibraryUploader: Sendable {
             var running = 0
 
             func startNext() {
+                // A cancelled push starts no new upload. The files that wait are
+                // reported as cancelled, so the caller still hears about each one.
+                if Task.isCancelled {
+                    for item in pending { results[item] = .failure(CancellationError()) }
+                    pending = []
+                }
                 guard let item = pending.popFirst() else { return }
                 running += 1
                 group.addTask {

@@ -43,10 +43,13 @@ enum LibraryReply {
 }
 
 /// What a test sees of the record the pusher saves.
-actor SavedRecords {
-    private(set) var saved: [AssetRecord] = []
+final class SavedRecords: Sendable {
+    private let records = Mutex<[AssetRecord]>([])
+
+    var saved: [AssetRecord] { records.withLock { $0 } }
+
     func add(_ record: AssetRecord) {
-        saved.append(record)
+        records.withLock { $0.append(record) }
     }
 }
 
@@ -82,7 +85,7 @@ struct LibraryPusherTests {
         saved: SavedRecords = SavedRecords()
     ) async throws -> (result: ScreenshotPusher.Result, record: AssetRecord) {
         let pusher = try LibraryPusher(client: ASCClient.stubbed(transport: transport), poll: .immediate, uploadLimit: 1)
-        return await pusher.push(targets, libraryID: "lib1", record: record, saveRecord: { record in await saved.add(record) })
+        return await pusher.push(targets, libraryID: "lib1", record: record, saveRecord: { record in saved.add(record) })
     }
 
     static func calls(_ transport: StubTransport) async -> [String] {
@@ -129,10 +132,32 @@ struct LibraryPusherTests {
         ])
 
         _ = try await push([target(local: [one])], transport: transport, saved: saved)
-        try await Task.sleep(for: .milliseconds(50))
 
-        let first = try #require(await saved.saved.first)
+        let first = try #require(saved.saved.first)
         #expect(try first.assetID(md5: LibraryFiles.md5(one), fileSize: one.byteCount) == "new1")
+    }
+
+    /// Uploads that commit at the same time each save the record. The last
+    /// save must hold every entry, or a push that stops halfway forgets an
+    /// asset it made.
+    @Test func theLastSavedRecordHoldsEveryUploadThatCommitted() async {
+        let saved = SavedRecords()
+        let box = RecordBox(AssetRecord(), uploadedAt: .now, save: saved.add)
+        let count = 40
+
+        await withDiscardingTaskGroup { group in
+            for index in 0..<count {
+                group.addTask {
+                    await box.record(md5: "md5-\(index)", AssetRecord.Entry(
+                        assetID: "asset-\(index)", media: .image, category: .screenshotsAndPreviews,
+                        fileName: "\(index).png", fileSize: 1, uploadedAt: nil, state: .uploadComplete
+                    ))
+                }
+            }
+        }
+
+        #expect(saved.saved.count == count)
+        #expect(saved.saved.last?.assets.count == count)
     }
 
     @Test func onlySetsTheOrderWhenOnlyTheOrderChanged() async throws {

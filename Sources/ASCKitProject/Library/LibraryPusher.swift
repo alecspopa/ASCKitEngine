@@ -62,17 +62,16 @@ public struct LibraryPusher: Sendable {
         _ targets: [Target],
         libraryID: String,
         record: AssetRecord,
-        saveRecord: @escaping @Sendable (AssetRecord) async -> Void,
+        saveRecord: @escaping @Sendable (AssetRecord) -> Void,
         at date: Date = .now,
         progress: (@Sendable (ScreenshotPusher.Step) -> Void)? = nil
     ) async -> (result: ScreenshotPusher.Result, record: AssetRecord) {
-        let box = RecordBox(record, uploadedAt: date)
+        let box = RecordBox(record, uploadedAt: date, save: saveRecord)
         var result = ScreenshotPusher.Result()
 
         let uploads = Self.uploads(in: targets)
         await freeNames(Set(Self.referenceNames(for: uploads).values), in: targets)
-        let failedUploads = await upload(uploads, libraryID: libraryID, box: box, saveRecord: saveRecord,
-                                         progress: progress)
+        let failedUploads = await upload(uploads, libraryID: libraryID, box: box, progress: progress)
 
         let processed = await waitForProcessing(box: box, libraryID: libraryID, md5s: Array(uploads.keys))
 
@@ -103,9 +102,12 @@ public struct LibraryPusher: Sendable {
             }
         }
 
-        result.archived = await archiveUnplaced(
-            replaced.values.filter { stillWanted.contains($0.id) == false }, libraryID: libraryID
-        )
+        // A cancelled push leaves the old assets. The next push archives them.
+        if Task.isCancelled == false {
+            result.archived = await archiveUnplaced(
+                replaced.values.filter { stillWanted.contains($0.id) == false }, libraryID: libraryID
+            )
+        }
         return await (result, box.record)
     }
 
@@ -129,7 +131,6 @@ public struct LibraryPusher: Sendable {
         _ uploads: [String: (file: LibraryFile, target: Target)],
         libraryID: String,
         box: RecordBox,
-        saveRecord: @escaping @Sendable (AssetRecord) async -> Void,
         progress: (@Sendable (ScreenshotPusher.Step) -> Void)?
     ) async -> [String: String] {
         guard uploads.isEmpty == false else { return [:] }
@@ -171,7 +172,7 @@ public struct LibraryPusher: Sendable {
                     uploadedAt: nil,
                     state: .uploadComplete
                 )
-                await saveRecord(box.record(md5: md5, entry))
+                await box.record(md5: md5, entry)
             }
         )
 
@@ -401,16 +402,21 @@ actor RecordBox {
     /// When this push uploaded, for each entry it adds.
     private let uploadedAt: Date
 
-    init(_ record: AssetRecord, uploadedAt: Date) {
+    /// Called inside the actor, so the saves reach the disk in the same order
+    /// as the entries. A save outside it can write an older record last.
+    private let save: @Sendable (AssetRecord) -> Void
+
+    init(_ record: AssetRecord, uploadedAt: Date, save: @escaping @Sendable (AssetRecord) -> Void = { _ in }) {
         self.record = record
         self.uploadedAt = uploadedAt
+        self.save = save
     }
 
-    func record(md5: String, _ entry: AssetRecord.Entry) -> AssetRecord {
+    func record(md5: String, _ entry: AssetRecord.Entry) {
         var dated = entry
         dated.uploadedAt = uploadedAt
         record.record(md5: md5, dated)
-        return record
+        save(record)
     }
 
     func update(states: [String: LibraryAssetState]) {
