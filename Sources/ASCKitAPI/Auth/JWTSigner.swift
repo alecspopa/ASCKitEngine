@@ -83,7 +83,7 @@ public struct JWTSigner: Sendable {
     }
 }
 
-public enum JWTSignerError: Error, Equatable {
+public enum JWTSignerError: ReadableError, Equatable {
     case unreadablePrivateKey(underlying: any Error)
     case expiryNotInTheFuture
     case lifetimeTooLong(requested: TimeInterval, maximum: TimeInterval)
@@ -98,7 +98,7 @@ public enum JWTSignerError: Error, Equatable {
     }
 }
 
-extension JWTSignerError: CustomLocalizedStringResourceConvertible {
+extension JWTSignerError {
     public var localizedStringResource: LocalizedStringResource {
         switch self {
         case let .unreadablePrivateKey(underlying):
@@ -113,8 +113,4 @@ extension JWTSignerError: CustomLocalizedStringResourceConvertible {
             """, bundle: .here)
         }
     }
-}
-
-extension JWTSignerError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

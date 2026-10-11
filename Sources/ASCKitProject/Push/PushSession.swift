@@ -94,6 +94,10 @@ public struct PushSession: Sendable {
         includeLiveTexts: Bool = false,
         prices: PriceSource = .notRead
     ) async throws -> Reading {
+        // Products need only the bundle id, so they are read while the
+        // listing is.
+        async let productsRead = includeProducts ? client.products(bundleID: project.config.bundleID) : nil
+
         let listing = try await client.listing(
             bundleID: project.config.bundleID,
             versionString: version,
@@ -110,9 +114,7 @@ public struct PushSession: Sendable {
         // not tied to a version, so a version folder that is not there yet must
         // not stop somebody reading or changing a price.
         let onDisk = includeProducts ? ProductStore.load(in: project) : nil
-        let onStore = includeProducts
-            ? try await client.products(bundleID: project.config.bundleID)
-            : nil
+        let onStore = try await productsRead
 
         var product: ProductPlanner.Outcome?
         var origins: [String: PriceLadderCache.Origin] = [:]

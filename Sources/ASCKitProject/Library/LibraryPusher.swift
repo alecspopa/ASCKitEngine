@@ -429,7 +429,7 @@ actor RecordBox {
     }
 }
 
-public enum LibraryPushError: Error, CustomLocalizedStringResourceConvertible {
+public enum LibraryPushError: ReadableError {
     case unreadable(fileName: String)
     case uploadFailed(fileName: String, reason: String?)
 
@@ -443,8 +443,4 @@ public enum LibraryPushError: Error, CustomLocalizedStringResourceConvertible {
             LocalizedStringResource("\(fileName) did not upload.", bundle: .here)
         }
     }
-}
-
-extension LibraryPushError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

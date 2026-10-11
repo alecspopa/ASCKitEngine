@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// Writes the app previews and the header and search results art of a
@@ -186,7 +187,7 @@ public enum LibraryContentWriter {
     }
 }
 
-public enum LibraryWriteError: Error, Equatable, CustomLocalizedStringResourceConvertible {
+public enum LibraryWriteError: ReadableError, Equatable {
     case takesNoPreviews(String)
     case notAVideo(String)
     case notArt(String)
@@ -219,10 +220,6 @@ public enum LibraryWriteError: Error, Equatable, CustomLocalizedStringResourceCo
             """, bundle: .here)
         }
     }
-}
-
-extension LibraryWriteError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }
 
 // MARK: - Where the files go

@@ -339,7 +339,7 @@ public struct ProductPusher: Sendable {
     }
 }
 
-public enum ProductPushError: Error, CustomLocalizedStringResourceConvertible {
+public enum ProductPushError: ReadableError {
     case noNameToCreateWith(locale: String)
 
     /// App Store Connect holds no version of this product's words at all.
@@ -386,8 +386,4 @@ public enum ProductPushError: Error, CustomLocalizedStringResourceConvertible {
             """, bundle: .here)
         }
     }
-}
-
-extension ProductPushError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

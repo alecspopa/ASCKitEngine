@@ -500,7 +500,7 @@ public enum ContentWriter {
     }
 }
 
-public enum ContentWriteError: Error, CustomLocalizedStringResourceConvertible {
+public enum ContentWriteError: ReadableError {
     case versionAlreadyThere(String)
     case noSuchFile(URL)
     case refusedImage(reason: String)
@@ -538,8 +538,4 @@ public enum ContentWriteError: Error, CustomLocalizedStringResourceConvertible {
             LocalizedStringResource("\(name) cannot be a subscription group name. \(reason)", bundle: .here)
         }
     }
-}
-
-extension ContentWriteError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// Finding the language next door that got the newer screenshots, and copying
@@ -523,7 +524,7 @@ public enum SiblingScreenshots {
     }
 }
 
-public enum SiblingScreenshotError: Error, CustomLocalizedStringResourceConvertible {
+public enum SiblingScreenshotError: ReadableError {
     case sameLanguage(String)
     case notShipped(String, shipped: [String])
     case differentLanguage(from: String, to: String)
@@ -558,8 +559,4 @@ public enum SiblingScreenshotError: Error, CustomLocalizedStringResourceConverti
             LocalizedStringResource("\(from) has no \(deviceClassID) screenshots to copy.", bundle: .here)
         }
     }
-}
-
-extension SiblingScreenshotError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

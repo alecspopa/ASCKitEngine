@@ -156,12 +156,10 @@ public enum CustomPagePlanner {
             let files = local.previews(in: CustomPageSlot(
                 page: place.folder, locale: localization.locale, deviceClassID: deviceClass.id
             ))
-            let current = LibraryPlanner.current(
-                in: localization.placements, locale: localization.locale,
-                group: deviceClass.placementGroup, type: .appPreview
-            )
-            // An emptied folder removes the previews on the store, as it does for a test.
-            guard files.isEmpty == false || current.isEmpty == false else { return nil }
+            guard let library = LibraryPlanner.previewSet(
+                files: files, placements: localization.placements, locale: localization.locale,
+                deviceClass: deviceClass, record: record
+            ) else { return nil }
 
             return CustomPagePlan.PreviewSetPlan(
                 pageID: place.page.id,
@@ -170,10 +168,7 @@ public enum CustomPagePlanner {
                 localizationID: localization.id,
                 deviceClass: deviceClass,
                 localFiles: files,
-                library: LibraryPlanner.slot(
-                    files: files.map(\.libraryFile), current: current, record: record,
-                    group: deviceClass.placementGroup, type: .appPreview
-                )
+                library: library
             )
         }
     }

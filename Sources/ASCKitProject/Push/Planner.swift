@@ -201,19 +201,13 @@ public enum Planner {
                 let files = config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id)
                     ? []
                     : local.previews(locale: locale, deviceClassID: deviceClass.id)
-                let current = LibraryPlanner.current(
-                    in: remote.placements, locale: locale, group: deviceClass.placementGroup, type: .appPreview
-                )
-                guard files.isEmpty == false || current.isEmpty == false else { continue }
+                guard let library = LibraryPlanner.previewSet(
+                    files: files, placements: remote.placements, locale: locale,
+                    deviceClass: deviceClass, record: record
+                ) else { continue }
 
                 plans.append(ChangePlan.PreviewPlan(
-                    locale: locale,
-                    deviceClass: deviceClass,
-                    localFiles: files,
-                    library: LibraryPlanner.slot(
-                        files: files.map(\.libraryFile), current: current, record: record,
-                        group: deviceClass.placementGroup, type: .appPreview
-                    )
+                    locale: locale, deviceClass: deviceClass, localFiles: files, library: library
                 ))
             }
         }

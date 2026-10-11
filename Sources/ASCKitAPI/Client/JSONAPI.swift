@@ -65,21 +65,11 @@ struct ListResponse<Attributes: Decodable & Sendable>: Decodable, PagedResponse,
     let included: [Resource<Attributes>]?
 
     let links: Links?
-    let meta: Meta?
 
     var nextURL: URL? { links?.next.flatMap(URL.init(string:)) }
 
     struct Links: Decodable, Sendable {
         let next: String?
-    }
-
-    struct Meta: Decodable, Sendable {
-        let paging: Paging?
-
-        struct Paging: Decodable, Sendable {
-            let total: Int?
-            let limit: Int?
-        }
     }
 }
 
@@ -189,7 +179,6 @@ struct IncludedResource: Encodable, Sendable {
 /// it is what says "from now" rather than "no start date given".
 enum JSONValue: Encodable, Sendable {
     case string(String)
-    case int(Int)
     case bool(Bool)
     case null
 
@@ -197,7 +186,6 @@ enum JSONValue: Encodable, Sendable {
         var container = encoder.singleValueContainer()
         switch self {
         case let .string(value): try container.encode(value)
-        case let .int(value): try container.encode(value)
         case let .bool(value): try container.encode(value)
         case .null: try container.encodeNil()
         }

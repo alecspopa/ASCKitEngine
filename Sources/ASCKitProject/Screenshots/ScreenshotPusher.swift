@@ -80,7 +80,7 @@ public enum ScreenshotPusher {
     }
 }
 
-public enum ScreenshotPushError: Error, CustomLocalizedStringResourceConvertible {
+public enum ScreenshotPushError: ReadableError {
     case noLanguageOnAppStoreConnect(locale: String)
 
     public var localizedStringResource: LocalizedStringResource {
@@ -92,8 +92,4 @@ public enum ScreenshotPushError: Error, CustomLocalizedStringResourceConvertible
             """, bundle: .here)
         }
     }
-}
-
-extension ScreenshotPushError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

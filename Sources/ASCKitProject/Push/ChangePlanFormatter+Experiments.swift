@@ -10,7 +10,7 @@ public extension ChangePlanFormatter {
             adding: plan.imagesToAdd,
             removing: plan.imagesToRemove
         )
-        if plan.creativeSets.contains(where: \.plan.changesAnything) {
+        if plan.creativeSets.contains(where: \.changesAnything) {
             pieces.append(String(localized: "header and search results art", bundle: .module))
         }
         return pieces.formatted(.list(type: .and))

@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// Saying that a language is the app's and not the store's.
@@ -83,7 +84,7 @@ public enum IgnoredLocales {
     }
 }
 
-public enum IgnoredLocaleError: Error, Equatable, CustomLocalizedStringResourceConvertible {
+public enum IgnoredLocaleError: ReadableError, Equatable {
     case sourceLanguage(String)
     case notListed(String, listed: [String])
 
@@ -100,8 +101,4 @@ public enum IgnoredLocaleError: Error, Equatable, CustomLocalizedStringResourceC
             """, bundle: .here)
         }
     }
-}
-
-extension IgnoredLocaleError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

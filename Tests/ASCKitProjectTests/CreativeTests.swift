@@ -301,7 +301,7 @@ struct LibraryReportLineTests {
         let slot = LibrarySlot(group: "G", type: .appPreview, wanted: poster ? ["b", "a"] : ["a", "b"],
                                checksums: [nil, nil], current: current,
                                posterFrames: poster ? ["a": "00:00:01:00"] : [:])
-        #expect(ExperimentPlan.describe(slot) == words)
+        #expect(slot.summary == words)
     }
 
     @Test func countsEachFileOnceAndEachSlotsWorkInTheProgress() {

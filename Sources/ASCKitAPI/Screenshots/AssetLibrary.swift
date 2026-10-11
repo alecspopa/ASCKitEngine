@@ -44,6 +44,31 @@ public struct PreviewFrameImage: Decodable, Sendable {
     public let state: String?
 }
 
+/// Where App Store Connect serves the image it holds. The URL is a template
+/// with a width, a height and a file format in it, and it is unauthenticated,
+/// so the bearer token must not be attached to it.
+public struct ImageAsset: Decodable, Sendable {
+    public let templateUrl: String?
+    public let width: Int?
+    public let height: Int?
+}
+
+/// One PUT Apple wants during an upload. The URL is unauthenticated and short
+/// lived, so the bearer token must not be attached to it.
+public struct UploadOperation: Decodable, Sendable {
+    public let method: String
+    public let url: String
+    public let length: Int
+    public let offset: Int
+    public let requestHeaders: [Header]
+
+    /// An array of name and value pairs, not a dictionary.
+    public struct Header: Decodable, Sendable {
+        public let name: String
+        public let value: String
+    }
+}
+
 public struct PlacementAttributes: Decodable, Sendable {
     public let mediaType: LibraryMedia?
     public let placementType: PlacementType?
@@ -112,10 +137,6 @@ public extension ASCClient {
             query: query,
             as: LibraryAssetAttributes.self
         )
-    }
-
-    func libraryAsset(media: LibraryMedia, id: String) async throws -> Resource<LibraryAssetAttributes> {
-        try await get("/v1/\(media.resourceType)/\(id)", as: LibraryAssetAttributes.self)
     }
 
     /// Step one of an upload: claim a place in the library and get told where
@@ -289,5 +310,31 @@ public enum LibraryRefusal: Sendable, Equatable {
         } else {
             return nil
         }
+    }
+}
+
+// MARK: - Sending the bytes
+
+extension ASCClient {
+    /// Sends one part of an upload where App Store Connect said to send it.
+    ///
+    /// The address is unauthenticated and short lived. Attaching the bearer
+    /// token to it is wrong, so this deliberately does not go through the
+    /// normal request path.
+    func uploadPart(
+        to url: URL,
+        method: String,
+        headers: [UploadOperation.Header],
+        body: Data
+    ) async throws {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.httpBody = body
+        for header in headers {
+            request.setValue(header.value, forHTTPHeaderField: header.name)
+        }
+
+        let (data, response) = try await perform(request)
+        try Self.checked(data: data, response: response)
     }
 }

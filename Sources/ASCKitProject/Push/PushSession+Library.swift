@@ -13,7 +13,7 @@ public struct LibraryState: Sendable {
 }
 
 /// Why a read of the images could not go on.
-public enum LibraryReadError: Error, Equatable, CustomLocalizedStringResourceConvertible {
+public enum LibraryReadError: ReadableError, Equatable {
     /// App Store Connect has no asset library for this app.
     case noLibrary
     /// A push of images from a read that left the images out.
@@ -30,10 +30,6 @@ public enum LibraryReadError: Error, Equatable, CustomLocalizedStringResourceCon
             LocalizedStringResource("Read App Store Connect with the images, then push them.", bundle: .here)
         }
     }
-}
-
-extension LibraryReadError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }
 
 extension PushSession {
@@ -107,41 +103,7 @@ extension PushSession {
     }
 
     static func targets(in plan: ExperimentPlan) -> [LibraryPusher.Target] {
-        let previews = plan.changingPreviewSets.map { item in
-            LibraryPusher.Target(
-                id: item.id,
-                label: item.label,
-                deviceClassID: item.deviceClass.id,
-                parent: .treatmentLocalization(id: item.treatmentLocalizationID),
-                files: item.localFiles.map(\.libraryFile),
-                slot: item.library
-            )
-        }
-        let creative = plan.creativeSets.filter(\.plan.changesAnything).map { item in
-            LibraryPusher.Target(
-                id: item.id,
-                label: item.label,
-                deviceClassID: item.plan.role.rawValue,
-                parent: .treatmentLocalization(id: item.treatmentLocalizationID),
-                files: item.plan.file.map { [$0.libraryFile] } ?? [],
-                slot: item.plan.library
-            )
-        }
-        return screenshotTargets(in: plan) + previews + creative
-    }
-
-    private static func screenshotTargets(in plan: ExperimentPlan) -> [LibraryPusher.Target] {
-        plan.changingSets.compactMap { item in
-            let slot = item.library
-            return LibraryPusher.Target(
-                id: item.id,
-                label: item.label,
-                deviceClassID: item.deviceClass.id,
-                parent: .treatmentLocalization(id: item.treatmentLocalizationID),
-                files: item.localFiles.map(\.libraryFile),
-                slot: slot
-            )
-        }
+        plan.targets
     }
 
     /// Moves the files a tick leaves out to the Trash. A file that will not go

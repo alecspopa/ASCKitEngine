@@ -1,3 +1,4 @@
+import ASCKitAPI
 import CoreGraphics
 import Foundation
 
@@ -128,7 +129,7 @@ public struct IconComposerDocument: Sendable {
 
     /// What a folder that is not an Icon Composer document, or one this cannot
     /// make sense of, answers with.
-    public enum Failure: Error, CustomLocalizedStringResourceConvertible {
+    public enum Failure: ReadableError {
         case noDocument(at: URL)
 
         public var localizedStringResource: LocalizedStringResource {
@@ -316,8 +317,4 @@ private extension [IconComposerDocument.Specialization] {
     var light: IconComposerDocument.FillValue? {
         (first { $0.appearance == nil } ?? first)?.value
     }
-}
-
-extension IconComposerDocument.Failure: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

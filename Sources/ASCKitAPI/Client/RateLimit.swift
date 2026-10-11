@@ -51,13 +51,6 @@ public struct RateLimit: Sendable, Hashable {
         )
     }
 
-    /// A run across every language and device class is request-heavy, so the
-    /// caller may want to slow down before Apple starts refusing.
-    public var isRunningLow: Bool {
-        guard let remainingThisHour, let limitPerHour, limitPerHour > 0 else { return false }
-        return Double(remainingThisHour) / Double(limitPerHour) < 0.1
-    }
-
     /// `Retry-After` carries either a number of seconds or a date to wait for.
     ///
     /// A date already gone by means wait no longer, so both shapes end up as a

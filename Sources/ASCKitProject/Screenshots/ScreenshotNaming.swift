@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// What the name of a screenshot waiting to be filed says about it.
@@ -44,7 +45,7 @@ public enum ScreenshotNaming {
     ///
     /// The words live here rather than in either front end, so the window and
     /// the terminal refuse the same file for the same stated reason.
-    public enum Refusal: Error, Sendable, Hashable, CustomLocalizedStringResourceConvertible {
+    public enum Refusal: ReadableError, Sendable, Hashable {
         case noLanguage(fileName: String, token: String)
         case languageNotShipped(fileName: String, locale: String, shipped: [String])
         case twoLanguagesFit(fileName: String, language: String, candidates: [String])
@@ -436,8 +437,4 @@ public enum ScreenshotNaming {
     }
 
     private static let foldDisplays: Set = ["inner", "outer"]
-}
-
-extension ScreenshotNaming.Refusal: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

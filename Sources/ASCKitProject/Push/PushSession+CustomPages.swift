@@ -76,36 +76,6 @@ public extension PushSession {
 
 extension PushSession {
     static func targets(in plan: CustomPagePlan) -> [LibraryPusher.Target] {
-        let screenshots = plan.changingSets.map { item in
-            LibraryPusher.Target(
-                id: item.id,
-                label: item.label,
-                deviceClassID: item.deviceClass.id,
-                parent: .customProductPageLocalization(id: item.localizationID),
-                files: item.localFiles.map(\.libraryFile),
-                slot: item.library
-            )
-        }
-        let previews = plan.changingPreviewSets.map { item in
-            LibraryPusher.Target(
-                id: item.id,
-                label: item.label,
-                deviceClassID: item.deviceClass.id,
-                parent: .customProductPageLocalization(id: item.localizationID),
-                files: item.localFiles.map(\.libraryFile),
-                slot: item.library
-            )
-        }
-        let creative = plan.changingCreativeSets.map { item in
-            LibraryPusher.Target(
-                id: item.id,
-                label: item.label,
-                deviceClassID: item.plan.role.rawValue,
-                parent: .customProductPageLocalization(id: item.localizationID),
-                files: item.plan.file.map { [$0.libraryFile] } ?? [],
-                slot: item.plan.library
-            )
-        }
-        return screenshots + previews + creative
+        plan.targets
     }
 }

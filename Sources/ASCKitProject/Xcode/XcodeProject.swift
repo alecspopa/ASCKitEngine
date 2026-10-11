@@ -567,7 +567,7 @@ public struct XcodeProject: Sendable {
     }
 }
 
-public enum XcodeProjectError: Error, CustomLocalizedStringResourceConvertible {
+public enum XcodeProjectError: ReadableError {
     case unreadable(url: URL)
     case notAProject(url: URL)
 
@@ -582,8 +582,4 @@ public enum XcodeProjectError: Error, CustomLocalizedStringResourceConvertible {
             LocalizedStringResource("\(url.lastPathComponent) is not an Xcode project this can read.", bundle: .here)
         }
     }
-}
-
-extension XcodeProjectError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

@@ -188,6 +188,26 @@ public enum LibraryPlanner {
         )
     }
 
+    /// The previews of one device class in one language, or nil when there
+    /// is nothing on either side.
+    ///
+    /// Unlike screenshots, an empty folder takes the previews on the store
+    /// off. The same rule holds for a version, a test and a custom page.
+    public static func previewSet(
+        files: [PreviewFile],
+        placements: [RemotePlacement],
+        locale: String,
+        deviceClass: DeviceClass,
+        record: AssetRecord
+    ) -> LibrarySlot? {
+        let current = current(in: placements, locale: locale, group: deviceClass.placementGroup, type: .appPreview)
+        guard files.isEmpty == false || current.isEmpty == false else { return nil }
+        return slot(
+            files: files.map(\.libraryFile), current: current, record: record,
+            group: deviceClass.placementGroup, type: .appPreview
+        )
+    }
+
     // swiftlint:enable function_parameter_count
 
     /// The placements of one slot, from all the placements of one language.

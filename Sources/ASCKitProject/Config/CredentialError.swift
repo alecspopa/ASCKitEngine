@@ -1,7 +1,8 @@
+import ASCKitAPI
 import Foundation
 
 /// A picked file that is not the key the project needs.
-public enum CredentialError: Error, Equatable, CustomLocalizedStringResourceConvertible {
+public enum CredentialError: ReadableError, Equatable {
     case notAPrivateKey(fileName: String)
     case wrongKey(fileName: String, expected: String, found: String)
 
@@ -20,8 +21,4 @@ public enum CredentialError: Error, Equatable, CustomLocalizedStringResourceConv
             """, bundle: .here)
         }
     }
-}
-
-extension CredentialError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

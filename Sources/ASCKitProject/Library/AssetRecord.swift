@@ -156,7 +156,7 @@ public enum AssetRecordStore {
     private static var decoder: JSONDecoder { ProjectJSON.decoder(datesAsISO8601: true) }
 }
 
-public enum AssetRecordError: Error, Equatable, CustomLocalizedStringResourceConvertible {
+public enum AssetRecordError: ReadableError, Equatable {
     case damaged(path: String)
 
     public var localizedStringResource: LocalizedStringResource {
@@ -168,8 +168,4 @@ public enum AssetRecordError: Error, Equatable, CustomLocalizedStringResourceCon
             """, bundle: .here)
         }
     }
-}
-
-extension AssetRecordError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

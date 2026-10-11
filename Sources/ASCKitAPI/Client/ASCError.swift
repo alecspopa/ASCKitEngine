@@ -43,7 +43,7 @@ struct ASCErrorEnvelope: Decodable {
     let errors: [ASCErrorDetail]
 }
 
-public enum ASCError: Error {
+public enum ASCError: ReadableError {
     case notAnHTTPResponse
 
     /// 401. The token was refused. Usually a clock problem or the wrong key id.
@@ -144,7 +144,7 @@ extension URLError {
     }
 }
 
-extension ASCError: CustomLocalizedStringResourceConvertible {
+extension ASCError {
     public var localizedStringResource: LocalizedStringResource {
         guard let said = details.sentences else { return sentence }
         return LocalizedStringResource("\(sentence) App Store Connect said: \(said)", bundle: .here)
@@ -252,10 +252,6 @@ extension ASCError: CustomLocalizedStringResourceConvertible {
         let written = path.map { $0.intValue.map(String.init) ?? $0.stringValue }.joined(separator: ".")
         return written.isEmpty ? nil : written
     }
-}
-
-extension ASCError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }
 
 public extension [ASCErrorDetail] {

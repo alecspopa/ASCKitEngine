@@ -114,11 +114,10 @@ public enum ExperimentPlanner {
                 experiment: folders.experiment, treatment: folders.treatment,
                 locale: localization.locale, deviceClassID: deviceClass.id
             ))
-            let current = LibraryPlanner.current(
-                in: localization.placements, locale: localization.locale,
-                group: deviceClass.placementGroup, type: .appPreview
-            )
-            guard files.isEmpty == false || current.isEmpty == false else { return nil }
+            guard let library = LibraryPlanner.previewSet(
+                files: files, placements: localization.placements, locale: localization.locale,
+                deviceClass: deviceClass, record: record
+            ) else { return nil }
 
             return ExperimentPlan.PreviewSetPlan(
                 experimentName: experiment.name,
@@ -128,10 +127,7 @@ public enum ExperimentPlanner {
                 treatmentLocalizationID: localization.id,
                 deviceClass: deviceClass,
                 localFiles: files,
-                library: LibraryPlanner.slot(
-                    files: files.map(\.libraryFile), current: current, record: record,
-                    group: deviceClass.placementGroup, type: .appPreview
-                )
+                library: library
             )
         }
     }

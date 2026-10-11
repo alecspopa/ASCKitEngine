@@ -151,7 +151,7 @@ public enum PrivateKeyStore {
     }
 }
 
-public enum PrivateKeyError: Error, CustomLocalizedStringResourceConvertible {
+public enum PrivateKeyError: ReadableError {
     case notFound(keyID: String, looked: [URL])
     case unreadable(url: URL, underlying: any Error)
     case unwritable(url: URL)
@@ -183,8 +183,4 @@ public enum PrivateKeyError: Error, CustomLocalizedStringResourceConvertible {
             return LocalizedStringResource("Could not write \(url.path).", bundle: .here)
         }
     }
-}
-
-extension PrivateKeyError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

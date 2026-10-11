@@ -38,7 +38,7 @@ public struct CustomPagePlan: Sendable {
     }
 
     /// The screenshots of one device class in one language of a page.
-    public struct SetPlan: Sendable, Identifiable {
+    public struct SetPlan: LibrarySetPlan {
         public let pageID: String
         public let pageName: String
         public let locale: String
@@ -50,14 +50,15 @@ public struct CustomPagePlan: Sendable {
         public let library: LibrarySlot
 
         public var id: String { "\(pageID)|\(locale)|\(deviceClass.id)" }
-        public var action: ChangePlan.ScreenshotPlan.Action { LibraryPlanner.action(for: library) }
-        public var changesAnything: Bool { library.isUnchanged == false }
         public var remoteCount: Int { library.current.count }
         public var label: String { "\(pageName) / \(locale)" }
+        public var slotName: String { deviceClass.id }
+        public var parent: PlacementParent { .customProductPageLocalization(id: localizationID) }
+        public var libraryFiles: [LibraryFile] { localFiles.map(\.libraryFile) }
     }
 
     /// The app previews of one device class in one language of a page.
-    public struct PreviewSetPlan: Sendable, Identifiable {
+    public struct PreviewSetPlan: LibrarySetPlan {
         public let pageID: String
         public let pageName: String
         public let locale: String
@@ -67,19 +68,24 @@ public struct CustomPagePlan: Sendable {
         public let library: LibrarySlot
 
         public var id: String { "\(pageID)|\(locale)|\(deviceClass.id)|previews" }
-        public var changesAnything: Bool { library.isUnchanged == false }
-        public var action: ChangePlan.ScreenshotPlan.Action { LibraryPlanner.action(for: library) }
         public var label: String { "\(pageName) / \(locale)" }
+        public var slotName: String { deviceClass.id }
+        public var parent: PlacementParent { .customProductPageLocalization(id: localizationID) }
+        public var libraryFiles: [LibraryFile] { localFiles.map(\.libraryFile) }
     }
 
     /// The header or search results art of one language of a page.
-    public struct CreativeSetPlan: Sendable, Identifiable {
+    public struct CreativeSetPlan: LibrarySetPlan {
         public let pageID: String
         public let label: String
         public let localizationID: String
         public let plan: CreativePlan
 
         public var id: String { "\(localizationID)|\(plan.role.rawValue)" }
+        public var slotName: String { plan.role.rawValue }
+        public var parent: PlacementParent { .customProductPageLocalization(id: localizationID) }
+        public var libraryFiles: [LibraryFile] { plan.file.map { [$0.libraryFile] } ?? [] }
+        public var library: LibrarySlot { plan.library }
     }
 
     /// A folder of images with no place to go.
@@ -129,7 +135,7 @@ public struct CustomPagePlan: Sendable {
     public var changingTexts: [TextChange] { textChanges.filter(\.changesAnything) }
     public var changingSets: [SetPlan] { sets.filter(\.changesAnything) }
     public var changingPreviewSets: [PreviewSetPlan] { previewSets.filter(\.changesAnything) }
-    public var changingCreativeSets: [CreativeSetPlan] { creativeSets.filter(\.plan.changesAnything) }
+    public var changingCreativeSets: [CreativeSetPlan] { creativeSets.filter(\.changesAnything) }
 
     public var hasTextChanges: Bool { changingTexts.isEmpty == false || deepLinkChanges.isEmpty == false }
     public var hasImageChanges: Bool {
@@ -138,18 +144,12 @@ public struct CustomPagePlan: Sendable {
 
     public var hasChanges: Bool { hasTextChanges || hasImageChanges }
 
-    public var imagesToAdd: Int {
-        sets.reduce(0) { total, item in
-            guard case let .replace(_, adding) = item.action else { return total }
-            return total + adding
-        }
-    }
+    public var imagesToAdd: Int { sets.imagesToAdd }
+    public var imagesToRemove: Int { sets.imagesToRemove }
 
-    public var imagesToRemove: Int {
-        sets.reduce(0) { total, item in
-            guard case let .replace(removing, _) = item.action else { return total }
-            return total + removing
-        }
+    /// Every slot that changes, with the page each one goes on.
+    var targets: [LibraryPusher.Target] {
+        sets.changingTargets + previewSets.changingTargets + creativeSets.changingTargets
     }
 
     /// Whether anything changes on one page.
@@ -177,19 +177,12 @@ public struct CustomPagePlan: Sendable {
             return lines
         }
         let screenshots = changingSets.filter { $0.pageID == pageID }.map { item in
-            "\(item.locale)/\(item.deviceClass.id) screenshots: \(ExperimentPlan.describe(item.library))"
+            "\(item.locale)/\(item.deviceClass.id) screenshots: \(item.library.summary)"
         }
         let previews = changingPreviewSets.filter { $0.pageID == pageID }.map { item in
-            "\(item.locale)/\(item.deviceClass.id) previews: \(ExperimentPlan.describe(item.library))"
+            "\(item.locale)/\(item.deviceClass.id) previews: \(item.library.summary)"
         }
-        let art = changingCreativeSets.filter { $0.pageID == pageID }.map { item in
-            let locale = item.plan.locale
-            return switch (item.plan.file, item.plan.usesHeader) {
-            case (nil, _): "\(locale) \(item.plan.role.rawValue): will be removed"
-            case (_?, true): "\(locale) \(item.plan.role.rawValue): show the header"
-            case let (file?, false): "\(locale) \(item.plan.role.rawValue): put up \(file.fileName)"
-            }
-        }
+        let art = changingCreativeSets.filter { $0.pageID == pageID }.map(\.plan.summary)
         return deepLinks + texts + screenshots + previews + art
     }
 }

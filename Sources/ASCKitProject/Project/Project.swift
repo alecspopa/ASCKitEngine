@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// A project on disk: one configuration file and the content beside it.
@@ -263,7 +264,7 @@ extension Project {
     static let cacheFolderName = "cache"
 }
 
-public enum ProjectError: Error, CustomLocalizedStringResourceConvertible {
+public enum ProjectError: ReadableError {
     case noXcodeProject(at: URL)
     case noConfigurationFile(at: URL)
     case unreadableFile(url: URL, underlying: any Error)
@@ -291,8 +292,4 @@ public enum ProjectError: Error, CustomLocalizedStringResourceConvertible {
             LocalizedStringResource("There is no folder for version \(version).", bundle: .here)
         }
     }
-}
-
-extension ProjectError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

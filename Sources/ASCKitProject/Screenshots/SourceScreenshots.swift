@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// Saying that a language shows the source language's screenshots.
@@ -45,7 +46,7 @@ public enum SourceScreenshots {
     }
 }
 
-public enum SourceScreenshotError: Error, CustomLocalizedStringResourceConvertible {
+public enum SourceScreenshotError: ReadableError {
     case sourceLanguage(String)
 
     public var localizedStringResource: LocalizedStringResource {
@@ -57,8 +58,4 @@ public enum SourceScreenshotError: Error, CustomLocalizedStringResourceConvertib
             """, bundle: .here)
         }
     }
-}
-
-extension SourceScreenshotError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

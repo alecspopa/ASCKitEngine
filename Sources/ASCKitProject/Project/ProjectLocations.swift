@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// Where each app's project data is kept, when it is not in the repository.
@@ -236,7 +237,7 @@ public struct ProjectLocations: Sendable, Equatable {
     }
 }
 
-public enum ProjectLocationsError: Error, CustomLocalizedStringResourceConvertible {
+public enum ProjectLocationsError: ReadableError {
     case unreadable(url: URL, underlying: any Error)
 
     public var localizedStringResource: LocalizedStringResource {
@@ -248,8 +249,4 @@ public enum ProjectLocationsError: Error, CustomLocalizedStringResourceConvertib
             """, bundle: .here)
         }
     }
-}
-
-extension ProjectLocationsError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

@@ -208,7 +208,7 @@ public struct TextPusher: Sendable {
     }
 }
 
-public enum PushError: Error, CustomLocalizedStringResourceConvertible {
+public enum PushError: ReadableError {
     case appInformationNotEditable
 
     /// The plan named a language App Store Connect has no page for.
@@ -239,8 +239,4 @@ public enum PushError: Error, CustomLocalizedStringResourceConvertible {
             return LocalizedStringResource("This version refuses some of these changes:\n\(reasons)", bundle: .here)
         }
     }
-}
-
-extension PushError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

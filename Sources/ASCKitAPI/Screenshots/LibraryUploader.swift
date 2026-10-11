@@ -262,7 +262,7 @@ extension ASCClient {
 
 // MARK: - Errors
 
-public enum UploadError: Error, CustomLocalizedStringResourceConvertible {
+public enum UploadError: ReadableError {
     case noUploadInstructions(fileName: String)
     case badUploadURL(fileName: String, url: String)
     case partOutsideTheFile(fileName: String)
@@ -299,8 +299,4 @@ public enum UploadError: Error, CustomLocalizedStringResourceConvertible {
         }
         return LocalizedStringResource("App Store Connect refused \(fileName). App Store Connect said: \(said)", bundle: .here)
     }
-}
-
-extension UploadError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

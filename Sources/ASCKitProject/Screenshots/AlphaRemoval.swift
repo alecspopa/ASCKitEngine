@@ -1,3 +1,4 @@
+import ASCKitAPI
 import CoreGraphics
 import Foundation
 import ImageIO
@@ -172,7 +173,7 @@ public enum AlphaRemoval {
     }
 }
 
-public enum AlphaRemovalError: Error, CustomLocalizedStringResourceConvertible {
+public enum AlphaRemovalError: ReadableError {
     case couldNotRead(String)
     case couldNotDraw(String)
     case couldNotWrite(String)
@@ -191,8 +192,4 @@ public enum AlphaRemovalError: Error, CustomLocalizedStringResourceConvertible {
             """, bundle: .here)
         }
     }
-}
-
-extension AlphaRemovalError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

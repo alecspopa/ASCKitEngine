@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// What a new project in a folder would be, read out of the Xcode project
@@ -168,7 +169,7 @@ public struct NewProject: Sendable {
     }
 }
 
-public enum NewProjectError: Error, CustomLocalizedStringResourceConvertible {
+public enum NewProjectError: ReadableError {
     case noApp(in: String)
     case severalApps([String])
     case noSuchTarget(String, available: [String])
@@ -188,8 +189,4 @@ public enum NewProjectError: Error, CustomLocalizedStringResourceConvertible {
             """, bundle: .here)
         }
     }
-}
-
-extension NewProjectError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

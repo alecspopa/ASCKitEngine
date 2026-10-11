@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// Makes a new project on disk: the configuration, the version folder, and a
@@ -173,7 +174,7 @@ public enum ProjectScaffold {
     }
 }
 
-public enum ScaffoldError: Error, CustomLocalizedStringResourceConvertible {
+public enum ScaffoldError: ReadableError {
     case alreadyAProject(at: URL)
 
     public var localizedStringResource: LocalizedStringResource {
@@ -182,8 +183,4 @@ public enum ScaffoldError: Error, CustomLocalizedStringResourceConvertible {
             LocalizedStringResource("There is already a project at \(folder.path). Open it instead.", bundle: .here)
         }
     }
-}
-
-extension ScaffoldError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

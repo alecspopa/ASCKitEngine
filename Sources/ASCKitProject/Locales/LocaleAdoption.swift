@@ -27,7 +27,7 @@ public enum LocaleAdoption {
     }
 
     /// Why there is nothing to do, or why it cannot be done yet.
-    public enum Refusal: Error, Sendable, Equatable, CustomLocalizedStringResourceConvertible {
+    public enum Refusal: ReadableError, Sendable, Equatable {
         /// App Store Connect has not been read yet, so nothing here knows what
         /// it holds.
         case nothingReadYet
@@ -198,8 +198,4 @@ public enum LocaleAdoption {
             )
         }
     }
-}
-
-extension LocaleAdoption.Refusal: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

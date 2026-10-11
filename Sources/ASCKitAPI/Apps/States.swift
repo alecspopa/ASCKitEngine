@@ -138,24 +138,3 @@ public struct ProductLocalizationState: RawRepresentable, Sendable, Hashable, Co
     /// same way a live one is.
     public var isEditable: Bool { self == .prepareForSubmission }
 }
-
-/// Where Apple has got to with an image it is ingesting.
-public struct AssetDeliveryState: Sendable, Hashable, Decodable {
-    public struct State: RawRepresentable, Sendable, Hashable, Codable {
-        public let rawValue: String
-        public init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
-        public static let awaitingUpload = Self(rawValue: "AWAITING_UPLOAD")
-        public static let uploadComplete = Self(rawValue: "UPLOAD_COMPLETE")
-        public static let complete = Self(rawValue: "COMPLETE")
-        public static let failed = Self(rawValue: "FAILED")
-
-        public var isTerminal: Bool { self == .complete || self == .failed }
-    }
-
-    public let state: State?
-    public let errors: [ASCErrorDetail]?
-    public let warnings: [ASCErrorDetail]?
-}
