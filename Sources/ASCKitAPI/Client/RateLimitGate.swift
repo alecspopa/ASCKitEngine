@@ -19,8 +19,12 @@ actor RateLimitGate {
     }
 
     /// Returns at once while the gate is open, which is the usual case.
+    ///
+    /// A refusal can arrive while a request waits and push the gate further
+    /// out, so the time is read again after each sleep.
     func waitUntilOpen() async throws {
-        guard let openAt else { return }
-        try await Task.sleep(until: openAt, clock: .continuous)
+        while let openAt, openAt > .now {
+            try await Task.sleep(until: openAt, clock: .continuous)
+        }
     }
 }
