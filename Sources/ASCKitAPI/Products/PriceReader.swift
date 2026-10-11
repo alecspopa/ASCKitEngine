@@ -241,11 +241,17 @@ public extension ASCClient {
     /// keeps two lists: the countries somebody set, and the ones Apple worked
     /// out from the base territory. Both are what a buyer pays, so both count.
     private func currentPurchasePrices(purchaseID: String) async throws -> [String: String] {
-        let schedule = try? await get(
-            "/v2/inAppPurchases/\(purchaseID)/iapPriceSchedule",
-            as: NoAttributes.self
-        )
-        guard let scheduleID = schedule?.id else { return [:] }
+        // Only a missing schedule means no prices. Any other failure must
+        // stop the read, or a rise would look like no change.
+        let scheduleID: String
+        do {
+            scheduleID = try await get(
+                "/v2/inAppPurchases/\(purchaseID)/iapPriceSchedule",
+                as: NoAttributes.self
+            ).id
+        } catch ASCError.notFound {
+            return [:]
+        }
 
         async let manual = listIncluding(
             "/v1/inAppPurchasePriceSchedules/\(scheduleID)/manualPrices",
