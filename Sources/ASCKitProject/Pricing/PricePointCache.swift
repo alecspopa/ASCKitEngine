@@ -172,6 +172,7 @@ public enum PricePointStore {
 
     public static func save(_ cache: PricePointCache, in project: Project) throws {
         let url = url(productID: cache.productID, in: project)
+        try ProjectScaffold.makeCache(at: project.cacheURL)
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(),
             withIntermediateDirectories: true

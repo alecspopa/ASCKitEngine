@@ -64,10 +64,7 @@ public enum CustomPageSnapshotStore {
     }
 
     public static func save(_ snapshot: CustomPageSnapshot, in project: Project) throws {
-        let url = url(in: project)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
-        )
-        try ProjectJSON.write(snapshot, to: url, datesAsISO8601: true)
+        try ProjectScaffold.makeCache(at: project.cacheURL)
+        try ProjectJSON.write(snapshot, to: url(in: project), datesAsISO8601: true)
     }
 }
