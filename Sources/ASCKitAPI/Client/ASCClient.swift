@@ -141,12 +141,24 @@ public struct ASCClient: Sendable {
 
     // MARK: - Writing
 
-    func post<Attributes: Decodable & Sendable>(
-        _ path: String,
-        body: WriteRequest<some Encodable & Sendable>,
+    /// Sends a create to the path of its resource type, so the type is
+    /// written once.
+    func create<Attributes: Decodable & Sendable>(
+        _ body: WriteRequest<some Encodable & Sendable>,
+        apiVersion: String = "v1",
         as type: Attributes.Type = Attributes.self
     ) async throws -> Resource<Attributes> {
-        try await write(HTTPMethod.post, path, body: body, as: type)
+        try await write(HTTPMethod.post, "/\(apiVersion)/\(body.data.type)", body: body, as: type)
+    }
+
+    /// Sends an update to the path of the resource it names.
+    func update<Attributes: Decodable & Sendable>(
+        _ body: WriteRequest<some Encodable & Sendable>,
+        apiVersion: String = "v1",
+        as type: Attributes.Type = Attributes.self
+    ) async throws -> Resource<Attributes> {
+        guard let id = body.data.id else { preconditionFailure("An update names the resource it changes.") }
+        return try await write(HTTPMethod.patch, "/\(apiVersion)/\(body.data.type)/\(id)", body: body, as: type)
     }
 
     /// A create whose body carries the resources it points at.
@@ -174,14 +186,6 @@ public struct ASCClient: Sendable {
         try await write(HTTPMethod.patch, path, body: body, as: type)
     }
 
-    func patch<Attributes: Decodable & Sendable>(
-        _ path: String,
-        body: WriteRequest<some Encodable & Sendable>,
-        as type: Attributes.Type = Attributes.self
-    ) async throws -> Resource<Attributes> {
-        try await write(HTTPMethod.patch, path, body: body, as: type)
-    }
-
     private func write<Attributes: Decodable & Sendable>(
         _ method: String,
         _ path: String,
@@ -194,11 +198,6 @@ public struct ASCClient: Sendable {
 
     func delete(_ path: String) async throws {
         _ = try await send(method: HTTPMethod.delete, url: url(path), body: nil)
-    }
-
-    /// Relationship updates answer 204 with no body, so they decode nothing.
-    func replaceRelationship(_ path: String, with identifiers: [Identifier]) async throws {
-        try await changeRelationship(HTTPMethod.patch, path, identifiers)
     }
 
     /// Links more things, and leaves the ones already linked alone.

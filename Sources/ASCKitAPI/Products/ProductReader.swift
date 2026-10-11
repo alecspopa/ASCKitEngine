@@ -13,17 +13,15 @@ public extension ASCClient {
     /// to thousands of rows, so it is asked for when somebody wants to see a
     /// price rather than every time a window opens.
     func products(bundleID: String, includeWords: Bool = true) async throws -> RemoteProducts {
-        guard let app = try await app(bundleID: bundleID) else {
-            throw ListingError.noSuchApp(bundleID: bundleID)
-        }
+        let app = try await requireApp(bundleID: bundleID)
 
         async let purchases = readPurchases(appID: app.id)
         async let subscriptions = readSubscriptions(appID: app.id)
 
         let found = try await purchases + subscriptions.products
-        let withWords = includeWords ? try await readWords(for: found) : found
         let groups = try await subscriptions.groups
-        let groupsWithWords = includeWords ? try await readGroupWords(for: groups) : groups
+        async let withWords = includeWords ? readWords(for: found) : found
+        async let groupsWithWords = includeWords ? readWords(for: groups) : groups
 
         return try await RemoteProducts(
             appID: app.id,
@@ -38,28 +36,18 @@ public extension ASCClient {
     private func readPurchases(appID: String) async throws -> [RemoteProduct] {
         try await inAppPurchases(appID: appID).compactMap { resource in
             guard let productID = resource.attributes?.productId else { return nil }
+            let appleType = resource.attributes?.inAppPurchaseType
             return RemoteProduct(
                 id: resource.id,
                 productID: productID,
-                kind: Self.kind(fromAppleType: resource.attributes?.inAppPurchaseType),
+                // A kind added later keeps Apple's own word, so it reads as
+                // itself and is reported rather than guessed at.
+                kind: ProductKind(appleType: appleType)?.rawValue ?? appleType?.lowercased() ?? "unknown",
                 referenceName: resource.attributes?.name,
                 state: resource.attributes?.state,
                 reviewNote: resource.attributes?.reviewNote,
                 familySharable: resource.attributes?.familySharable
             )
-        }
-    }
-
-    /// Apple writes the kind in capitals with underscores. ASCKit writes it in
-    /// lower case, because that is what goes in a file somebody reads.
-    private static func kind(fromAppleType written: String?) -> String {
-        switch written {
-        case "CONSUMABLE": "consumable"
-        case "NON_CONSUMABLE": "non_consumable"
-        case "NON_RENEWING_SUBSCRIPTION": "non_renewing_subscription"
-        // Anything else keeps Apple's own word, so a kind added later reads as
-        // itself and is reported rather than guessed at.
-        default: written?.lowercased() ?? "unknown"
         }
     }
 
@@ -85,35 +73,26 @@ public extension ASCClient {
             }
         }
 
-        let found = try await withThrowingTaskGroup(of: [RemoteProduct].self) { tasks in
-            for group in groups {
-                let groupName = group.attributes?.referenceName
-                tasks.addTask {
-                    try await self.subscriptions(groupID: group.id).compactMap { resource in
-                        guard let productID = resource.attributes?.productId else { return nil }
-                        return RemoteProduct(
-                            id: resource.id,
-                            productID: productID,
-                            kind: "auto_renewable_subscription",
-                            referenceName: resource.attributes?.name,
-                            state: resource.attributes?.state,
-                            reviewNote: resource.attributes?.reviewNote,
-                            familySharable: resource.attributes?.familySharable,
-                            subscriptionGroup: groupName,
-                            subscriptionPeriod: resource.attributes?.subscriptionPeriod
-                        )
-                    }
-                }
+        let found = try await groups.concurrentMap { group in
+            let groupName = group.attributes?.referenceName
+            return try await self.subscriptions(groupID: group.id).compactMap { resource -> RemoteProduct? in
+                guard let productID = resource.attributes?.productId else { return nil }
+                return RemoteProduct(
+                    id: resource.id,
+                    productID: productID,
+                    kind: ProductKind.autoRenewableSubscription.rawValue,
+                    referenceName: resource.attributes?.name,
+                    state: resource.attributes?.state,
+                    reviewNote: resource.attributes?.reviewNote,
+                    familySharable: resource.attributes?.familySharable,
+                    subscriptionGroup: groupName,
+                    subscriptionPeriod: resource.attributes?.subscriptionPeriod
+                )
             }
-            var collected: [RemoteProduct] = []
-            for try await batch in tasks {
-                collected += batch
-            }
-            return collected
         }
 
         return SubscriptionRead(
-            products: found,
+            products: found.flatMap(\.self),
             groupNames: names.compactMapValues { $0 },
             groups: remoteGroups
         )
@@ -121,111 +100,65 @@ public extension ASCClient {
 
     // MARK: - Words
 
-    private func readGroupWords(
-        for groups: [RemoteSubscriptionGroup]
-    ) async throws -> [RemoteSubscriptionGroup] {
-        try await withThrowingTaskGroup(of: RemoteSubscriptionGroup.self) { tasks in
-            for group in groups {
-                tasks.addTask { try await self.withWords(group) }
-            }
-            var collected: [RemoteSubscriptionGroup] = []
-            for try await one in tasks {
-                collected.append(one)
-            }
-            return collected
-        }
-    }
-
-    /// The words a group holds, out of the version they live in.
-    ///
-    /// Two requests rather than one: the words hang off a version now, so the
-    /// version has to be found before they can be read.
-    private func withWords(
-        _ group: RemoteSubscriptionGroup
-    ) async throws -> RemoteSubscriptionGroup {
-        let versions = try await subscriptionGroupVersions(groupID: group.id)
-
-        // A group with no version has no words yet, and a read makes none.
-        guard let version = Self.wordsVersion(in: versions) else { return group }
-
-        let found = try await groupWords(inVersion: version.id)
-        return group.with(version: Self.remoteVersion(version), words: found)
-    }
-
-    private func groupWords(
-        inVersion versionID: String
-    ) async throws -> [RemoteGroupLocalization] {
-        try await subscriptionGroupLocalizations(versionID: versionID)
-            .compactMap { resource -> RemoteGroupLocalization? in
-                guard let locale = resource.attributes?.locale else { return nil }
-                return RemoteGroupLocalization(
-                    id: resource.id,
-                    locale: locale,
-                    name: resource.attributes?.name,
-                    customAppName: resource.attributes?.customAppName,
-                    state: resource.attributes?.state
-                )
-            }
-    }
-
-    /// A subscription's words and a one-time purchase's words come from two
-    /// different endpoints holding the same two fields.
     private func readWords(for products: [RemoteProduct]) async throws -> [RemoteProduct] {
-        try await withThrowingTaskGroup(of: RemoteProduct.self) { tasks in
-            for product in products {
-                tasks.addTask { try await self.withWords(product) }
+        try await products.concurrentMap { product in
+            guard let read = try await self.readWords(of: WordsOwner(product), parentID: product.id) else {
+                // A product with no version has no words yet, and a read makes
+                // none. The push refuses it and says to make the draft in App
+                // Store Connect.
+                return product
             }
-            var collected: [RemoteProduct] = []
-            for try await one in tasks {
-                collected.append(one)
-            }
-            return collected
+            return product.with(version: read.version, words: Self.productWords(read.words))
         }
     }
 
-    private func withWords(_ product: RemoteProduct) async throws -> RemoteProduct {
-        let versions = product.isAutoRenewable
-            ? try await subscriptionVersions(subscriptionID: product.id)
-            : try await inAppPurchaseVersions(purchaseID: product.id)
-
-        // A product with no version has no words yet, and a read makes none.
-        // The push refuses it and says to make the draft in App Store Connect.
-        guard let version = Self.wordsVersion(in: versions) else { return product }
-
-        let found = try await words(of: product, inVersion: version.id)
-        return product.with(version: Self.remoteVersion(version), words: found)
+    private func readWords(for groups: [RemoteSubscriptionGroup]) async throws -> [RemoteSubscriptionGroup] {
+        try await groups.concurrentMap { group in
+            guard let read = try await self.readWords(of: .subscriptionGroup, parentID: group.id) else {
+                return group
+            }
+            return group.with(version: read.version, words: Self.groupWords(read.words))
+        }
     }
 
-    /// The two endpoints hand back two types carrying the same two fields, so
-    /// each branch maps its own.
-    private func words(
-        of product: RemoteProduct,
-        inVersion versionID: String
-    ) async throws -> [RemoteProductLocalization] {
-        if product.isAutoRenewable {
-            return try await subscriptionLocalizations(versionID: versionID)
-                .compactMap { resource in
-                    guard let locale = resource.attributes?.locale else { return nil }
-                    return RemoteProductLocalization(
-                        id: resource.id,
-                        locale: locale,
-                        name: resource.attributes?.name,
-                        description: resource.attributes?.description,
-                        state: resource.attributes?.state
-                    )
-                }
+    /// The words of the version a reader should show, or nil when the
+    /// product holds no version yet.
+    ///
+    /// Two requests rather than one: the words hang off a version, so the
+    /// version has to be found before they can be read.
+    private func readWords(
+        of owner: WordsOwner,
+        parentID: String
+    ) async throws -> (version: RemoteProductVersion, words: [Resource<ProductWordsAttributes>])? {
+        let versions = try await wordsVersions(of: owner, parentID: parentID)
+        guard let version = Self.wordsVersion(in: versions) else { return nil }
+        return try await (Self.remoteVersion(version), words(of: owner, versionID: version.id))
+    }
+
+    private static func productWords(_ found: [Resource<ProductWordsAttributes>]) -> [RemoteProductLocalization] {
+        found.compactMap { resource in
+            guard let locale = resource.attributes?.locale else { return nil }
+            return RemoteProductLocalization(
+                id: resource.id,
+                locale: locale,
+                name: resource.attributes?.name,
+                description: resource.attributes?.description,
+                state: resource.attributes?.state
+            )
         }
-        return try await inAppPurchaseLocalizations(versionID: versionID)
-            .compactMap { resource in
-                guard let locale = resource.attributes?.locale else { return nil }
-                return RemoteProductLocalization(
-                    id: resource.id,
-                    locale: locale,
-                    name: resource.attributes?.name,
-                    description: resource.attributes?.description,
-                    state: resource.attributes?.state
-                )
-            }
+    }
+
+    private static func groupWords(_ found: [Resource<ProductWordsAttributes>]) -> [RemoteGroupLocalization] {
+        found.compactMap { resource in
+            guard let locale = resource.attributes?.locale else { return nil }
+            return RemoteGroupLocalization(
+                id: resource.id,
+                locale: locale,
+                name: resource.attributes?.name,
+                customAppName: resource.attributes?.customAppName,
+                state: resource.attributes?.state
+            )
+        }
     }
 }
 
@@ -238,18 +171,16 @@ public extension ASCClient {
     /// The copies have ids of their own, and a change to a language names the
     /// row in the new draft.
     func newWordsDraft(for product: RemoteProduct) async throws -> RemoteProduct {
-        let version = try await createWordsVersion(
-            of: product.isAutoRenewable ? .subscription : .inAppPurchase,
-            parentID: product.id
-        )
-        let found = try await words(of: product, inVersion: version.id)
-        return product.with(version: Self.remoteVersion(version), words: found)
+        let owner = WordsOwner(product)
+        let version = try await createWordsVersion(of: owner, parentID: product.id)
+        let found = try await words(of: owner, versionID: version.id)
+        return product.with(version: Self.remoteVersion(version), words: Self.productWords(found))
     }
 
     func newWordsDraft(for group: RemoteSubscriptionGroup) async throws -> RemoteSubscriptionGroup {
         let version = try await createWordsVersion(of: .subscriptionGroup, parentID: group.id)
-        let found = try await groupWords(inVersion: version.id)
-        return group.with(version: Self.remoteVersion(version), words: found)
+        let found = try await words(of: .subscriptionGroup, versionID: version.id)
+        return group.with(version: Self.remoteVersion(version), words: Self.groupWords(found))
     }
 }
 

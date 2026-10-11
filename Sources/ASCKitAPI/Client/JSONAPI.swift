@@ -103,6 +103,20 @@ struct WriteRequest<Attributes: Encodable & Sendable>: Encodable, Sendable {
         var attributes: Attributes?
         var relationships: [String: RelationshipToOne]?
     }
+
+    /// A new resource. App Store Connect gives it its id.
+    static func create(
+        _ type: String,
+        attributes: Attributes?,
+        relationships: [String: RelationshipToOne]? = nil
+    ) -> Self {
+        Self(data: Payload(type: type, id: nil, attributes: attributes, relationships: relationships))
+    }
+
+    /// A change to one resource. A field left nil stays as it is.
+    static func update(_ type: String, id: String, attributes: Attributes) -> Self {
+        Self(data: Payload(type: type, id: id, attributes: attributes, relationships: nil))
+    }
 }
 
 struct RelationshipToOne: Encodable, Sendable {

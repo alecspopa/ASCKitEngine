@@ -159,25 +159,23 @@ public extension ASCClient {
     /// Nothing is made. A test, a treatment and a language of a treatment all
     /// come from App Store Connect, and ASCKit only places assets on them.
     func experiments(bundleID: String) async throws -> RemoteExperiments {
-        guard let app = try await app(bundleID: bundleID) else {
-            throw ListingError.noSuchApp(bundleID: bundleID)
-        }
+        let app = try await requireApp(bundleID: bundleID)
 
-        var experiments: [RemoteExperiment] = []
         // App Store Connect answered a COMPLETED test to the state filter on
         // 2026-10-10, so the state is checked here as well.
         let unfinished = try await self.experiments(appID: app.id).filter { experiment in
             experiment.attributes?.state.map(ExperimentState.unfinished.contains) == true
         }
+        // One test at a time. Its treatments and their languages are read at
+        // the same time already, and a third level would multiply the burst.
+        var experiments: [RemoteExperiment] = []
         for experiment in unfinished {
-            var treatments: [RemoteTreatment] = []
-            for treatment in try await self.treatments(experimentID: experiment.id) {
-                let localizations = try await readTreatmentLocalizations(treatmentID: treatment.id)
-                treatments.append(RemoteTreatment(
+            let treatments = try await self.treatments(experimentID: experiment.id).concurrentMap { treatment in
+                try await RemoteTreatment(
                     id: treatment.id,
                     name: treatment.attributes?.name ?? treatment.id,
-                    localizations: localizations
-                ))
+                    localizations: readTreatmentLocalizations(treatmentID: treatment.id)
+                )
             }
             experiments.append(RemoteExperiment(
                 id: experiment.id,
@@ -201,29 +199,12 @@ public extension ASCClient {
     private func readTreatmentLocalizations(
         treatmentID: String
     ) async throws -> [RemoteTreatmentLocalization] {
-        let resources = try await treatmentLocalizations(treatmentID: treatmentID)
-
-        let outcomes = await withTaskGroup(
-            of: Result<RemoteTreatmentLocalization?, any Error>.self
-        ) { group in
-            for resource in resources {
-                group.addTask {
-                    await Self.captured {
-                        guard let locale = resource.attributes?.locale else { return nil }
-                        let placements = try await readPlacements(
-                            on: .treatmentLocalization(id: resource.id), locale: locale
-                        )
-                        return RemoteTreatmentLocalization(id: resource.id, locale: locale, placements: placements)
-                    }
-                }
-            }
-            var collected: [Result<RemoteTreatmentLocalization?, any Error>] = []
-            for await outcome in group {
-                collected.append(outcome)
-            }
-            return collected
+        try await treatmentLocalizations(treatmentID: treatmentID).concurrentMap { resource in
+            guard let locale = resource.attributes?.locale else { return nil }
+            let placements = try await readPlacements(on: .treatmentLocalization(id: resource.id), locale: locale)
+            return RemoteTreatmentLocalization(id: resource.id, locale: locale, placements: placements)
         }
-
-        return try Self.unwrap(outcomes).compactMap(\.self).sorted { $0.locale < $1.locale }
+        .compactMap(\.self)
+        .sorted { $0.locale < $1.locale }
     }
 }

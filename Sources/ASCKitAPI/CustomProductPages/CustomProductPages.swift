@@ -122,33 +122,18 @@ public extension ASCClient {
     }
 
     func updateCustomPageVersion(id: String, deepLink: String) async throws {
-        let body = WriteRequest<CustomPageVersionWrite>(
-            data: .init(
-                type: "appCustomProductPageVersions",
-                id: id,
-                attributes: CustomPageVersionWrite(deepLink: deepLink),
-                relationships: nil
-            )
-        )
-        _ = try await patch(
-            "/v1/appCustomProductPageVersions/\(id)",
-            body: body,
+        _ = try await update(
+            .update("appCustomProductPageVersions", id: id, attributes: CustomPageVersionWrite(deepLink: deepLink)),
             as: CustomPageVersionAttributes.self
         )
     }
 
     func updateCustomPageLocalization(id: String, promotionalText: String) async throws {
-        let body = WriteRequest<CustomPageLocalizationWrite>(
-            data: .init(
-                type: "appCustomProductPageLocalizations",
-                id: id,
-                attributes: CustomPageLocalizationWrite(promotionalText: promotionalText),
-                relationships: nil
-            )
-        )
-        _ = try await patch(
-            "/v1/appCustomProductPageLocalizations/\(id)",
-            body: body,
+        _ = try await update(
+            .update(
+                "appCustomProductPageLocalizations", id: id,
+                attributes: CustomPageLocalizationWrite(promotionalText: promotionalText)
+            ),
             as: CustomPageLocalizationAttributes.self
         )
     }
@@ -275,10 +260,9 @@ public extension ASCClient {
     /// Nothing is made. A page, a version and a language of a page all come
     /// from App Store Connect, and ASCKit only writes into them.
     func customPages(bundleID: String) async throws -> RemoteCustomPages {
-        guard let app = try await app(bundleID: bundleID) else {
-            throw ListingError.noSuchApp(bundleID: bundleID)
-        }
+        let app = try await requireApp(bundleID: bundleID)
 
+        // One page at a time. Its languages are read at the same time already.
         var pages: [RemoteCustomPage] = []
         for page in try await customPages(appID: app.id) {
             try await pages.append(RemoteCustomPage(
@@ -290,11 +274,9 @@ public extension ASCClient {
             ))
         }
 
-        let locales = Set(pages.flatMap { $0.version?.localizations.map(\.locale) ?? [] })
-        var keywords: [String: [String]] = [:]
-        for locale in locales.sorted() {
-            keywords[locale] = try await appKeywordIDs(appID: app.id, locale: locale)
-        }
+        let locales = Set(pages.flatMap { $0.version?.localizations.map(\.locale) ?? [] }).sorted()
+        let keywordIDs = try await locales.concurrentMap { try await appKeywordIDs(appID: app.id, locale: $0) }
+        let keywords = Dictionary(uniqueKeysWithValues: zip(locales, keywordIDs))
 
         // By name, because App Store Connect answers in no order a person can
         // rely on.
@@ -326,36 +308,21 @@ public extension ASCClient {
     private func readCustomPageLocalizations(
         versionID: String
     ) async throws -> [RemoteCustomPageLocalization] {
-        let resources = try await customPageLocalizations(versionID: versionID)
-
-        let outcomes = await withTaskGroup(
-            of: Result<RemoteCustomPageLocalization?, any Error>.self
-        ) { group in
-            for resource in resources {
-                group.addTask {
-                    await Self.captured {
-                        guard let locale = resource.attributes?.locale else { return nil }
-                        async let keywordIDs = customPageKeywordIDs(localizationID: resource.id)
-                        async let placements = readPlacements(
-                            on: .customProductPageLocalization(id: resource.id), locale: locale
-                        )
-                        return try await RemoteCustomPageLocalization(
-                            id: resource.id,
-                            locale: locale,
-                            promotionalText: resource.attributes?.promotionalText,
-                            keywordIDs: keywordIDs,
-                            placements: placements
-                        )
-                    }
-                }
-            }
-            var collected: [Result<RemoteCustomPageLocalization?, any Error>] = []
-            for await outcome in group {
-                collected.append(outcome)
-            }
-            return collected
+        try await customPageLocalizations(versionID: versionID).concurrentMap { resource in
+            guard let locale = resource.attributes?.locale else { return nil }
+            async let keywordIDs = customPageKeywordIDs(localizationID: resource.id)
+            async let placements = readPlacements(
+                on: .customProductPageLocalization(id: resource.id), locale: locale
+            )
+            return try await RemoteCustomPageLocalization(
+                id: resource.id,
+                locale: locale,
+                promotionalText: resource.attributes?.promotionalText,
+                keywordIDs: keywordIDs,
+                placements: placements
+            )
         }
-
-        return try Self.unwrap(outcomes).compactMap(\.self).sorted { $0.locale < $1.locale }
+        .compactMap(\.self)
+        .sorted { $0.locale < $1.locale }
     }
 }

@@ -40,7 +40,46 @@ public struct RemoteProducts: Sendable {
     }
 }
 
-/// One purchase, as the store holds it.
+/// The kinds of product, as ASCKit spells them in a file.
+///
+/// Apple writes them in capitals with underscores, and ASCKit in lower case,
+/// because the lower case word is what goes in a file somebody reads.
+public enum ProductKind: String, Sendable, CaseIterable, Codable {
+    case consumable
+    case nonConsumable = "non_consumable"
+    case nonRenewingSubscription = "non_renewing_subscription"
+    case autoRenewableSubscription = "auto_renewable_subscription"
+
+    /// Only an auto-renewable subscription belongs to a group, keeps its
+    /// prices per territory, and can preserve what current customers pay.
+    public var isAutoRenewable: Bool { self == .autoRenewableSubscription }
+
+    /// Whether writing a price replaces every territory at once.
+    ///
+    /// True for everything but an auto-renewable subscription. A one-time
+    /// purchase has one price schedule and posting a new one throws the old
+    /// one away, so a territory left out goes back to Apple's equalized
+    /// price. A subscription has no schedule at all: each territory is its
+    /// own write, and a territory left out keeps what it has.
+    ///
+    /// The two rules are opposite, and confusing them reprices a hundred
+    /// countries without saying so.
+    public var priceWriteReplacesEveryTerritory: Bool { isAutoRenewable == false }
+
+    public static var allIdentifiers: [String] { allCases.map(\.rawValue) }
+
+    /// The kind of a one-time purchase, from Apple's word for it. Nil for a
+    /// word ASCKit does not know.
+    init?(appleType: String?) {
+        switch appleType {
+        case "CONSUMABLE": self = .consumable
+        case "NON_CONSUMABLE": self = .nonConsumable
+        case "NON_RENEWING_SUBSCRIPTION": self = .nonRenewingSubscription
+        default: return nil
+        }
+    }
+}
+
 /// The version of a product's words that the store holds.
 ///
 /// One type for all three, because an in-app purchase version, a subscription
@@ -78,8 +117,8 @@ public struct RemoteProduct: Sendable, Identifiable {
     /// The string the app asks the store for.
     public let productID: String
 
-    /// `consumable`, `non_consumable`, `non_renewing_subscription` or
-    /// `auto_renewable_subscription`, as ASCKit spells them.
+    /// A `ProductKind` raw value. Held as a string, so a kind Apple adds later
+    /// reads as itself and is reported rather than guessed at.
     public let kind: String
 
     public let referenceName: String?
@@ -133,7 +172,7 @@ public struct RemoteProduct: Sendable, Identifiable {
 
     /// Whether this is an auto-renewable subscription, which decides how its
     /// price is written and whether it belongs to a group.
-    public var isAutoRenewable: Bool { kind == "auto_renewable_subscription" }
+    public var isAutoRenewable: Bool { ProductKind(rawValue: kind)?.isAutoRenewable == true }
 
     /// The same product, with the words of another version.
     public func with(

@@ -105,7 +105,7 @@ struct ListingReaderTests {
 
     @Test func refusesABundleIdentifierNoAppMatches() async throws {
         let client = try ASCClient.stubbed(transport: StubTransport(.ok(#"{"data":[]}"#)))
-        await #expect(throws: ListingError.self) {
+        await #expect(throws: AppError.self) {
             _ = try await client.listing(bundleID: "com.example.Missing")
         }
     }

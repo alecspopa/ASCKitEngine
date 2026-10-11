@@ -80,14 +80,15 @@ public extension ASCClient {
         baseAmount: String,
         territories: [String]
     ) async throws -> RemotePrices {
-        let (ladders, anchors) = try await ladderAndAnchors(
+        async let ladderRead = ladderAndAnchors(
             for: product,
             baseTerritory: baseTerritory,
             baseAmount: baseAmount,
             territories: territories
         )
-
-        let today = try await currentPrices(for: product)
+        async let todayRead = currentPrices(for: product)
+        let (ladders, anchors) = try await ladderRead
+        let today = try await todayRead
         return RemotePrices(
             // One ladder serves both plan types. `filter[planType]` narrows
             // nothing: the same 800 points and the same identifiers come back
@@ -220,8 +221,8 @@ public extension ASCClient {
             as: PricePointAttributes.self
         )
 
-        let upfront = answer.data.filter { $0.attributes?.planType == Self.upfront }
-        let monthly = answer.data.filter { $0.attributes?.planType == Self.monthly }
+        let upfront = answer.data.filter { $0.attributes?.planType == PlanType.upfront.rawValue }
+        let monthly = answer.data.filter { $0.attributes?.planType == PlanType.monthly.rawValue }
 
         return (
             Self.match(
@@ -231,11 +232,6 @@ public extension ASCClient {
             Self.match(prices: monthly, toPointsIn: answer.included)
         )
     }
-
-    /// Apple's words for the price you pay in one go, and for one instalment
-    /// of it.
-    private static let upfront = "UPFRONT"
-    private static let monthly = "MONTHLY"
 
     /// A one-time purchase keeps its prices on a schedule, and the schedule
     /// keeps two lists: the countries somebody set, and the ones Apple worked

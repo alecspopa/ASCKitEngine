@@ -293,7 +293,7 @@ struct ProductReaderTests {
         let client = try ASCClient.stubbed(
             transport: StubTransport(routes: [("/apps", .ok(#"{"data":[]}"#))])
         )
-        await #expect(throws: ListingError.self) {
+        await #expect(throws: AppError.self) {
             try await client.products(bundleID: "com.example.nope")
         }
     }

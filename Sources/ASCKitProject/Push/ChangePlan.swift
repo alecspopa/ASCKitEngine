@@ -367,23 +367,7 @@ public struct ChangePlan: Sendable {
             case new
         }
 
-        /// Which of a subscription's two prices a row is.
-        ///
-        /// A yearly subscription sold with instalments has both in every
-        /// country: what it costs bought outright, and what one month costs.
-        /// Everything else has only the first.
-        public enum PlanType: String, Sendable {
-            case upfront = "UPFRONT"
-            /// One instalment of a yearly subscription paid monthly.
-            case monthly = "MONTHLY"
-
-            public var displayName: String {
-                switch self {
-                case .upfront: String(localized: "the year", bundle: .module)
-                case .monthly: String(localized: "one month", bundle: .module)
-                }
-            }
-        }
+        public typealias PlanType = ASCKitAPI.PlanType
 
         public struct Row: Sendable, Hashable, Identifiable {
             public let territory: String
@@ -667,6 +651,15 @@ private extension ChangePlan.ScreenshotPlan.Action {
         switch self {
         case .unchanged: "unchanged"
         case let .replace(removing, adding): "replace-\(removing)-\(adding)"
+        }
+    }
+}
+
+public extension PlanType {
+    var displayName: String {
+        switch self {
+        case .upfront: String(localized: "the year", bundle: .module)
+        case .monthly: String(localized: "one month", bundle: .module)
         }
     }
 }

@@ -19,13 +19,6 @@ public struct AppStoreVersionAttributes: Decodable, Sendable {
     public let releaseType: String?
 }
 
-struct AppStoreVersionWrite: Encodable, Sendable {
-    var platform: String?
-    var versionString: String?
-    var copyright: String?
-    var releaseType: String?
-}
-
 public extension ASCClient {
     /// Nil when no app on the account has that bundle id, which is a different
     /// problem from a key that cannot see it.
@@ -37,11 +30,12 @@ public extension ASCClient {
         ).first
     }
 
-    /// An app returns more than one appInfo: one live, one editable. The name
-    /// and the subtitle can only be written on the editable one, and writing to
-    /// the live one answers 409.
-    func editableAppInfo(appID: String) async throws -> Resource<AppInfoAttributes>? {
-        try await appInfos(appID: appID).first { $0.attributes?.state?.isEditable == true }
+    /// The app with that bundle id. Every read of an app starts here.
+    func requireApp(bundleID: String) async throws -> Resource<AppAttributes> {
+        guard let app = try await app(bundleID: bundleID) else {
+            throw AppError.noSuchApp(bundleID: bundleID)
+        }
+        return app
     }
 
     func appInfos(appID: String) async throws -> [Resource<AppInfoAttributes>] {
@@ -58,43 +52,18 @@ public extension ASCClient {
         }
         return try await list("/v1/apps/\(appID)/appStoreVersions", query: query, as: AppStoreVersionAttributes.self)
     }
+}
 
-    /// The version a push should target: the one that still accepts changes.
-    /// Prefers an exact version string when the caller names one.
-    ///
-    /// Every platform, until a caller names one. A Mac app has no IOS version
-    /// to find.
-    func editableVersion(
-        appID: String,
-        platform: Platform? = nil,
-        versionString: String? = nil
-    ) async throws -> Resource<AppStoreVersionAttributes>? {
-        let versions = try await appStoreVersions(appID: appID, platform: platform)
-        let editable = versions.filter { $0.attributes?.appVersionState?.acceptsTextChanges == true }
-        guard let versionString else { return editable.first }
-        return editable.first { $0.attributes?.versionString == versionString }
-    }
+public enum AppError: ReadableError {
+    case noSuchApp(bundleID: String)
 
-    func createVersion(
-        appID: String,
-        versionString: String,
-        platform: Platform = .ios,
-        copyright: String? = nil,
-        releaseType: String? = nil
-    ) async throws -> Resource<AppStoreVersionAttributes> {
-        let body = WriteRequest<AppStoreVersionWrite>(
-            data: .init(
-                type: "appStoreVersions",
-                id: nil,
-                attributes: AppStoreVersionWrite(
-                    platform: platform.rawValue,
-                    versionString: versionString,
-                    copyright: copyright,
-                    releaseType: releaseType
-                ),
-                relationships: ["app": RelationshipToOne(type: "apps", id: appID)]
-            )
-        )
-        return try await post("/v1/appStoreVersions", body: body, as: AppStoreVersionAttributes.self)
+    public var localizedStringResource: LocalizedStringResource {
+        switch self {
+        case let .noSuchApp(bundleID):
+            LocalizedStringResource("""
+            App Store Connect has no app with the bundle id \(bundleID). Check the id, and \
+            check that the key's team owns the app.
+            """, bundle: .here)
+        }
     }
 }

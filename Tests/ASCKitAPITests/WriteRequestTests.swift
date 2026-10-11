@@ -78,47 +78,42 @@ struct WriteRequestTests {
             == "https://example.com/privacy")
     }
 
-    // MARK: - Creating a language
+    // MARK: - The path comes from the type
 
-    @Test func namesTheLocaleAndTheParentWhenCreatingAVersionLanguage() async throws {
+    @Test func sendsACreateToThePathOfItsType() async throws {
         let transport = StubTransport(.ok(Self.versionLocalization))
         let client = try ASCClient.stubbed(transport: transport)
 
-        _ = try await client.createVersionLocalization(
-            versionID: "ver1",
-            locale: "de-DE",
-            description: "Wissen, was da ist."
+        _ = try await client.create(
+            WriteRequest.create(
+                "appStoreVersionLocalizations",
+                attributes: VersionLocalizationWrite(description: "Wissen, was da ist."),
+                relationships: ["appStoreVersion": RelationshipToOne(type: "appStoreVersions", id: "ver1")]
+            ),
+            as: VersionLocalizationAttributes.self
         )
 
         let request = await transport.request(at: 0)
         #expect(request.httpMethod == "POST")
         #expect(request.url?.path == "/v1/appStoreVersionLocalizations")
-
-        #expect(try attributes(of: request)["locale"] as? String == "de-DE")
+        #expect(try body(of: request)["id"] == nil)
 
         let relationships = try #require(try body(of: request)["relationships"] as? [String: Any])
         let parent = try #require(relationships["appStoreVersion"] as? [String: Any])
-        let identifier = try #require(parent["data"] as? [String: Any])
-        #expect(identifier["id"] as? String == "ver1")
-        #expect(identifier["type"] as? String == "appStoreVersions")
+        #expect((parent["data"] as? [String: Any])?["id"] as? String == "ver1")
     }
 
-    @Test func namesTheAppInformationWhenCreatingAnAppInfoLanguage() async throws {
-        let transport = StubTransport(.ok(Self.appInfoLocalization))
+    @Test func sendsAWordsWriteToTheSecondVersionOfTheAPI() async throws {
+        let transport = StubTransport(.ok(#"{"data":{"type":"inAppPurchaseLocalizations","id":"l1"}}"#))
         let client = try ASCClient.stubbed(transport: transport)
 
-        _ = try await client.createAppInfoLocalization(
-            appInfoID: "info1",
-            locale: "de-DE",
-            name: "Demo",
-            subtitle: "Geteilte Vorratsliste"
-        )
+        try await client.updateWords(of: .inAppPurchase, id: "l1", WordsWrite(name: "Coins"))
 
-        let relationships = try #require(
-            try await body(of: transport.request(at: 0))["relationships"] as? [String: Any]
-        )
-        let parent = try #require(relationships["appInfo"] as? [String: Any])
-        #expect((parent["data"] as? [String: Any])?["id"] as? String == "info1")
+        let request = await transport.request(at: 0)
+        #expect(request.httpMethod == "PATCH")
+        #expect(request.url?.path == "/v2/inAppPurchaseLocalizations/l1")
+        #expect(try attributes(of: request)["name"] as? String == "Coins")
+        #expect(try attributes(of: request)["description"] == nil)
     }
 
     /// An update carries the id in the body as well as the path, which is what
@@ -130,14 +125,5 @@ struct WriteRequestTests {
         _ = try await client.updateVersionLocalization(id: "v1", keywords: "one,two")
 
         #expect(try await body(of: transport.request(at: 0))["id"] as? String == "v1")
-    }
-
-    @Test func sendsNoIdentifierOnACreate() async throws {
-        let transport = StubTransport(.ok(Self.versionLocalization))
-        let client = try ASCClient.stubbed(transport: transport)
-
-        _ = try await client.createVersionLocalization(versionID: "ver1", locale: "de-DE")
-
-        #expect(try await body(of: transport.request(at: 0))["id"] == nil)
     }
 }

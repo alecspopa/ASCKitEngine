@@ -12,4 +12,7 @@ if [[ -n "$1" ]]; then
 else
     swift test --package-path "$root" 2>&1 | grep -E "Test run with|✘|failed|error:|recorded an issue"
 fi
+
+# This toolchain rewrites the pins without the packages that the app shares.
+git -C "$root" checkout --quiet Package.resolved
 exit 0

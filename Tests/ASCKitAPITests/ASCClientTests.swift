@@ -53,76 +53,11 @@ struct ASCClientTests {
         #expect(await transport.request(at: 1).url?.query?.contains("cursor=2") == true)
     }
 
-    /// An app has more than one appInfo. Writing the name to the live one is a
-    /// 409, so the client has to pick the editable one.
-    @Test func picksTheEditableAppInfo() async throws {
-        let json = """
-        {"data":[
-          {"type":"appInfos","id":"live","attributes":{"state":"READY_FOR_DISTRIBUTION"}},
-          {"type":"appInfos","id":"draft","attributes":{"state":"PREPARE_FOR_SUBMISSION"}}
-        ]}
-        """
-        let client = try ASCClient.stubbed(transport: StubTransport(.ok(json)))
-        #expect(try await client.editableAppInfo(appID: "1")?.id == "draft")
-    }
-
-    @Test func findsNoEditableAppInfoWhenEverythingIsLive() async throws {
-        let json = """
-        {"data":[{"type":"appInfos","id":"live","attributes":{"state":"READY_FOR_DISTRIBUTION"}}]}
-        """
-        let client = try ASCClient.stubbed(transport: StubTransport(.ok(json)))
-        #expect(try await client.editableAppInfo(appID: "1") == nil)
-    }
-
-    @Test func picksTheVersionThatStillAcceptsChanges() async throws {
-        let json = """
-        {"data":[
-          {"type":"appStoreVersions","id":"live",
-           "attributes":{"versionString":"1.0","appVersionState":"READY_FOR_DISTRIBUTION"}},
-          {"type":"appStoreVersions","id":"next",
-           "attributes":{"versionString":"1.1","appVersionState":"PREPARE_FOR_SUBMISSION"}}
-        ]}
-        """
-        let client = try ASCClient.stubbed(transport: StubTransport(.ok(json)))
-        #expect(try await client.editableVersion(appID: "1")?.id == "next")
-    }
-
-    @Test func refusesAVersionStringThatIsNotEditable() async throws {
-        let json = """
-        {"data":[
-          {"type":"appStoreVersions","id":"live",
-           "attributes":{"versionString":"1.0","appVersionState":"READY_FOR_DISTRIBUTION"}},
-          {"type":"appStoreVersions","id":"next",
-           "attributes":{"versionString":"1.1","appVersionState":"PREPARE_FOR_SUBMISSION"}}
-        ]}
-        """
-        let client = try ASCClient.stubbed(transport: StubTransport(.ok(json)))
-        #expect(try await client.editableVersion(appID: "1", versionString: "1.0") == nil)
-    }
-
-    @Test func sendsTheVersionCreateBodyAppleExpects() async throws {
-        let reply = """
-        {"data":{"type":"appStoreVersions","id":"new","attributes":{"versionString":"1.1"}}}
-        """
-        let transport = StubTransport(.ok(reply))
-        let client = try ASCClient.stubbed(transport: transport)
-
-        _ = try await client.createVersion(appID: "1234", versionString: "1.1")
-
-        let request = await transport.request(at: 0)
-        #expect(request.httpMethod == "POST")
-        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
-
-        let json = try #require(request.jsonObject())
-        let data = try #require(json["data"] as? [String: Any])
-        let attributes = try #require(data["attributes"] as? [String: Any])
-        let relationships = try #require(data["relationships"] as? [String: Any])
-        let app = try #require(relationships["app"] as? [String: Any])
-
-        #expect(data["type"] as? String == "appStoreVersions")
-        #expect(attributes["platform"] as? String == "IOS")
-        #expect(attributes["versionString"] as? String == "1.1")
-        #expect((app["data"] as? [String: Any])?["id"] as? String == "1234")
+    @Test func refusesABundleIDNoAppHas() async throws {
+        let client = try ASCClient.stubbed(transport: StubTransport(.ok(#"{"data":[]}"#)))
+        await #expect(throws: AppError.self) {
+            try await client.requireApp(bundleID: "com.example.Missing")
+        }
     }
 
     // MARK: - When the network gets in the way

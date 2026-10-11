@@ -119,7 +119,7 @@ public extension ASCClient {
 
         return read.placements.map { placement in
             let attributes = placement.attributes
-            let assetID = placement.related("image") ?? placement.related("video")
+            let assetID = LibraryMedia.allCases.lazy.compactMap { placement.related($0.relationshipName) }.first
             return RemotePlacement(
                 id: placement.id,
                 locale: locale,
@@ -133,22 +133,10 @@ public extension ASCClient {
 
     /// The placements of many localizations, read together.
     func readPlacements(_ parents: [(parent: PlacementParent, locale: String)]) async throws -> [RemotePlacement] {
-        let outcomes = await withTaskGroup(of: Result<[RemotePlacement], any Error>.self) { group in
-            for (parent, locale) in parents {
-                group.addTask {
-                    await Self.captured { try await readPlacements(on: parent, locale: locale) }
-                }
-            }
-            var collected: [Result<[RemotePlacement], any Error>] = []
-            for await outcome in group {
-                collected.append(outcome)
-            }
-            return collected
-        }
+        let all = try await parents.concurrentMap { try await readPlacements(on: $0.parent, locale: $0.locale) }
 
         // By locale only. Within a locale the order is the store's, and that
         // order is what a plan compares with.
-        let all = try Self.unwrap(outcomes)
         return all.sorted { ($0.first?.locale ?? "") < ($1.first?.locale ?? "") }.flatMap(\.self)
     }
 

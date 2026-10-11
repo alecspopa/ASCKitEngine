@@ -129,23 +129,20 @@ public extension ASCClient {
         referenceName: String? = nil,
         previewFrameTimeCode: String? = nil
     ) async throws -> Resource<LibraryAssetAttributes> {
-        let body = WriteRequest<LibraryAssetReserveWrite>(
-            data: .init(
-                type: media.resourceType,
-                id: nil,
-                attributes: LibraryAssetReserveWrite(
-                    category: category.rawValue,
-                    fileName: fileName,
-                    fileSize: fileSize,
-                    referenceName: referenceName,
-                    previewFrameTimeCode: media == .video ? previewFrameTimeCode : nil
-                ),
-                relationships: [
-                    "assetLibrary": RelationshipToOne(type: "appAssetLibraries", id: libraryID)
-                ]
-            )
+        let body = WriteRequest.create(
+            media.resourceType,
+            attributes: LibraryAssetReserveWrite(
+                category: category.rawValue,
+                fileName: fileName,
+                fileSize: fileSize,
+                referenceName: referenceName,
+                previewFrameTimeCode: media == .video ? previewFrameTimeCode : nil
+            ),
+            relationships: [
+                "assetLibrary": RelationshipToOne(type: "appAssetLibraries", id: libraryID)
+            ]
         )
-        return try await post("/v1/\(media.resourceType)", body: body, as: LibraryAssetAttributes.self)
+        return try await create(body, as: LibraryAssetAttributes.self)
     }
 
     /// Step three: tell App Store Connect the bytes are all there. It checks
@@ -191,10 +188,7 @@ public extension ASCClient {
         id: String,
         _ attributes: LibraryAssetUpdateWrite
     ) async throws -> Resource<LibraryAssetAttributes> {
-        let body = WriteRequest<LibraryAssetUpdateWrite>(
-            data: .init(type: media.resourceType, id: id, attributes: attributes, relationships: nil)
-        )
-        return try await patch("/v1/\(media.resourceType)/\(id)", body: body, as: LibraryAssetAttributes.self)
+        try await update(.update(media.resourceType, id: id, attributes: attributes), as: LibraryAssetAttributes.self)
     }
 }
 
@@ -226,18 +220,15 @@ public extension ASCClient {
         assetID: String,
         on parent: PlacementParent
     ) async throws -> Resource<PlacementAttributes> {
-        let body = WriteRequest<PlacementWrite>(
-            data: .init(
-                type: "appAssetLibraryPlacements",
-                id: nil,
-                attributes: PlacementWrite(placementType: type.rawValue, placementGroup: group),
-                relationships: [
-                    media.relationshipName: RelationshipToOne(type: media.resourceType, id: assetID),
-                    parent.relationshipName: parent.relationship
-                ]
-            )
+        let body = WriteRequest.create(
+            "appAssetLibraryPlacements",
+            attributes: PlacementWrite(placementType: type.rawValue, placementGroup: group),
+            relationships: [
+                media.relationshipName: RelationshipToOne(type: media.resourceType, id: assetID),
+                parent.relationshipName: parent.relationship
+            ]
         )
-        return try await post("/v1/appAssetLibraryPlacements", body: body, as: PlacementAttributes.self)
+        return try await create(body, as: PlacementAttributes.self)
     }
 
     /// The asset and its other placements stay.

@@ -26,18 +26,6 @@ public struct InAppPurchaseAttributes: Decodable, Sendable {
     public let contentHosting: Bool?
 }
 
-/// A name and a description in one language.
-///
-/// The name is 30 characters and the description is 45. Both are needed in
-/// every language a product ships in: unlike a listing field, leaving one out
-/// is not "leave it alone", it is a product that cannot be submitted.
-public struct InAppPurchaseLocalizationAttributes: Decodable, Sendable {
-    public let locale: String?
-    public let name: String?
-    public let description: String?
-    public let state: ProductLocalizationState?
-}
-
 /// One price the store is willing to charge for one product in one country.
 ///
 /// The id encodes the product as well as the country, so a point read for one
@@ -67,36 +55,6 @@ public extension ASCClient {
             "/v1/apps/\(appID)/inAppPurchasesV2",
             query: [.maxPageSize],
             as: InAppPurchaseAttributes.self
-        )
-    }
-
-    // MARK: - Versions
-
-    /// Every version this purchase holds, each with its state.
-    ///
-    /// Every one, not only the draft: which version to read is decided here,
-    /// rather than by a filter Apple documents nowhere.
-    func inAppPurchaseVersions(
-        purchaseID: String
-    ) async throws -> [Resource<ProductVersionAttributes>] {
-        try await list(
-            "/v2/inAppPurchases/\(purchaseID)/versions",
-            query: [.maxPageSize],
-            as: ProductVersionAttributes.self
-        )
-    }
-
-    // MARK: - Words
-
-    /// Note the versions, plural and mixed. The list of versions is a `/v2`
-    /// path and the words inside one are a `/v1` path. That is Apple's split,
-    /// not a typo, and following the other one is a 404.
-    func inAppPurchaseLocalizations(
-        versionID: String
-    ) async throws -> [Resource<InAppPurchaseLocalizationAttributes>] {
-        try await list(
-            "/v1/inAppPurchaseVersions/\(versionID)/localizations",
-            as: InAppPurchaseLocalizationAttributes.self
         )
     }
 

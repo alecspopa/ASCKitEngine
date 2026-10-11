@@ -16,9 +16,7 @@ public extension ASCClient {
         includeScreenshots: Bool = true,
         includeLiveTexts: Bool = false
     ) async throws -> RemoteListing {
-        guard let app = try await app(bundleID: bundleID) else {
-            throw ListingError.noSuchApp(bundleID: bundleID)
-        }
+        let app = try await requireApp(bundleID: bundleID)
 
         // Fetched once and picked from, rather than asking twice.
         let versions = try await appStoreVersions(appID: app.id, platform: platform)
@@ -172,22 +170,7 @@ public extension ASCClient {
     private func readScreenshotSets(
         localizations: [RemoteLocalization]
     ) async throws -> [RemoteScreenshotSet] {
-        let outcomes = await withTaskGroup(
-            of: Result<[RemoteScreenshotSet], any Error>.self
-        ) { group in
-            for localization in localizations {
-                group.addTask {
-                    await Self.captured { try await readScreenshotSets(for: localization) }
-                }
-            }
-            var collected: [Result<[RemoteScreenshotSet], any Error>] = []
-            for await outcome in group {
-                collected.append(outcome)
-            }
-            return collected
-        }
-
-        let all = try Self.unwrap(outcomes).flatMap(\.self)
+        let all = try await localizations.concurrentMap { try await readScreenshotSets(for: $0) }.flatMap(\.self)
         return all.sorted {
             ($0.locale, $0.displayType.rawValue) < ($1.locale, $1.displayType.rawValue)
         }
@@ -201,45 +184,27 @@ public extension ASCClient {
     }
 
     /// The images of every set in a list, read together.
-    ///
-    /// Shared by a version's languages and a treatment's, which hold the same
-    /// sets under a different parent.
-    func readScreenshots(
+    private func readScreenshots(
         in sets: [Resource<ScreenshotSetAttributes>],
         locale: String
     ) async throws -> [RemoteScreenshotSet] {
-        let outcomes = await withTaskGroup(
-            of: Result<RemoteScreenshotSet?, any Error>.self
-        ) { group in
-            for set in sets {
-                group.addTask {
-                    await Self.captured {
-                        guard let displayType = set.attributes?.screenshotDisplayType else { return nil }
-                        let shots = try await screenshots(setID: set.id)
-                        return RemoteScreenshotSet(
-                            id: set.id,
-                            locale: locale,
-                            displayType: displayType,
-                            screenshots: shots.map { shot in
-                                RemoteScreenshot(
-                                    id: shot.id,
-                                    fileName: shot.attributes?.fileName,
-                                    fileSize: shot.attributes?.fileSize,
-                                    sourceFileChecksum: shot.attributes?.sourceFileChecksum
-                                )
-                            }
-                        )
-                    }
+        try await sets.concurrentMap { set -> RemoteScreenshotSet? in
+            guard let displayType = set.attributes?.screenshotDisplayType else { return nil }
+            let shots = try await screenshots(setID: set.id)
+            return RemoteScreenshotSet(
+                id: set.id,
+                locale: locale,
+                displayType: displayType,
+                screenshots: shots.map { shot in
+                    RemoteScreenshot(
+                        id: shot.id,
+                        fileName: shot.attributes?.fileName,
+                        fileSize: shot.attributes?.fileSize,
+                        sourceFileChecksum: shot.attributes?.sourceFileChecksum
+                    )
                 }
-            }
-            var collected: [Result<RemoteScreenshotSet?, any Error>] = []
-            for await outcome in group {
-                collected.append(outcome)
-            }
-            return collected
-        }
-
-        return try Self.unwrap(outcomes).compactMap(\.self)
+            )
+        }.compactMap(\.self)
     }
 
     /// What the store serves for an image it holds. An image it is still
@@ -249,53 +214,13 @@ public extension ASCClient {
         return RemoteImage(template: template, width: asset.width, height: asset.height)
     }
 
-    /// Runs one child of a group and keeps whatever it did, win or lose.
-    ///
-    /// A child that throws would cancel its siblings, and a cancelled sibling
-    /// then reports `cancelled` rather than the reason for it. Reading eleven
-    /// languages is short enough to let every one of them finish and answer
-    /// with the failure that started it.
-    static func captured<Value: Sendable>(
-        _ work: () async throws -> Value
-    ) async -> Result<Value, any Error> {
-        do {
-            return try await .success(work())
-        } catch {
-            return .failure(error)
-        }
-    }
-
-    /// Everything that worked, or the failure worth showing.
-    static func unwrap<Value>(_ outcomes: [Result<Value, any Error>]) throws -> [Value] {
-        let failures = outcomes.compactMap(\.failure)
-        if let error = failures.mostTelling { throw error }
-        return outcomes.compactMap(\.success)
-    }
 }
 
-extension Result {
-    var success: Success? {
-        guard case let .success(value) = self else { return nil }
-        return value
-    }
-
-    var failure: Failure? {
-        guard case let .failure(error) = self else { return nil }
-        return error
-    }
-}
-
-public enum ListingError: Error, CustomLocalizedStringResourceConvertible {
-    case noSuchApp(bundleID: String)
+public enum ListingError: ReadableError {
     case noSuchVersion(versionString: String?, bundleID: String)
 
     public var localizedStringResource: LocalizedStringResource {
         switch self {
-        case let .noSuchApp(bundleID):
-            LocalizedStringResource("""
-            App Store Connect has no app with the bundle id \(bundleID). Check the id, and \
-            check that the key's team owns the app.
-            """, bundle: .here)
         case let .noSuchVersion(versionString, bundleID):
             if let versionString {
                 LocalizedStringResource("\(versionString) is not a version of \(bundleID).", bundle: .here)
@@ -308,8 +233,4 @@ public enum ListingError: Error, CustomLocalizedStringResourceConvertible {
             }
         }
     }
-}
-
-extension ListingError: CustomStringConvertible {
-    public var description: String { String(localized: localizedStringResource) }
 }

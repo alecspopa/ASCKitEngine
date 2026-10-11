@@ -82,9 +82,7 @@ struct LibraryPrune: AsyncParsableCommand {
     func run() async throws {
         let project = try options.loadProject()
         let client = try makeClient(for: project)
-        guard let app = try await client.app(bundleID: project.config.bundleID) else {
-            throw ListingError.noSuchApp(bundleID: project.config.bundleID)
-        }
+        let app = try await client.requireApp(bundleID: project.config.bundleID)
 
         let session = PushSession(project: project, client: client)
         let read = try await session.readPrune(appID: app.id)

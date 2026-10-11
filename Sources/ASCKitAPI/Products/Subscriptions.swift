@@ -29,22 +29,6 @@ public struct SubscriptionAttributes: Decodable, Sendable {
     public let groupLevel: Int?
 }
 
-/// A group's own words: the name a customer reads above the tiers, and an
-/// optional name that replaces the app's own name beside them.
-public struct SubscriptionGroupLocalizationAttributes: Decodable, Sendable {
-    public let locale: String?
-    public let name: String?
-    public let customAppName: String?
-    public let state: ProductLocalizationState?
-}
-
-public struct SubscriptionLocalizationAttributes: Decodable, Sendable {
-    public let locale: String?
-    public let name: String?
-    public let description: String?
-    public let state: ProductLocalizationState?
-}
-
 public extension ASCClient {
     // MARK: - Products
 
@@ -61,50 +45,6 @@ public extension ASCClient {
             "/v1/subscriptionGroups/\(groupID)/subscriptions",
             query: [.maxPageSize],
             as: SubscriptionAttributes.self
-        )
-    }
-
-    // MARK: - Versions
-
-    /// Every version this subscription holds, each with its state.
-    func subscriptionVersions(
-        subscriptionID: String
-    ) async throws -> [Resource<ProductVersionAttributes>] {
-        try await list(
-            "/v1/subscriptions/\(subscriptionID)/versions",
-            query: [.maxPageSize],
-            as: ProductVersionAttributes.self
-        )
-    }
-
-    /// Every version this group holds, each with its state.
-    func subscriptionGroupVersions(
-        groupID: String
-    ) async throws -> [Resource<ProductVersionAttributes>] {
-        try await list(
-            "/v1/subscriptionGroups/\(groupID)/versions",
-            query: [.maxPageSize],
-            as: ProductVersionAttributes.self
-        )
-    }
-
-    // MARK: - Words
-
-    func subscriptionGroupLocalizations(
-        versionID: String
-    ) async throws -> [Resource<SubscriptionGroupLocalizationAttributes>] {
-        try await list(
-            "/v1/subscriptionGroupVersions/\(versionID)/localizations",
-            as: SubscriptionGroupLocalizationAttributes.self
-        )
-    }
-
-    func subscriptionLocalizations(
-        versionID: String
-    ) async throws -> [Resource<SubscriptionLocalizationAttributes>] {
-        try await list(
-            "/v1/subscriptionVersions/\(versionID)/localizations",
-            as: SubscriptionLocalizationAttributes.self
         )
     }
 

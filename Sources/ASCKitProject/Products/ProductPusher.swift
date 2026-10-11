@@ -182,7 +182,7 @@ public struct ProductPusher: Sendable {
             PriceWrite(
                 territory: $0.territory,
                 pricePointID: $0.pricePointID,
-                planType: $0.planType.rawValue
+                planType: $0.planType
             )
         }
 
@@ -258,7 +258,7 @@ public struct ProductPusher: Sendable {
                     price: PriceWrite(
                         territory: row.territory,
                         pricePointID: row.pricePointID,
-                        planType: row.planType.rawValue
+                        planType: row.planType
                     ),
                     preserveCurrentPrice: preserving
                 )

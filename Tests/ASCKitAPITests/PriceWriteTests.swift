@@ -188,8 +188,8 @@ struct PriceWriteTests {
     /// and both have to survive the round trip into `included`.
     @Test func sendsBothPlanTypesForOneCountry() async throws {
         let request = try await everyCountryRequest(prices: [
-            PriceWrite(territory: "DEU", pricePointID: "point-year", planType: "UPFRONT"),
-            PriceWrite(territory: "DEU", pricePointID: "point-month", planType: "MONTHLY")
+            PriceWrite(territory: "DEU", pricePointID: "point-year", planType: .upfront),
+            PriceWrite(territory: "DEU", pricePointID: "point-month", planType: .monthly)
         ])
 
         let included = try #require(body(of: request)["included"] as? [[String: Any]])

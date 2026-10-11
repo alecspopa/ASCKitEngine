@@ -180,10 +180,7 @@ extension ProductPusher {
         }
 
         if dryRun {
-            result.wouldSend.append(ProductWritePreview.newWordsVersion(
-                of: product.isAutoRenewable ? .subscription : .inAppPurchase,
-                parentID: product.id
-            ))
+            result.wouldSend.append(ProductWritePreview.newWordsVersion(of: WordsOwner(product), parentID: product.id))
             return product.with(
                 version: Self.standInDraft,
                 words: product.localizations.values.map {
@@ -320,21 +317,11 @@ extension ProductPusher {
         in draft: RemoteProductVersion
     ) async throws {
         if let existing = group.localizations[locale] {
-            _ = try await client.updateSubscriptionGroupLocalization(
-                id: existing.id, name: fields[.name], customAppName: fields[.customAppName]
-            )
+            try await client.updateWords(of: .subscriptionGroup, id: existing.id, Self.change(fields))
             return
         }
-
-        guard let name = fields[.name] else {
-            throw ProductPushError.noNameToCreateWith(locale: locale)
-        }
-
-        _ = try await client.createSubscriptionGroupLocalization(
-            versionID: draft.id,
-            locale: locale,
-            name: name,
-            customAppName: fields[.customAppName]
+        try await client.createWords(
+            of: .subscriptionGroup, versionID: draft.id, Self.newRow(fields, locale: locale)
         )
     }
 
@@ -347,19 +334,22 @@ extension ProductPusher {
         in draft: RemoteProductVersion
     ) throws -> String {
         if let existing = group.localizations[locale] {
-            return ProductWritePreview.groupWordsChange(
-                id: existing.id, name: fields[.name], customAppName: fields[.customAppName]
-            )
+            return ProductWritePreview.wordsChange(of: .subscriptionGroup, id: existing.id, Self.change(fields))
         }
-        guard let name = fields[.name] else {
-            throw ProductPushError.noNameToCreateWith(locale: locale)
-        }
-        return ProductWritePreview.groupWords(
-            versionID: draft.id,
-            locale: locale,
-            name: name,
-            customAppName: fields[.customAppName]
+        return try ProductWritePreview.words(
+            of: .subscriptionGroup, versionID: draft.id, Self.newRow(fields, locale: locale)
         )
+    }
+
+    private static func change(_ fields: [GroupField: String]) -> WordsWrite {
+        WordsWrite(name: fields[.name], customAppName: fields[.customAppName])
+    }
+
+    /// A new row needs a name. Nothing gets here without one, because the
+    /// checker refuses a group that publishes without it.
+    private static func newRow(_ fields: [GroupField: String], locale: String) throws -> WordsWrite {
+        guard let name = fields[.name] else { throw ProductPushError.noNameToCreateWith(locale: locale) }
+        return WordsWrite(locale: locale, name: name, customAppName: fields[.customAppName])
     }
 
     /// A name and a description go out together, because App Store Connect
@@ -378,37 +368,12 @@ extension ProductPusher {
         of product: RemoteProduct,
         in draft: RemoteProductVersion
     ) async throws {
+        let owner = WordsOwner(product)
         if let existing = product.localizations[locale] {
-            if product.isAutoRenewable {
-                _ = try await client.updateSubscriptionLocalization(
-                    id: existing.id, name: fields[.name], description: fields[.description]
-                )
-            } else {
-                _ = try await client.updateInAppPurchaseLocalization(
-                    id: existing.id, name: fields[.name], description: fields[.description]
-                )
-            }
+            try await client.updateWords(of: owner, id: existing.id, Self.change(fields))
             return
         }
-
-        // A new row needs a name. Nothing gets here without one, because both
-        // fields are required in every language and the checker refuses a
-        // product that publishes without them.
-        guard let name = fields[.name] else {
-            throw ProductPushError.noNameToCreateWith(locale: locale)
-        }
-
-        if product.isAutoRenewable {
-            _ = try await client.createSubscriptionLocalization(
-                versionID: draft.id, locale: locale,
-                name: name, description: fields[.description]
-            )
-        } else {
-            _ = try await client.createInAppPurchaseLocalization(
-                versionID: draft.id, locale: locale,
-                name: name, description: fields[.description]
-            )
-        }
+        try await client.createWords(of: owner, versionID: draft.id, Self.newRow(fields, locale: locale))
     }
 
     /// Throws wherever the write would throw, so a dry run never prints a body
@@ -419,27 +384,23 @@ extension ProductPusher {
         of product: RemoteProduct,
         in draft: RemoteProductVersion
     ) throws -> String {
+        let owner = WordsOwner(product)
         if let existing = product.localizations[locale] {
-            return product.isAutoRenewable
-                ? ProductWritePreview.subscriptionWordsChange(
-                    id: existing.id, name: fields[.name], description: fields[.description]
-                )
-                : ProductWritePreview.purchaseWordsChange(
-                    id: existing.id, name: fields[.name], description: fields[.description]
-                )
+            return ProductWritePreview.wordsChange(of: owner, id: existing.id, Self.change(fields))
         }
-        guard let name = fields[.name] else {
-            throw ProductPushError.noNameToCreateWith(locale: locale)
-        }
-        return product.isAutoRenewable
-            ? ProductWritePreview.subscriptionWords(
-                versionID: draft.id, locale: locale,
-                name: name, description: fields[.description]
-            )
-            : ProductWritePreview.purchaseWords(
-                versionID: draft.id, locale: locale,
-                name: name, description: fields[.description]
-            )
+        return try ProductWritePreview.words(of: owner, versionID: draft.id, Self.newRow(fields, locale: locale))
+    }
+
+    private static func change(_ fields: [ProductField: String]) -> WordsWrite {
+        WordsWrite(name: fields[.name], description: fields[.description])
+    }
+
+    /// A new row needs a name. Nothing gets here without one, because both
+    /// fields are required in every language and the checker refuses a
+    /// product that publishes without them.
+    private static func newRow(_ fields: [ProductField: String], locale: String) throws -> WordsWrite {
+        guard let name = fields[.name] else { throw ProductPushError.noNameToCreateWith(locale: locale) }
+        return WordsWrite(locale: locale, name: name, description: fields[.description])
     }
 
     private func group(

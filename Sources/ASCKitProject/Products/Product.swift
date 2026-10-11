@@ -1,3 +1,4 @@
+import ASCKitAPI
 import Foundation
 
 /// One in-app purchase, as `products/<productId>.json`.
@@ -69,39 +70,7 @@ public struct Product: Codable, Sendable, Hashable, Identifiable {
 
     // MARK: - Pieces
 
-    public enum Kind: String, Sendable, CaseIterable, Codable {
-        case consumable
-        case nonConsumable = "non_consumable"
-        case nonRenewingSubscription = "non_renewing_subscription"
-        case autoRenewableSubscription = "auto_renewable_subscription"
-
-        public var displayName: String {
-            switch self {
-            case .consumable: String(localized: "Consumable", bundle: .module)
-            case .nonConsumable: String(localized: "Non-consumable", bundle: .module)
-            case .nonRenewingSubscription: String(localized: "Non-renewing subscription", bundle: .module)
-            case .autoRenewableSubscription: String(localized: "Auto-renewable subscription", bundle: .module)
-            }
-        }
-
-        /// Only an auto-renewable subscription belongs to a group, keeps its
-        /// prices per territory, and can preserve what current customers pay.
-        public var isAutoRenewable: Bool { self == .autoRenewableSubscription }
-
-        /// Whether writing a price replaces every territory at once.
-        ///
-        /// True for everything but an auto-renewable subscription. A one-time
-        /// purchase has one price schedule and posting a new one throws the old
-        /// one away, so a territory left out goes back to Apple's equalized
-        /// price. A subscription has no schedule at all: each territory is its
-        /// own write, and a territory left out keeps what it has.
-        ///
-        /// The two rules are opposite, and confusing them reprices a hundred
-        /// countries without saying so.
-        public var priceWriteReplacesEveryTerritory: Bool { isAutoRenewable == false }
-
-        public static var allIdentifiers: [String] { allCases.map(\.rawValue) }
-    }
+    public typealias Kind = ProductKind
 
     /// What this product should cost, everywhere.
     public struct PricePlan: Codable, Sendable, Hashable {
@@ -286,5 +255,16 @@ public struct Product: Codable, Sendable, Hashable, Identifiable {
         localizations = try container.decodeIfPresent(
             [String: Localization].self, forKey: .localizations
         ) ?? [:]
+    }
+}
+
+public extension ProductKind {
+    var displayName: String {
+        switch self {
+        case .consumable: String(localized: "Consumable", bundle: .module)
+        case .nonConsumable: String(localized: "Non-consumable", bundle: .module)
+        case .nonRenewingSubscription: String(localized: "Non-renewing subscription", bundle: .module)
+        case .autoRenewableSubscription: String(localized: "Auto-renewable subscription", bundle: .module)
+        }
     }
 }
