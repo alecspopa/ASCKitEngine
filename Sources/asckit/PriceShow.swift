@@ -74,7 +74,7 @@ struct PriceShow: AsyncParsableCommand {
             territories: wanted
         )
 
-        let ladders = Self.ladders(from: ladder)
+        let ladders = PushSession.pricePoints(from: ladder.ladders)
         let current = ladder.current.compactMapValues(Money.init(string:))
 
         try printToday(current, home: home, ladders: ladders)
@@ -86,14 +86,16 @@ struct PriceShow: AsyncParsableCommand {
         print("Working from \(amount) in \(home).")
 
         // The anchors need the base price, so they are read once it is known.
-        let anchored = try await client.prices(
+        // They are asked from the ladder in hand, so it is not read twice.
+        let anchored = try await client.anchors(
             for: product,
             baseTerritory: home,
             baseAmount: amount.description,
-            territories: wanted
+            territories: wanted,
+            ladders: ladder.ladders
         )
         let read = Read(
-            anchors: anchored.anchors.compactMapValues(Money.init(string:)),
+            anchors: anchored.compactMapValues(Money.init(string:)),
             ladders: ladders,
             current: current
         )
@@ -308,21 +310,5 @@ struct PriceShow: AsyncParsableCommand {
             ladders: read.ladders,
             territories: Array(read.ladders.keys)
         )
-    }
-
-    private static func ladders(from read: RemotePrices) -> [String: [PricePoint]] {
-        read.ladders.mapValues { points in
-            points.compactMap { point in
-                Money(string: point.customerPrice).map {
-                    PricePoint(
-                        id: point.id,
-                        territory: point.territory,
-                        customerPrice: $0,
-                        proceeds: point.proceeds.flatMap(Money.init(string:)),
-                        currency: nil
-                    )
-                }
-            }
-        }
     }
 }

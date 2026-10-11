@@ -98,10 +98,8 @@ public struct PushSession: Sendable {
         // listing is.
         async let productsRead = includeProducts ? client.products(bundleID: project.config.bundleID) : nil
 
-        let listing = try await client.listing(
-            bundleID: project.config.bundleID,
-            versionString: version,
-            platform: project.config.resolvedPlatform,
+        let listing = try await readListing(
+            version: version,
             includeScreenshots: includeScreenshots,
             includeLiveTexts: includeLiveTexts
         )
@@ -156,6 +154,23 @@ public struct PushSession: Sendable {
             currentPrices: currentPrices,
             currentMonthlyPrices: currentMonthlyPrices,
             library: library
+        )
+    }
+
+    /// The listing alone, for a caller that plans nothing from it.
+    ///
+    /// A nil `version` is the newest one, the same as in `read`.
+    public func readListing(
+        version: String? = nil,
+        includeScreenshots: Bool,
+        includeLiveTexts: Bool = false
+    ) async throws -> RemoteListing {
+        try await client.listing(
+            bundleID: project.config.bundleID,
+            versionString: version,
+            platform: project.config.resolvedPlatform,
+            includeScreenshots: includeScreenshots,
+            includeLiveTexts: includeLiveTexts
         )
     }
 
@@ -299,18 +314,27 @@ public struct PushSession: Sendable {
         // No currency and no proceeds. A kept ladder cannot hold either, and a
         // plan built from one has to match a plan built from this row for row
         // or the digest a push compares is a digest of something else.
-        let points = read.ladders.mapValues { rungs in
+        return Ladder(
+            anchors: read.anchors.compactMapValues(Money.init(string:)),
+            rungs: Self.pricePoints(from: read.ladders),
+            origin: .network
+        )
+    }
+
+    /// A read ladder as price points, one list per country.
+    ///
+    /// The command line tool converts a ladder the same way, so a price it
+    /// shows is a price a push works from.
+    public static func pricePoints(
+        from ladders: [String: [RemotePricePoint]]
+    ) -> [String: [PricePoint]] {
+        ladders.mapValues { rungs in
             rungs.compactMap { rung in
                 Money(string: rung.customerPrice).map {
                     PricePoint(id: rung.id, territory: rung.territory, customerPrice: $0)
                 }
             }
         }
-        return Ladder(
-            anchors: read.anchors.compactMapValues(Money.init(string:)),
-            rungs: points,
-            origin: .network
-        )
     }
 
     /// Keeps what Apple answered, in two files.

@@ -125,6 +125,26 @@ public extension ASCClient {
         return (Dictionary(grouping: ladder, by: \.territory), anchors)
     }
 
+    /// Apple's equivalent prices for a base price, from a ladder already read.
+    ///
+    /// For a caller that read the ladder first to find the base price, so it
+    /// does not read the same ladder twice.
+    func anchors(
+        for product: RemoteProduct,
+        baseTerritory: String,
+        baseAmount: String,
+        territories: [String],
+        ladders: [String: [RemotePricePoint]]
+    ) async throws -> [String: String] {
+        try await anchors(
+            for: product,
+            baseTerritory: baseTerritory,
+            baseAmount: baseAmount,
+            territories: Set(territories).union([baseTerritory]).sorted(),
+            ladder: Array(ladders.values.joined())
+        )
+    }
+
     // MARK: - The ladder
 
     private func ladder(

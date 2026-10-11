@@ -40,6 +40,7 @@ struct PushPrices: AsyncParsableCommand {
     @Flag(name: .long, help: "Print the exact request bodies and send nothing.")
     var dryRun = false
 
+    // Not `ConfirmOptions`, because the help text here says "table".
     @Flag(name: .long, help: "Do not ask. Use only for a table you have already read.")
     var yes = false
 
@@ -72,10 +73,7 @@ struct PushPrices: AsyncParsableCommand {
             prices: .fresh
         )
 
-        guard let plan = reading.changes else {
-            print("Nothing was read from App Store Connect.")
-            throw ExitCode.failure
-        }
+        let plan = try plannedProducts(in: reading)
 
         for line in ChangePlanFormatter.priceLines(for: plan) {
             print(line)
@@ -95,26 +93,19 @@ struct PushPrices: AsyncParsableCommand {
         }
 
         try askAboutRises(plan)
-        guard confirmed(yes: yes, "Write these prices to App Store Connect?") else {
-            throw ExitCode.failure
-        }
+        try requireConfirmation(yes: yes, "Write these prices to App Store Connect?")
 
         let outcome = try await session.pushPrices(
             reading, oneCountryAtATime: oneCountryAtATime
         ) { print("  writing \($0)…") }
         report(outcome.result, plan: plan)
-        reportReceipt(outcome, project: project)
-
-        if outcome.result.isCompleteSuccess == false { throw ExitCode.failure }
+        try finish(outcome, project: project, succeeded: outcome.result.isCompleteSuccess)
     }
 
     // MARK: - Looking before writing
 
-    /// How many bodies to print in full.
-    ///
     /// A subscription is one request per country, and after the first couple
-    /// they differ only in two ids. Printing a hundred and seventy seven of
-    /// them buries the thing somebody opened this to look at.
+    /// they differ only in two ids.
     private static let bodiesShown = 2
 
     private func showWhatWouldGo(
@@ -124,21 +115,12 @@ struct PushPrices: AsyncParsableCommand {
         let bodies = try await session.pushPrices(
             reading, dryRun: true, oneCountryAtATime: oneCountryAtATime
         ).result.wouldSend
-        print("")
-        print("\(countedNoun(bodies.count, "request")) would go. Nothing was sent.")
-
-        for body in bodies.prefix(Self.bodiesShown) {
-            print("")
-            print(body)
-        }
-
-        let hidden = bodies.count - Self.bodiesShown
-        if hidden > 0 {
-            print("")
-            print("...and \(hidden) more like it, one per country, differing only in the "
-                + "country and its price point.")
-            print("Pass no --one-country-at-a-time to send them as one request instead.")
-        }
+        printDryRun(
+            bodies,
+            shown: Self.bodiesShown,
+            more: "one per country, differing only in the country and its price point.",
+            extraLines: ["Pass no --one-country-at-a-time to send them as one request instead."]
+        )
     }
 
     /// A rise is the change that cannot be taken back, so one word is not

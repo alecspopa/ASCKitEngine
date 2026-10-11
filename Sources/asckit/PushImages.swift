@@ -20,8 +20,7 @@ struct PushImages: AsyncParsableCommand {
 
     @OptionGroup var options: ProjectOptions
 
-    @Flag(name: .long, help: "Do not ask. Use only for a plan you have already read.")
-    var yes = false
+    @OptionGroup var confirmation: ConfirmOptions
 
     func run() async throws {
         let project = try options.loadProject()
@@ -51,17 +50,13 @@ struct PushImages: AsyncParsableCommand {
 
         print(ChangePlanFormatter.summary(plan))
 
-        guard confirmed(yes: yes, "Upload these to App Store Connect?") else {
-            throw ExitCode.failure
-        }
+        try confirmation.require("Upload these to App Store Connect?")
 
         let outcome = try await session.pushImages(reading) { step in
             print("  \(step.label)")
         }
         report(outcome.result)
-        reportReceipt(outcome, project: project)
-
-        if outcome.result.isCompleteSuccess == false { throw ExitCode.failure }
+        try finish(outcome, project: project, succeeded: outcome.result.isCompleteSuccess)
     }
 
     /// Text problems do not stop an image push. Anything wrong with the images

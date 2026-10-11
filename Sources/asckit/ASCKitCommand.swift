@@ -60,41 +60,13 @@ struct ProjectOptions: ParsableArguments {
     /// The project for the folder. Refuses a folder with no Xcode project, the
     /// same as the app does.
     func loadProject() throws -> Project {
-        if let data {
-            return try Project.open(
-                repo: folderURL,
-                data: URL(fileURLWithPath: data, relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
-                    .standardizedFileURL,
-                cacheRoot: Self.cacheRoot
-            )
-        }
-
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        var locations: ProjectLocations
-        do {
-            locations = try ProjectLocations.load(root: ProjectLocations.defaultRoot(home: home))
-        } catch {
-            // A broken registry says nothing about a project kept in the
-            // repository, so that one still opens.
-            guard Project.alreadyAProject(in: folderURL) else { throw error }
-            return try Project.open(at: folderURL)
-        }
-
-        guard
-            let resolution = locations.resolve(repo: folderURL),
-            resolution.source != .inRepo
-        else {
-            return try Project.open(at: folderURL)
-        }
-
-        let project = try Project.open(repo: folderURL, data: resolution.dataURL, cacheRoot: Self.cacheRoot)
-
-        // Written down so the next run finds it by repository, and a project
-        // whose bundle identifier changed is still found.
-        if resolution.source != .registeredByRepo {
-            locations.register(bundleID: project.config.bundleID, data: resolution.dataURL, repo: folderURL)
-            try? locations.save()
-        }
-        return project
+        try Project.resolve(
+            repo: folderURL,
+            data: data.map {
+                URL(fileURLWithPath: $0, relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
+                    .standardizedFileURL
+            },
+            cacheRoot: Self.cacheRoot
+        )
     }
 }

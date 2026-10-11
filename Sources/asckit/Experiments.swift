@@ -145,8 +145,7 @@ struct PushExperimentImages: AsyncParsableCommand {
 
     @OptionGroup var options: ProjectOptions
 
-    @Flag(name: .long, help: "Do not ask. Use only for a plan you have already read.")
-    var yes = false
+    @OptionGroup var confirmation: ConfirmOptions
 
     func run() async throws {
         let project = try options.loadProject()
@@ -170,18 +169,13 @@ struct PushExperimentImages: AsyncParsableCommand {
             return
         }
 
-        guard confirmed(yes: yes, "Upload these to App Store Connect?") else {
-            throw ExitCode.failure
-        }
+        try confirmation.require("Upload these to App Store Connect?")
 
         let outcome = await session.pushExperimentImages(reading) { step in
             print("  \(step.label)")
         }
-        let result = outcome.result
 
-        reportImages(result, readBack: "Run asckit experiments to read it back.")
-        reportReceipt(outcome, project: project)
-
-        if result.isCompleteSuccess == false { throw ExitCode.failure }
+        reportImages(outcome.result, readBack: "Run asckit experiments to read it back.")
+        try finish(outcome, project: project, succeeded: outcome.result.isCompleteSuccess)
     }
 }

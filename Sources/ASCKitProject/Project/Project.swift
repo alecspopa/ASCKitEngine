@@ -77,6 +77,50 @@ public struct Project: Sendable {
         return try load(at: folderURL)
     }
 
+    /// Opens the project for a repository folder, the way the command line
+    /// tool does.
+    ///
+    /// An explicit `data` folder wins. Otherwise the registry in the home
+    /// folder says where the data is, and a project kept in the repository
+    /// still opens when the registry is broken.
+    public static func resolve(
+        repo: URL,
+        data: URL? = nil,
+        cacheRoot: URL?,
+        home: URL = FileManager.default.homeDirectoryForCurrentUser
+    ) throws -> Project {
+        if let data {
+            return try open(repo: repo, data: data, cacheRoot: cacheRoot)
+        }
+
+        var locations: ProjectLocations
+        do {
+            locations = try ProjectLocations.load(root: ProjectLocations.defaultRoot(home: home))
+        } catch {
+            // A broken registry says nothing about a project kept in the
+            // repository, so that one still opens.
+            guard alreadyAProject(in: repo) else { throw error }
+            return try open(at: repo)
+        }
+
+        guard
+            let resolution = locations.resolve(repo: repo),
+            resolution.source != .inRepo
+        else {
+            return try open(at: repo)
+        }
+
+        let project = try open(repo: repo, data: resolution.dataURL, cacheRoot: cacheRoot)
+
+        // Written down so the next run finds it by repository, and a project
+        // whose bundle identifier changed is still found.
+        if resolution.source != .registeredByRepo {
+            locations.register(bundleID: project.config.bundleID, data: resolution.dataURL, repo: repo)
+            try? locations.save()
+        }
+        return project
+    }
+
     /// Throws when a folder holds no single Xcode project.
     ///
     /// ASCKit reads the app's name, its bundle identifier, the version it

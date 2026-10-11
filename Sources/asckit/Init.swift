@@ -100,15 +100,23 @@ struct Init: ParsableCommand {
         let destination = data.map { URL(fileURLWithPath: $0, relativeTo: currentFolder).standardizedFileURL }
             ?? found.destination
         let languages = try chooseLanguages(in: found)
+        let bundleID = try require(found.app.bundleID, "bundle identifier", flag: nil)
+        let key = try require(keyID, "Key ID", flag: "--key-id")
+        let platformID = try mapped { () throws(NewProject.ChoiceError) in
+            try NewProject.platformID(named: platform)
+        }
+        let deviceClasses = try mapped { () throws(NewProject.ChoiceError) in
+            try NewProject.deviceClassIDs(deviceClass, platform: platformID)
+        }
 
-        let config = try ProjectConfig(
-            bundleID: require(found.app.bundleID, "bundle identifier", flag: nil),
-            keyID: require(keyID, "Key ID", flag: "--key-id"),
+        let config = ProjectConfig(
+            bundleID: bundleID,
+            keyID: key,
             issuerID: issuerID,
             sourceLocale: languages.source,
             locales: languages.all,
-            deviceClasses: chooseDeviceClasses(platform: choosePlatform()),
-            platform: choosePlatform()
+            deviceClasses: deviceClasses,
+            platform: platformID
         )
         let version = appVersion ?? found.app.marketingVersion ?? "1.0"
 
@@ -125,56 +133,36 @@ struct Init: ParsableCommand {
 
     // MARK: - Languages
 
-    /// The languages to ship, and which of them the listing is written in.
-    ///
-    /// Two answers rather than one list, because the source language is a
-    /// thing a person names. Reading it off the front of a list means a flag
-    /// typed in another order writes a German listing for an English app.
-    private struct Languages {
-        let source: String
-        let all: [String]
-    }
-
-    /// What Xcode says, turned into App Store codes, with the flags on top.
-    ///
     /// `--source-locale` says which language the listing is written in, and
-    /// `--locale` says what else to ship. Xcode answers whichever of the two
-    /// nobody passed.
-    private func chooseLanguages(in found: NewProject) throws -> Languages {
-        for code in [sourceLocale].compactMap(\.self) + locale
-            where StoreLocale.isKnown(code) == false {
-            throw InitError.unknownLocale(code, suggestion: StoreLocale.suggestion(for: code))
+    /// `--locale` says what else to ship. The choosing is in `NewProject`.
+    private func chooseLanguages(in found: NewProject) throws -> NewProject.Languages {
+        let languages = try mapped { () throws(NewProject.ChoiceError) in
+            try found.languages(source: sourceLocale, locales: locale)
         }
-
-        let source = try chooseSourceLocale(in: found)
-        var seen: Set<String> = []
-        let all = ([source] + (locale.isEmpty ? found.locales() : locale))
-            .filter { seen.insert($0).inserted }
-
-        sayWhatIsLeftOut(of: all, in: found)
-        return Languages(source: source, all: all)
+        sayWhatIsLeftOut(of: languages.all, in: found)
+        return languages
     }
 
-    /// The language the listing is written in.
-    ///
-    /// `--source-locale`, or the language Xcode builds the app in. A region
-    /// the App Store answers twice for, such as `en`, stops the command. A
-    /// listing written in the wrong English is one nobody notices is wrong,
-    /// and there is nobody here to ask which English it is.
-    private func chooseSourceLocale(in found: NewProject) throws -> String {
-        if let sourceLocale { return sourceLocale }
-
-        guard let development = found.regions.first else {
-            throw InitError.noLanguagesInXcode
-        }
-
-        switch development.outcome {
-        case let .one(code):
-            return code
-        case let .several(codes):
-            throw InitError.sourceLanguageNeedsAChoice(development.region, choices: codes)
-        case .none:
-            throw InitError.sourceLanguageNotOnTheAppStore(development.region)
+    /// Runs a choice and turns its refusal into the words of this command,
+    /// which name the flags that answer it.
+    private func mapped<T>(_ choice: () throws(NewProject.ChoiceError) -> T) throws -> T {
+        do {
+            return try choice()
+        } catch {
+            switch error {
+            case let .unknownLocale(code, suggestion):
+                throw InitError.unknownLocale(code, suggestion: suggestion)
+            case .noLanguagesInXcode:
+                throw InitError.noLanguagesInXcode
+            case let .sourceNeedsAChoice(region, choices):
+                throw InitError.sourceLanguageNeedsAChoice(region, choices: choices)
+            case let .sourceNotOnTheAppStore(region):
+                throw InitError.sourceLanguageNotOnTheAppStore(region)
+            case let .unknownDeviceClass(id):
+                throw InitError.unknownDeviceClass(id)
+            case let .unknownPlatform(name):
+                throw InitError.unknownPlatform(name)
+            }
         }
     }
 
@@ -182,8 +170,7 @@ struct Init: ParsableCommand {
     /// have. The person reading this output is the only check on a language
     /// going missing quietly.
     private func sayWhatIsLeftOut(of codes: [String], in found: NewProject) {
-        for (region, outcome) in found.regions
-            where outcome.choices.contains(where: codes.contains) == false {
+        for (region, outcome) in found.regionsLeftOut(of: codes) {
             switch outcome {
             case let .one(code):
                 print("The app is built in \(region), and the listing will not have \(code).")
@@ -196,33 +183,6 @@ struct Init: ParsableCommand {
         }
     }
 
-    /// Which platform's version this project writes.
-    ///
-    /// Left out for an app on one platform, which is most apps. App Store
-    /// Connect then answers with whichever version the app has.
-    private func choosePlatform() throws -> String? {
-        guard let platform else { return nil }
-        guard let known = Platform.named(platform) else {
-            throw InitError.unknownPlatform(platform)
-        }
-        return known.id
-    }
-
-    /// Xcode says nothing about which screenshot sizes an app ships, so this
-    /// is asked for rather than read, and refused when it is not one ASCKit
-    /// knows.
-    private func chooseDeviceClasses(platform: String?) throws -> [String] {
-        guard deviceClass.isEmpty == false else {
-            let platform = platform.flatMap(Platform.named) ?? .ios
-            return DeviceClass.first(on: platform).map { [$0.id] } ?? []
-        }
-
-        for id in deviceClass where DeviceClass.named(id) == nil {
-            throw InitError.unknownDeviceClass(id)
-        }
-        return deviceClass
-    }
-
     // MARK: - Writing
 
     private func write(
@@ -233,11 +193,10 @@ struct Init: ParsableCommand {
         locations: ProjectLocations
     ) throws {
         var locations = locations
-        let configPath = destination.appending(path: Project.defaultConfigName).path
 
-        if FileManager.default.fileExists(atPath: configPath) {
+        switch NewProject.placement(destination: destination, repo: folderURL) {
+        case let .rebuild(plan):
             // A project in the folder the registry names is rebuilt where it is.
-            let plan = ProjectRebuild.plan(at: destination)
             guard force else {
                 throw InitError.alreadyAProject(at: destination, plan: plan)
             }
@@ -248,47 +207,29 @@ struct Init: ParsableCommand {
             let trashed = try ProjectRebuild.rebuild(plan, config: config, version: version)
             print("Moved \(countedNoun(trashed.count, "item")) to the Trash.")
             print("Wrote \(plan.folderURL.path).")
-        } else if Project.alreadyAProject(in: folderURL) {
-            try replaceLegacyProject(
-                config: config, version: version, to: destination, repo: folderURL, locations: &locations
+        case let .replaceLegacy(plan):
+            guard force else {
+                throw InitError.alreadyAProject(at: plan.folderURL, plan: plan)
+            }
+            guard FileManager.default.fileExists(atPath: destination.path) == false else {
+                throw InitError.destinationTaken(destination)
+            }
+
+            describe(plan)
+            try NewProject.replaceLegacy(
+                plan, config: config, version: version,
+                to: destination, repo: folderURL, locations: &locations
             )
+            print("Wrote \(destination.path).")
+            print("Moved \(plan.folderURL.path) to the Trash.")
             return
-        } else {
+        case .create:
             try ProjectScaffold.create(at: destination, config: config, version: version)
             print("Wrote \(destination.path).")
         }
 
         locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
         try locations.save()
-    }
-
-    /// Moves a project kept in the repository to the data folder.
-    ///
-    /// The new folder and the registry come first and the Trash last, so a
-    /// failure never leaves the person with no project.
-    private func replaceLegacyProject(
-        config: ProjectConfig,
-        version: String,
-        to destination: URL,
-        repo folderURL: URL,
-        locations: inout ProjectLocations
-    ) throws {
-        let plan = ProjectRebuild.plan(at: folderURL)
-        guard force else {
-            throw InitError.alreadyAProject(at: plan.folderURL, plan: plan)
-        }
-        guard FileManager.default.fileExists(atPath: destination.path) == false else {
-            throw InitError.destinationTaken(destination)
-        }
-
-        describe(plan)
-        try ProjectScaffold.create(at: destination, config: config, version: version)
-        locations.register(bundleID: config.bundleID, data: destination, repo: folderURL)
-        try locations.save()
-        try FileManager.default.trashItem(at: plan.folderURL, resultingItemURL: nil)
-
-        print("Wrote \(destination.path).")
-        print("Moved \(plan.folderURL.path) to the Trash.")
     }
 
     private func describe(_ plan: ProjectRebuild.Plan) {

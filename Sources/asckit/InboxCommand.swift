@@ -233,11 +233,8 @@ struct InboxCommand: AsyncParsableCommand {
     /// does in the window with no connection, and the push refuses later.
     private func readListing(_ project: Project) async -> RemoteListing? {
         do {
-            return try await makeClient(for: project).listing(
-                bundleID: project.config.bundleID,
-                platform: project.config.resolvedPlatform,
-                includeScreenshots: false
-            )
+            // No version string: the listing of the newest version is enough.
+            return try await makeSession(for: project).readListing(includeScreenshots: false)
         } catch {
             print("warning: could not read App Store Connect, so the version state is not checked. \(error)")
             return nil

@@ -130,8 +130,7 @@ struct PushCustomPages: AsyncParsableCommand {
 
     @OptionGroup var options: ProjectOptions
 
-    @Flag(name: .long, help: "Do not ask. Use only for a plan you have already read.")
-    var yes = false
+    @OptionGroup var confirmation: ConfirmOptions
 
     func run() async throws {
         let project = try options.loadProject()
@@ -151,9 +150,7 @@ struct PushCustomPages: AsyncParsableCommand {
         CustomPageReport.print(reading)
         guard reading.plan.hasChanges else { return }
 
-        guard confirmed(yes: yes, "Write these to App Store Connect?") else {
-            throw ExitCode.failure
-        }
+        try confirmation.require("Write these to App Store Connect?")
 
         var succeeded = true
         if reading.plan.hasTextChanges {

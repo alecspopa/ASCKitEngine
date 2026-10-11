@@ -12,17 +12,6 @@ struct Push: AsyncParsableCommand {
     )
 }
 
-/// Asks before writing. Anything but yes is no, so a stray keypress or a
-/// pipe with nothing on the other end leaves App Store Connect alone.
-func confirm(_ question: String) -> Bool {
-    print("")
-    print("\(question) [y/N] ", terminator: "")
-    guard let answer = readLine()?.trimmingCharacters(in: .whitespaces).lowercased() else {
-        return false
-    }
-    return answer == "y" || answer == "yes"
-}
-
 /// Stops a push that has errors, naming each one. The caller picks the errors
 /// that matter for its half of the listing.
 func stopOnErrors(_ errors: [Problem], project: Project) throws {
@@ -34,13 +23,6 @@ func stopOnErrors(_ errors: [Problem], project: Project) throws {
         print("Fix these first. Nothing was written.")
         throw ExitCode.failure
     }
-}
-
-/// True when the person said yes or passed `--yes`. Says so when it is no.
-func confirmed(yes: Bool, _ question: String) -> Bool {
-    if yes || confirm(question) { return true }
-    print("Nothing written.")
-    return false
 }
 
 /// Says where the record of a push went. The session files it, so nothing here
@@ -74,8 +56,7 @@ struct PushText: AsyncParsableCommand {
 
     @OptionGroup var options: ProjectOptions
 
-    @Flag(name: .long, help: "Do not ask. Use only for a plan you have already read.")
-    var yes = false
+    @OptionGroup var confirmation: ConfirmOptions
 
     @Flag(name: .long, help: "Write even the changes this version's state will refuse.")
     var ignoreBlocked = false
@@ -107,15 +88,11 @@ struct PushText: AsyncParsableCommand {
         }
 
         print(ChangePlanFormatter.summary(plan))
-        guard confirmed(yes: yes, "Write this to App Store Connect?") else {
-            throw ExitCode.failure
-        }
+        try confirmation.require("Write this to App Store Connect?")
 
         let outcome = try await session.pushText(reading) { print("  writing \($0)…") }
         report(outcome.result)
-        reportReceipt(outcome, project: project)
-
-        if outcome.result.isCompleteSuccess == false { throw ExitCode.failure }
+        try finish(outcome, project: project, succeeded: outcome.result.isCompleteSuccess)
     }
 
     /// Screenshot problems do not stop a text push, because they are about a

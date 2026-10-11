@@ -34,8 +34,7 @@ struct PushProducts: AsyncParsableCommand {
     @Flag(name: .long, help: "Print the exact request bodies and send nothing.")
     var dryRun = false
 
-    @Flag(name: .long, help: "Do not ask. Use only for a plan you have already read.")
-    var yes = false
+    @OptionGroup var confirmation: ConfirmOptions
 
     func run() async throws {
         let project = try options.loadProject()
@@ -49,10 +48,7 @@ struct PushProducts: AsyncParsableCommand {
             includeScreenshots: false
         )
 
-        guard let plan = reading.changes else {
-            print("Nothing was read from App Store Connect.")
-            throw ExitCode.failure
-        }
+        let plan = try plannedProducts(in: reading)
 
         for line in ChangePlanFormatter.productWordLines(for: plan) {
             print(line)
@@ -68,24 +64,16 @@ struct PushProducts: AsyncParsableCommand {
             return
         }
 
-        guard confirmed(yes: yes, "Write these words to App Store Connect?") else {
-            throw ExitCode.failure
-        }
+        try confirmation.require("Write these words to App Store Connect?")
 
         let outcome = try await session.pushProductText(reading) { print("  writing \($0)…") }
         report(outcome.result)
-        reportReceipt(outcome, project: project)
-
-        if outcome.result.isCompleteSuccess == false { throw ExitCode.failure }
+        try finish(outcome, project: project, succeeded: outcome.result.isCompleteSuccess)
     }
 
     // MARK: - Looking before writing
 
-    /// How many bodies to print in full.
-    ///
-    /// One request per product per language, and after the first few they
-    /// differ only in the words. Printing every one buries the thing somebody
-    /// opened this to look at.
+    /// After the first few, the bodies differ only in the words.
     private static let bodiesShown = 3
 
     private func showWhatWouldGo(
@@ -93,20 +81,11 @@ struct PushProducts: AsyncParsableCommand {
         reading: PushSession.Reading
     ) async throws {
         let bodies = try await session.pushProductText(reading, dryRun: true).result.wouldSend
-        print("")
-        print("\(countedNoun(bodies.count, "request")) would go. Nothing was sent.")
-
-        for body in bodies.prefix(Self.bodiesShown) {
-            print("")
-            print(body)
-        }
-
-        let hidden = bodies.count - Self.bodiesShown
-        if hidden > 0 {
-            print("")
-            print("...and \(hidden) more like it, one per language, differing only in the "
-                + "words and the row they name.")
-        }
+        printDryRun(
+            bodies,
+            shown: Self.bodiesShown,
+            more: "one per language, differing only in the words and the row they name."
+        )
     }
 
     /// Anything wrong with a price does not stop the words going out. They are

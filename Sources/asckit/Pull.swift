@@ -72,10 +72,8 @@ struct Pull: AsyncParsableCommand {
     func run() async throws {
         let project = try options.loadProject()
         let client = try makeClient(for: project)
-        let listing = try await client.listing(
-            bundleID: project.config.bundleID,
-            versionString: options.appVersion,
-            platform: project.config.resolvedPlatform,
+        let listing = try await PushSession(project: project, client: client).readListing(
+            version: options.appVersion,
             // The new folder takes its screenshots by checksum, so it needs them.
             includeScreenshots: noScreenshots == false || createVersion
         )
@@ -160,9 +158,9 @@ struct Pull: AsyncParsableCommand {
         }
 
         print("In-app purchases on App Store Connect: \(remote.products.count)")
-        let onDisk = ProductStore.load(in: project).products
+        let catalog = ProductStore.load(in: project)
         for product in remote.products {
-            let here = onDisk[product.productID] == nil ? "no file yet" : "in files"
+            let here = catalog.products[product.productID] == nil ? "no file yet" : "in files"
             let words = product.localizations.keys.sorted().joined(separator: ", ")
             print("  \(product.productID)  \(product.kind)  \(here)")
             print("    \(product.state ?? unknownState), words in: \(words.isEmpty ? "none" : words)")
@@ -178,7 +176,7 @@ struct Pull: AsyncParsableCommand {
                 + unshipped.joined(separator: ", "))
         }
 
-        let drift = SubscriptionGroupDrift.compare(local: ProductStore.load(in: project), remote: remote)
+        let drift = SubscriptionGroupDrift.compare(local: catalog, remote: remote)
         if drift.agrees == false, write == false {
             print("")
             print("App Store Connect renamed or removed a subscription group: "
