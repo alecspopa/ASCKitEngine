@@ -10,7 +10,12 @@ import Foundation
 /// only shared mutable state is the cached token, and that lives in its own
 /// actor.
 public struct ASCClient: Sendable {
-    public static let productionBaseURL = URL(string: "https://api.appstoreconnect.apple.com")!
+    public static let productionBaseURL: URL = {
+        guard let url = URL(string: "https://api.appstoreconnect.apple.com") else {
+            preconditionFailure("The production base URL is a fixed, valid string")
+        }
+        return url
+    }()
 
     let transport: any Transport
     private let tokens: TokenProvider
@@ -320,12 +325,17 @@ public struct ASCClient: Sendable {
     }
 
     private func url(_ path: String, query: [URLQueryItem] = []) -> URL {
-        var components = URLComponents(
+        guard var components = URLComponents(
             url: baseURL.appending(path: path),
             resolvingAgainstBaseURL: false
-        )!
+        ) else {
+            preconditionFailure("A URL that was already built from a base and a path splits into components")
+        }
         if query.isEmpty == false { components.queryItems = query }
-        return components.url!
+        guard let url = components.url else {
+            preconditionFailure("Components that came from a URL, with query items added, make a URL")
+        }
+        return url
     }
 
     private func encode(_ value: some Encodable & Sendable) throws -> Data {
