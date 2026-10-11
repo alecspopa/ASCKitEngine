@@ -29,7 +29,7 @@ public extension DeviceClass {
     private static let placementGroups: [String: String] = [
         "iphone-6.9": "IPHONE_DYNAMIC_ISLAND_LARGE_PROFILE",
         "iphone-6.5": "IPHONE_FACE_ID_LARGE_PROFILE",
-        "iphone-6.1": "IPHONE_DYNAMIC_ISLAND_MEDIUM_PROFILE",
+        "iphone-6.3": "IPHONE_DYNAMIC_ISLAND_MEDIUM_PROFILE",
         "iphone-duo": "IPHONE_DUO_PROFILE",
         "ipad-13": "IPAD_13_PROFILE",
         "ipad-11": "IPAD_11_PROFILE",
@@ -43,7 +43,7 @@ public extension DeviceClass {
         "watch-series-3": "WATCH_SERIES_3_PROFILE",
         "imessage-iphone-6.9": "IMESSAGE_IPHONE_DYNAMIC_ISLAND_LARGE_PROFILE",
         "imessage-iphone-6.5": "IMESSAGE_IPHONE_FACE_ID_LARGE_PROFILE",
-        "imessage-iphone-6.1": "IMESSAGE_IPHONE_DYNAMIC_ISLAND_MEDIUM_PROFILE",
+        "imessage-iphone-6.3": "IMESSAGE_IPHONE_DYNAMIC_ISLAND_MEDIUM_PROFILE",
         "imessage-ipad-13": "IMESSAGE_IPAD_13_PROFILE",
         "imessage-ipad-11": "IMESSAGE_IPAD_11_PROFILE"
     ]

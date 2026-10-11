@@ -42,6 +42,7 @@ struct DeviceClassCatalogTests {
 
     @Test func namesADeviceTheWayAppleNamesIt() {
         #expect(DeviceClass.iPhone69.displayName == "iPhone 6.9 inch")
+        #expect(DeviceClass.iPhone63.displayName == "iPhone 6.3 inch")
         #expect(DeviceClass.watchUltra.displayName == "Apple Watch Ultra")
         #expect(DeviceClass.mac.displayName == "Mac")
         #expect(DeviceClass.appleTV.displayName == "Apple TV")
@@ -75,9 +76,9 @@ struct DeviceClassCatalogTests {
     /// Apple widened this slot to take the 6.3-inch sizes as well, and App
     /// Store Connect now labels it 6.3 inch.
     @Test func takesTheSixPointThreeInchSizesInTheSixPointOneInchSlot() {
-        #expect(DeviceClass.iPhone61.accepts(width: 1206, height: 2622))
-        #expect(DeviceClass.iPhone61.accepts(width: 1179, height: 2556))
-        #expect(DeviceClass.iPhone61.accepts(width: 1170, height: 2532))
+        #expect(DeviceClass.iPhone63.accepts(width: 1206, height: 2622))
+        #expect(DeviceClass.iPhone63.accepts(width: 1179, height: 2556))
+        #expect(DeviceClass.iPhone63.accepts(width: 1170, height: 2532))
     }
 }
 
@@ -102,8 +103,8 @@ struct DeviceClassPlatformTests {
         #expect(families == ["iPhone", "iPad", "Apple Watch", "iMessage App"])
     }
 
-    @Test func startsANewProjectOnTheLargestSizeItsPlatformTakes() {
-        #expect(DeviceClass.first(on: .ios) == .iPhone69)
+    @Test func startsANewProjectOnTheDefaultSizeItsPlatformTakes() {
+        #expect(DeviceClass.first(on: .ios) == .iPhone63)
         #expect(DeviceClass.first(on: .macOS) == .mac)
         #expect(DeviceClass.first(on: .tvOS) == .appleTV)
         #expect(DeviceClass.first(on: .visionOS) == .visionPro)

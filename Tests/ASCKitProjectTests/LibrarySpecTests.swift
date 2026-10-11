@@ -33,7 +33,7 @@ struct DeviceClassPlacementTests {
     @Test func takesPreviewsOnlyWhereAppStoreConnectDoes() {
         let taking = DeviceClass.all.filter(\.takesPreviews).map(\.id)
         #expect(taking == [
-            "iphone-6.9", "iphone-6.5", "iphone-6.1", "iphone-duo", "ipad-13", "ipad-11", "mac", "appletv", "visionpro"
+            "iphone-6.9", "iphone-6.5", "iphone-6.3", "iphone-duo", "ipad-13", "ipad-11", "mac", "appletv", "visionpro"
         ])
     }
 

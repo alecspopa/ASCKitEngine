@@ -179,13 +179,12 @@ public extension DeviceClass {
         acceptedSizes: [PixelSize(1284, 2778), PixelSize(1242, 2688)]
     )
 
-    /// The slot App Store Connect now labels 6.3 inch. It takes the 6.3-inch
-    /// sizes and the 6.1-inch ones Apple widened it with, and it keeps the
-    /// 6.1 id because that id names the folder the files are already in.
-    static let iPhone61 = DeviceClass(
-        id: "iphone-6.1",
+    /// The slot App Store Connect labels 6.3 inch. It takes the 6.3-inch sizes
+    /// and the 6.1-inch ones Apple widened it with.
+    static let iPhone63 = DeviceClass(
+        id: "iphone-6.3",
         family: "iPhone",
-        size: .inches("6.1"),
+        size: .inches("6.3"),
         displayType: .appIPhone61,
         acceptedSizes: [
             PixelSize(1206, 2622), PixelSize(1179, 2556), PixelSize(1170, 2532),
@@ -338,13 +337,13 @@ public extension DeviceClass {
         acceptedSizes: iPhone65.acceptedSizes
     )
 
-    static let iMessageIPhone61 = DeviceClass(
-        id: "imessage-iphone-6.1",
+    static let iMessageIPhone63 = DeviceClass(
+        id: "imessage-iphone-6.3",
         family: "iPhone",
-        size: .inches("6.1"),
+        size: .inches("6.3"),
         heading: iMessageHeading,
         displayType: .iMessageIPhone61,
-        acceptedSizes: iPhone61.acceptedSizes
+        acceptedSizes: iPhone63.acceptedSizes
     )
 
     static let iMessageIPad13 = DeviceClass(
@@ -373,13 +372,13 @@ public extension DeviceClass {
     /// order the store lists them. That order is what the screenshots page
     /// reads down, so a person moving between the two reads the same page.
     static let all: [DeviceClass] = [
-        .iPhone69, .iPhone65, .iPhone61, .iPhoneDuo,
+        .iPhone69, .iPhone65, .iPhone63, .iPhoneDuo,
         .iPad13, .iPad11,
         .mac,
         .appleTV,
         .visionPro,
         .watchUltra, .watchSeries10, .watchSeries7, .watchSeries4, .watchSeries3,
-        .iMessageIPhone69, .iMessageIPhone65, .iMessageIPhone61,
+        .iMessageIPhone69, .iMessageIPhone65, .iMessageIPhone63,
         .iMessageIPad13, .iMessageIPad11
     ]
 
@@ -394,10 +393,11 @@ public extension DeviceClass {
 
     /// The device class a new project on this platform starts with.
     ///
-    /// One, and the largest, because every smaller picture of the same app is
-    /// scaled from it. A project adds the rest as it makes them.
+    /// One, and the largest for most platforms. An iOS project starts on the
+    /// 6.3-inch iPhone, because App Store Connect requires that size and
+    /// scales the others. A project adds the rest as it makes them.
     static func first(on platform: Platform) -> DeviceClass? {
-        all(on: platform).first
+        platform == .ios ? .iPhone63 : all(on: platform).first
     }
 
     /// At most 10 images per set, and a set with none is not a set.
