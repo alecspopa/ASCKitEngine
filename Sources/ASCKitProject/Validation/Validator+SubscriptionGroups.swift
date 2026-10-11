@@ -110,61 +110,30 @@ extension Validator {
         locale: String,
         group: SubscriptionGroup
     ) -> [Problem] {
+        // An empty custom app name means the app's own name.
+        if value.isEmpty, field.isRequired == false { return [] }
+
         let filePath = groupPath(for: group.referenceName)
-
-        if value.isEmpty {
-            // An empty custom app name means the app's own name.
-            guard field.isRequired else { return [] }
-            return [Problem(
-                severity: .error,
-                area: .products,
-                message: LocalizedStringResource("\(field.rawValue) is empty in \(locale).", bundle: .here),
-                fix: LocalizedStringResource("""
+        return validateWords(
+            name: field.rawValue,
+            value: value,
+            length: field.length(of: value),
+            maximum: field.maximumLength,
+            locale: locale,
+            rules: WordRules(
+                empty: .groupTextEmpty,
+                overLimit: .groupTextOverLimit,
+                edgeSpace: .groupTextHasEdgeSpace,
+                emptyFix: LocalizedStringResource("""
                 Write a display name, or take the language out of the group file.
-                """, bundle: .here),
-                locale: locale,
-                subscriptionGroup: group.referenceName,
-                groupField: field,
-                path: filePath,
-                kind: .groupTextEmpty
-            )]
+                """, bundle: .here)
+            )
+        ) { severity, kind, message, fix in
+            Problem(
+                severity: severity, area: .products, message: message, fix: fix, locale: locale,
+                subscriptionGroup: group.referenceName, groupField: field, path: filePath, kind: kind
+            )
         }
-
-        var problems: [Problem] = []
-
-        let length = field.length(of: value)
-        if length > field.maximumLength {
-            problems.append(Problem(
-                severity: .error,
-                area: .products,
-                message: LocalizedStringResource("""
-                \(field.rawValue) is \(length) characters in \(locale), and the \
-                limit is \(field.maximumLength).
-                """, bundle: .here),
-                fix: LocalizedStringResource("Cut \(length - field.maximumLength) characters.", bundle: .here),
-                locale: locale,
-                subscriptionGroup: group.referenceName,
-                groupField: field,
-                path: filePath,
-                kind: .groupTextOverLimit
-            ))
-        }
-
-        if value.trimmingCharacters(in: .whitespacesAndNewlines) != value {
-            problems.append(Problem(
-                severity: .warning,
-                area: .products,
-                message: LocalizedStringResource("\(field.rawValue) in \(locale) starts or ends with a space.", bundle: .here),
-                fix: LocalizedStringResource("Trim it. App Store Connect keeps the space and counts it.", bundle: .here),
-                locale: locale,
-                subscriptionGroup: group.referenceName,
-                groupField: field,
-                path: filePath,
-                kind: .groupTextHasEdgeSpace
-            ))
-        }
-
-        return problems
     }
 
     func groupPath(for name: String) -> String {

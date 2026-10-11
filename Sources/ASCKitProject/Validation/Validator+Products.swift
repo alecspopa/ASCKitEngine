@@ -257,60 +257,28 @@ extension Validator {
         locale: String,
         product: Product
     ) -> [Problem] {
-        var problems: [Problem] = []
         let filePath = path(for: product.productID)
-
-        if value.isEmpty {
-            problems.append(Problem(
-                severity: .error,
-                area: .products,
-                message: LocalizedStringResource("\(field.rawValue) is empty in \(locale).", bundle: .here),
-                fix: LocalizedStringResource("""
+        return validateWords(
+            name: field.rawValue,
+            value: value,
+            length: field.length(of: value),
+            maximum: field.maximumLength,
+            locale: locale,
+            rules: WordRules(
+                empty: .productTextEmpty,
+                overLimit: .productTextOverLimit,
+                edgeSpace: .productTextHasEdgeSpace,
+                emptyFix: LocalizedStringResource("""
                 App Store Connect needs both fields. Write something, or take the \
                 language out of the file.
-                """, bundle: .here),
-                locale: locale,
-                productID: product.productID,
-                productField: field,
-                path: filePath,
-                kind: .productTextEmpty
-            ))
-            return problems
+                """, bundle: .here)
+            )
+        ) { severity, kind, message, fix in
+            Problem(
+                severity: severity, area: .products, message: message, fix: fix, locale: locale,
+                productID: product.productID, productField: field, path: filePath, kind: kind
+            )
         }
-
-        let length = field.length(of: value)
-        if length > field.maximumLength {
-            problems.append(Problem(
-                severity: .error,
-                area: .products,
-                message: LocalizedStringResource("""
-                \(field.rawValue) is \(length) characters in \(locale), and the \
-                limit is \(field.maximumLength).
-                """, bundle: .here),
-                fix: LocalizedStringResource("Cut \(length - field.maximumLength) characters.", bundle: .here),
-                locale: locale,
-                productID: product.productID,
-                productField: field,
-                path: filePath,
-                kind: .productTextOverLimit
-            ))
-        }
-
-        if value.trimmingCharacters(in: .whitespacesAndNewlines) != value {
-            problems.append(Problem(
-                severity: .warning,
-                area: .products,
-                message: LocalizedStringResource("\(field.rawValue) in \(locale) starts or ends with a space.", bundle: .here),
-                fix: LocalizedStringResource("Trim it. App Store Connect keeps the space and counts it.", bundle: .here),
-                locale: locale,
-                productID: product.productID,
-                productField: field,
-                path: filePath,
-                kind: .productTextHasEdgeSpace
-            ))
-        }
-
-        return problems
     }
 
     func path(for productID: String) -> String {

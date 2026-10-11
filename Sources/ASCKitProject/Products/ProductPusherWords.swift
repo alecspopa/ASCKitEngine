@@ -296,7 +296,7 @@ extension ProductPusher {
         let error: ProductPushError = if let state = version?.state?.rawValue {
             .versionIsClosed(
                 locales: locales,
-                state: state.lowercased().replacingOccurrences(of: "_", with: " ")
+                state: StateWords.readable(state)
             )
         } else {
             .noDraft(locales: locales)

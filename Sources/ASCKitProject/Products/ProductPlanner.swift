@@ -105,7 +105,7 @@ public enum ProductPlanner {
             }
 
             if let state = match.state, statesThatRefuseEdits.contains(state) {
-                let readable = state.lowercased().replacingOccurrences(of: "_", with: " ")
+                let readable = StateWords.readable(state)
                 blocked.append(ChangePlan.Blocked(
                     reason: LocalizedStringResource("""
                     \(product.productID) is \(readable), so App Store Connect \
@@ -226,7 +226,7 @@ public enum ProductPlanner {
         let reason = if let state = version?.state?.rawValue {
             LocalizedStringResource("""
             The words of \(productID) are in a version that is \
-            \(state.lowercased().replacingOccurrences(of: "_", with: " ")), so App \
+            \(StateWords.readable(state)), so App \
             Store Connect refuses a change to them now.
             """, bundle: .here)
         } else {

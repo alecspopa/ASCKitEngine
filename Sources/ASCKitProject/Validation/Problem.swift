@@ -13,7 +13,8 @@ public struct Problem: Sendable, Hashable, Identifiable {
         }
     }
 
-    public enum Area: String, Sendable, CaseIterable, Codable {
+    /// In the order a person reads them.
+    public enum Area: String, Sendable, CaseIterable, Codable, Comparable {
         case configuration
         case layout
         case appInformation
@@ -22,6 +23,10 @@ public struct Problem: Sendable, Hashable, Identifiable {
         case products
         /// What an in-app purchase costs, and where.
         case pricing
+
+        public static func < (lhs: Area, rhs: Area) -> Bool {
+            (allCases.firstIndex(of: lhs) ?? 0) < (allCases.firstIndex(of: rhs) ?? 0)
+        }
     }
 
     /// The rule that made this problem.
@@ -414,10 +419,7 @@ public extension [Problem] {
     var sortedForDisplay: [Problem] {
         sorted { lhs, rhs in
             if lhs.severity != rhs.severity { return lhs.severity < rhs.severity }
-            if lhs.area != rhs.area {
-                let order = Problem.Area.allCases
-                return order.firstIndex(of: lhs.area)! < order.firstIndex(of: rhs.area)!
-            }
+            if lhs.area != rhs.area { return lhs.area < rhs.area }
             if lhs.subscriptionGroup != rhs.subscriptionGroup {
                 return (lhs.subscriptionGroup ?? "") < (rhs.subscriptionGroup ?? "")
             }

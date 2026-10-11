@@ -140,8 +140,7 @@ struct Pull: AsyncParsableCommand {
     private static func versionLine(_ version: RemoteProductVersion?) -> String {
         guard let version else { return "none, so a push needs one made first" }
 
-        let state = (version.state?.rawValue ?? unknownState)
-            .lowercased().replacingOccurrences(of: "_", with: " ")
+        let state = StateWords.readable(version.state?.rawValue ?? unknownState)
         let number = version.number.map { "\($0)" } ?? "?"
         if version.needsNewDraft {
             return "\(number), \(state), so a push makes a new draft"

@@ -1,5 +1,12 @@
 import Foundation
 
+/// Apple's state words, as a person reads them: `IN_REVIEW` is `in review`.
+public enum StateWords {
+    public static func readable(_ rawValue: String) -> String {
+        rawValue.lowercased().replacingOccurrences(of: "_", with: " ")
+    }
+}
+
 /// The state of an app version.
 ///
 /// Written as a wrapper around a raw string rather than an enum, because Apple

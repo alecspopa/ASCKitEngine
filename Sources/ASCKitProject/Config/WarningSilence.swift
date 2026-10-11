@@ -376,10 +376,7 @@ extension SilencedWarning: Comparable {
     /// The order they are written in, which is the order a person reads them:
     /// by what they are about, then by language.
     public static func < (lhs: SilencedWarning, rhs: SilencedWarning) -> Bool {
-        if lhs.area != rhs.area {
-            let order = Problem.Area.allCases
-            return order.firstIndex(of: lhs.area)! < order.firstIndex(of: rhs.area)!
-        }
+        if lhs.area != rhs.area { return lhs.area < rhs.area }
         if lhs.locale != rhs.locale { return (lhs.locale ?? "") < (rhs.locale ?? "") }
         if lhs.kind != rhs.kind { return lhs.kind.rawValue < rhs.kind.rawValue }
         return lhs.id < rhs.id

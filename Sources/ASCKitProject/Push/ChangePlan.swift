@@ -486,6 +486,8 @@ public struct ChangePlan: Sendable {
     }
 
     public struct Skipped: Sendable, Hashable {
+        /// What was left out: a language in a listing plan, and a product id
+        /// or a group name in a product plan.
         public let locale: String
         public let reason: LocalizedStringResource
 
