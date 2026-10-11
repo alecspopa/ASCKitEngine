@@ -5,11 +5,11 @@ import Foundation
 /// A subscription hangs off a group rather than off the app, so reading them
 /// takes two hops. Moving between the tiers of one group is an upgrade, and
 /// moving between groups is not, which is why the group exists at all.
-public struct SubscriptionGroupAttributes: Decodable, Sendable {
+struct SubscriptionGroupAttributes: Decodable, Sendable {
     public let referenceName: String?
 }
 
-public struct SubscriptionAttributes: Decodable, Sendable {
+struct SubscriptionAttributes: Decodable, Sendable {
     /// The internal name, which only App Store Connect shows.
     public let name: String?
 
@@ -29,7 +29,7 @@ public struct SubscriptionAttributes: Decodable, Sendable {
     public let groupLevel: Int?
 }
 
-public extension ASCClient {
+extension ASCClient {
     // MARK: - Products
 
     func subscriptionGroups(appID: String) async throws -> [Resource<SubscriptionGroupAttributes>] {
@@ -92,7 +92,7 @@ public extension ASCClient {
     }
 }
 
-public struct SubscriptionPriceAttributes: Decodable, Sendable {
+struct SubscriptionPriceAttributes: Decodable, Sendable {
     public let startDate: String?
 
     /// Whether people who already subscribe keep what they pay.

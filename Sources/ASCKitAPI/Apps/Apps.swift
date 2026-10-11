@@ -1,17 +1,17 @@
 import Foundation
 
-public struct AppAttributes: Decodable, Sendable {
+struct AppAttributes: Decodable, Sendable {
     public let name: String?
     public let bundleId: String?
     public let sku: String?
     public let primaryLocale: String?
 }
 
-public struct AppInfoAttributes: Decodable, Sendable {
+struct AppInfoAttributes: Decodable, Sendable {
     public let state: AppInfoState?
 }
 
-public struct AppStoreVersionAttributes: Decodable, Sendable {
+struct AppStoreVersionAttributes: Decodable, Sendable {
     public let platform: Platform?
     public let versionString: String?
     public let appVersionState: AppVersionState?
@@ -20,6 +20,13 @@ public struct AppStoreVersionAttributes: Decodable, Sendable {
 }
 
 public extension ASCClient {
+    /// Apple's id of the app with that bundle id.
+    func appID(bundleID: String) async throws -> String {
+        try await requireApp(bundleID: bundleID).id
+    }
+}
+
+extension ASCClient {
     /// Nil when no app on the account has that bundle id, which is a different
     /// problem from a key that cannot see it.
     func app(bundleID: String) async throws -> Resource<AppAttributes>? {

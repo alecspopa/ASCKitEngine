@@ -38,19 +38,19 @@ public struct CustomPageVersionState: RawRepresentable, Sendable, Hashable, Coda
     }
 }
 
-public struct CustomPageAttributes: Decodable, Sendable {
+struct CustomPageAttributes: Decodable, Sendable {
     public let name: String?
     public let url: String?
     public let visible: Bool?
 }
 
-public struct CustomPageVersionAttributes: Decodable, Sendable {
+struct CustomPageVersionAttributes: Decodable, Sendable {
     public let version: String?
     public let state: CustomPageVersionState?
     public let deepLink: String?
 }
 
-public struct CustomPageLocalizationAttributes: Decodable, Sendable {
+struct CustomPageLocalizationAttributes: Decodable, Sendable {
     public let locale: String?
     public let promotionalText: String?
 }
@@ -65,7 +65,7 @@ struct CustomPageLocalizationWrite: Encodable, Sendable {
 
 // MARK: - Calls
 
-public extension ASCClient {
+extension ASCClient {
     func customPages(appID: String) async throws -> [Resource<CustomPageAttributes>] {
         try await list(
             "/v1/apps/\(appID)/appCustomProductPages",
@@ -121,14 +121,14 @@ public extension ASCClient {
         ).map(\.id)
     }
 
-    func updateCustomPageVersion(id: String, deepLink: String) async throws {
+    public func updateCustomPageVersion(id: String, deepLink: String) async throws {
         _ = try await update(
             .update("appCustomProductPageVersions", id: id, attributes: CustomPageVersionWrite(deepLink: deepLink)),
             as: CustomPageVersionAttributes.self
         )
     }
 
-    func updateCustomPageLocalization(id: String, promotionalText: String) async throws {
+    public func updateCustomPageLocalization(id: String, promotionalText: String) async throws {
         _ = try await update(
             .update(
                 "appCustomProductPageLocalizations", id: id,
@@ -138,14 +138,14 @@ public extension ASCClient {
         )
     }
 
-    func linkKeywords(_ keywordIDs: [String], localizationID: String) async throws {
+    public func linkKeywords(_ keywordIDs: [String], localizationID: String) async throws {
         try await addToRelationship(
             Self.keywordsPath(localizationID),
             keywordIDs.map { Identifier(type: "appKeywords", id: $0) }
         )
     }
 
-    func unlinkKeywords(_ keywordIDs: [String], localizationID: String) async throws {
+    public func unlinkKeywords(_ keywordIDs: [String], localizationID: String) async throws {
         try await removeFromRelationship(
             Self.keywordsPath(localizationID),
             keywordIDs.map { Identifier(type: "appKeywords", id: $0) }

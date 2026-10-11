@@ -315,8 +315,8 @@ struct LibraryUploaderTests {
 
         let states = try await uploader.waitUntilProcessed([.image: ["a", "b"]], libraryID: "lib1", poll: .immediate)
 
-        #expect(states["a"]?.attributes?.state == .prepareForSubmission)
-        #expect(states["b"]?.attributes?.state == .failed)
+        #expect(states["a"]?.state == .prepareForSubmission)
+        #expect(states["b"]?.state == .failed)
         #expect(await LibraryQuery.ids(in: transport.request(at: 1)) == "b")
     }
 
@@ -327,7 +327,7 @@ struct LibraryUploaderTests {
         let states = try await uploader.waitUntilProcessed([.image: ["a"]], libraryID: "lib1", poll: .immediate)
         let failed = try #require(states["a"])
 
-        let error = LibraryUploader.Committed.failure(fileName: "one.png", asset: failed)
+        let error = failed.failure(fileName: "one.png")
         #expect(String(describing: error).contains("Too small."))
     }
 
@@ -339,7 +339,7 @@ struct LibraryUploaderTests {
 
         let states = try await uploader.waitUntilProcessed([.image: ["a"]], libraryID: "lib1", poll: .immediate)
 
-        #expect(states["a"]?.attributes?.state == .uploadComplete)
+        #expect(states["a"]?.state == .uploadComplete)
         #expect(await transport.requestCount == LibraryUploader.PollSettings.immediate.attempts)
     }
 
@@ -352,7 +352,7 @@ struct LibraryUploaderTests {
 
         let states = try await uploader.waitUntilProcessed([.image: ["a"]], libraryID: "lib1", poll: .immediate)
 
-        #expect(states["a"]?.attributes?.state == .prepareForSubmission)
+        #expect(states["a"]?.state == .prepareForSubmission)
     }
 
     @Test func asksNothingWhenThereIsNothingToWaitFor() async throws {

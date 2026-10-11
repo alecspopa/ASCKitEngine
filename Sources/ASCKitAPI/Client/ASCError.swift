@@ -118,6 +118,25 @@ public enum ASCError: ReadableError {
         }
     }
 
+    /// The fields a 409 refused, out of `names`.
+    ///
+    /// App Store Connect names a field in one of two places: at the end of
+    /// the source pointer, or in quotes in the wording of the detail.
+    public func refusedFields(among names: [String]) -> Set<String> {
+        guard case .conflict = self else { return [] }
+
+        var fields: Set<String> = []
+        for detail in details {
+            if let name = detail.pointer?.split(separator: "/").last.map(String.init), names.contains(name) {
+                fields.insert(name)
+            }
+            if let text = detail.detail ?? detail.title {
+                fields.formUnion(names.filter { text.contains("'\($0)'") })
+            }
+        }
+        return fields
+    }
+
     /// Retrying a 429, a 5xx or a dropped connection can work. Retrying a 403
     /// never will.
     public var isWorthRetrying: Bool {

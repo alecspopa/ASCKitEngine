@@ -82,10 +82,10 @@ struct LibraryPrune: AsyncParsableCommand {
     func run() async throws {
         let project = try options.loadProject()
         let client = try makeClient(for: project)
-        let app = try await client.requireApp(bundleID: project.config.bundleID)
+        let appID = try await client.appID(bundleID: project.config.bundleID)
 
         let session = PushSession(project: project, client: client)
-        let read = try await session.readPrune(appID: app.id)
+        let read = try await session.readPrune(appID: appID)
         guard read.library != nil else {
             print("This app has no asset library on App Store Connect.")
             return

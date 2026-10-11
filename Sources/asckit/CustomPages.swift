@@ -186,53 +186,10 @@ struct PushCustomPages: AsyncParsableCommand {
 /// see what a keyword id looks like and which placements a page takes.
 enum CustomPageProbe {
     static func print(client: ASCClient, bundleID: String) async throws {
-        let remote = try await client.customPages(bundleID: bundleID)
-        Swift.print("app \(remote.appID)")
-
-        for page in try await client.customPages(appID: remote.appID) {
-            let attributes = page.attributes
-            Swift.print("")
-            Swift.print("page \(page.id) \"\(attributes?.name ?? "")\" visible=\(attributes?.visible.map(String.init) ?? "nil")")
-            Swift.print("  url \(attributes?.url ?? "nil")")
-            for version in try await client.customPageVersions(pageID: page.id) {
-                let state = version.attributes?.state?.rawValue ?? unknownState
-                Swift.print("  version \(version.id) \(version.attributes?.version ?? "nil") \(state)"
-                    + " deepLink=\(version.attributes?.deepLink ?? "nil")")
-            }
-            guard let shown = remote.page(id: page.id)?.version else { continue }
-            Swift.print("  shown version \(shown.id)")
-            for localization in shown.localizations {
-                Swift.print("    \(localization.locale) \(localization.id)")
-                Swift.print("      promotionalText: \(localization.promotionalText ?? "nil")")
-                Swift.print("      keywords: \(localization.keywordIDs)")
-                for placement in localization.placements {
-                    Swift.print("      placement \(placement.type?.rawValue ?? "nil") \(placement.group ?? "nil")")
-                }
-            }
+        for line in try await client.customPageProbe(bundleID: bundleID) {
+            Swift.print(line)
         }
-
-        Swift.print("")
-        for (locale, keywords) in remote.keywords.sorted(by: { $0.key < $1.key }) {
-            Swift.print("app keywords \(locale): \(keywords)")
-        }
-
-        try await printVersionKeywords(client: client, appID: remote.appID)
         try await printRefData(client: client)
-    }
-
-    private static func printVersionKeywords(client: ASCClient, appID: String) async throws {
-        for version in try await client.appStoreVersions(appID: appID, platform: .ios) {
-            let string = version.attributes?.versionString ?? "nil"
-            let state = version.attributes?.appVersionState?.rawValue ?? unknownState
-            Swift.print("")
-            Swift.print("version \(string) \(state)")
-            for localization in try await client.versionLocalizations(versionID: version.id) {
-                let locale = localization.attributes?.locale ?? "nil"
-                let keywords = try await client.versionKeywordIDs(localizationID: localization.id)
-                Swift.print("  \(locale) text: \(localization.attributes?.keywords ?? "nil")")
-                Swift.print("  \(locale) ids: \(keywords)")
-            }
-        }
     }
 
     private static func printRefData(client: ASCClient) async throws {

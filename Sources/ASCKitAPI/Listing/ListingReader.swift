@@ -114,13 +114,13 @@ public extension ASCClient {
     }
 
     /// The one version on sale.
-    static func released(in versions: [Resource<AppStoreVersionAttributes>]) -> String? {
+    internal static func released(in versions: [Resource<AppStoreVersionAttributes>]) -> String? {
         versions.first { $0.attributes?.appVersionState == .readyForDistribution }?
             .attributes?.versionString
     }
 
     /// The one version that is neither on sale nor replaced by a newer one.
-    static func pending(in versions: [Resource<AppStoreVersionAttributes>]) -> String? {
+    internal static func pending(in versions: [Resource<AppStoreVersionAttributes>]) -> String? {
         let done: Set<AppVersionState> = [.readyForDistribution, .replacedWithNewVersion]
         return versions.first {
             guard let state = $0.attributes?.appVersionState else { return false }
@@ -130,7 +130,7 @@ public extension ASCClient {
 
     /// The newest app information that is not editable. One in review holds
     /// newer words than the live one, and a replaced one holds old words.
-    static func currentAppInfo(
+    internal static func currentAppInfo(
         in infos: [Resource<AppInfoAttributes>]
     ) -> Resource<AppInfoAttributes>? {
         let current = infos.filter { $0.attributes?.state != .replacedWithNewInfo }

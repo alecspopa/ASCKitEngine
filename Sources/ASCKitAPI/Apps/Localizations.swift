@@ -2,7 +2,7 @@ import Foundation
 
 /// Name, subtitle and the privacy policy. These hang off the app, not off a
 /// version, which is why changing a name means a new version once one is live.
-public struct AppInfoLocalizationAttributes: Decodable, Sendable {
+struct AppInfoLocalizationAttributes: Decodable, Sendable {
     public let locale: String?
     public let name: String?
     public let subtitle: String?
@@ -21,7 +21,7 @@ struct AppInfoLocalizationWrite: Encodable, Sendable {
 
 /// Everything else. Note that supportUrl and marketingUrl live here, on the
 /// version, while privacyPolicyUrl lives on the app information.
-public struct VersionLocalizationAttributes: Decodable, Sendable {
+struct VersionLocalizationAttributes: Decodable, Sendable {
     public let locale: String?
     public let description: String?
     public let keywords: String?
@@ -43,7 +43,7 @@ struct VersionLocalizationWrite: Encodable, Sendable {
 public extension ASCClient {
     // MARK: - App information
 
-    func appInfoLocalizations(
+    internal func appInfoLocalizations(
         appInfoID: String
     ) async throws -> [Resource<AppInfoLocalizationAttributes>] {
         try await list("/v1/appInfos/\(appInfoID)/appInfoLocalizations", as: AppInfoLocalizationAttributes.self)
@@ -54,9 +54,9 @@ public extension ASCClient {
         name: String? = nil,
         subtitle: String? = nil,
         privacyPolicyUrl: String? = nil
-    ) async throws -> Resource<AppInfoLocalizationAttributes> {
+    ) async throws {
         let attributes = AppInfoLocalizationWrite(name: name, subtitle: subtitle, privacyPolicyUrl: privacyPolicyUrl)
-        return try await update(
+        _ = try await update(
             .update("appInfoLocalizations", id: id, attributes: attributes),
             as: AppInfoLocalizationAttributes.self
         )
@@ -64,7 +64,7 @@ public extension ASCClient {
 
     // MARK: - Version information
 
-    func versionLocalizations(
+    internal func versionLocalizations(
         versionID: String
     ) async throws -> [Resource<VersionLocalizationAttributes>] {
         try await list(
@@ -81,7 +81,7 @@ public extension ASCClient {
         promotionalText: String? = nil,
         marketingUrl: String? = nil,
         supportUrl: String? = nil
-    ) async throws -> Resource<VersionLocalizationAttributes> {
+    ) async throws {
         let attributes = VersionLocalizationWrite(
             description: description,
             keywords: keywords,
@@ -90,7 +90,7 @@ public extension ASCClient {
             marketingUrl: marketingUrl,
             supportUrl: supportUrl
         )
-        return try await update(
+        _ = try await update(
             .update("appStoreVersionLocalizations", id: id, attributes: attributes),
             as: VersionLocalizationAttributes.self
         )

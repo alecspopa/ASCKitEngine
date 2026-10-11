@@ -7,7 +7,7 @@ import Foundation
 /// One type for both, because a list of placements brings images and videos
 /// back mixed in one `included` array. Every field is optional for the same
 /// reason: a field one of them has, the other lacks.
-public struct LibraryAssetAttributes: Decodable, Sendable {
+struct LibraryAssetAttributes: Decodable, Sendable {
     public let category: LibraryAssetCategory?
     public let fileName: String?
     public let fileSize: Int?
@@ -69,7 +69,7 @@ public struct UploadOperation: Decodable, Sendable {
     }
 }
 
-public struct PlacementAttributes: Decodable, Sendable {
+struct PlacementAttributes: Decodable, Sendable {
     public let mediaType: LibraryMedia?
     public let placementType: PlacementType?
     public let placementGroup: String?
@@ -116,10 +116,23 @@ public extension ASCClient {
         }
     }
 
+    /// The approved assets among `ids` that no placement uses, in id order.
+    /// Only these can be archived.
+    func unplacedApprovedAssetIDs(libraryID: String, media: LibraryMedia, ids: [String]) async throws -> [String] {
+        try await libraryAssets(libraryID: libraryID, media: media, ids: ids)
+            .filter { resource in
+                // A reply with no placements list says nothing, so the asset stays.
+                guard case let .many(placements)? = resource.relationships?["placements"]?.data else { return false }
+                return placements.isEmpty && resource.attributes?.state == .approved
+            }
+            .map(\.id)
+            .sorted()
+    }
+
     /// Every image or every video in a library, with the ids of their
     /// placements. `ids` reads only those, in one call, which is how a push
     /// checks on many uploads at once.
-    func libraryAssets(
+    internal func libraryAssets(
         libraryID: String,
         media: LibraryMedia,
         ids: [String]? = nil
@@ -141,7 +154,7 @@ public extension ASCClient {
 
     /// Step one of an upload: claim a place in the library and get told where
     /// to send the bytes. The category cannot change after this.
-    func reserveLibraryAsset(
+    internal func reserveLibraryAsset(
         media: LibraryMedia,
         libraryID: String,
         category: LibraryAssetCategory,
@@ -168,34 +181,26 @@ public extension ASCClient {
 
     /// Step three: tell App Store Connect the bytes are all there. It checks
     /// them against the size given at reservation and refuses a mismatch.
-    func commitLibraryAsset(media: LibraryMedia, id: String) async throws -> Resource<LibraryAssetAttributes> {
+    internal func commitLibraryAsset(media: LibraryMedia, id: String) async throws -> Resource<LibraryAssetAttributes> {
         try await updateLibraryAsset(media: media, id: id, LibraryAssetUpdateWrite(uploaded: true))
     }
 
     /// The poster frame of a video. It belongs to the video, so it changes on
     /// every placement of it.
-    func setPreviewFrame(videoID: String, timeCode: String) async throws -> Resource<LibraryAssetAttributes> {
-        try await updateLibraryAsset(
+    func setPreviewFrame(videoID: String, timeCode: String) async throws {
+        _ = try await updateLibraryAsset(
             media: .video, id: videoID, LibraryAssetUpdateWrite(previewFrameTimeCode: timeCode)
         )
     }
 
-    func renameLibraryAsset(
-        media: LibraryMedia,
-        id: String,
-        referenceName: String
-    ) async throws -> Resource<LibraryAssetAttributes> {
-        try await updateLibraryAsset(media: media, id: id, LibraryAssetUpdateWrite(referenceName: referenceName))
+    func renameLibraryAsset(media: LibraryMedia, id: String, referenceName: String) async throws {
+        _ = try await updateLibraryAsset(media: media, id: id, LibraryAssetUpdateWrite(referenceName: referenceName))
     }
 
     /// Only an approved asset can be archived. Anything else is refused with
     /// `LibraryRefusal.assetStateForbids`.
-    func archiveLibraryAsset(
-        media: LibraryMedia,
-        id: String,
-        archived: Bool = true
-    ) async throws -> Resource<LibraryAssetAttributes> {
-        try await updateLibraryAsset(media: media, id: id, LibraryAssetUpdateWrite(archived: archived))
+    func archiveLibraryAsset(media: LibraryMedia, id: String, archived: Bool = true) async throws {
+        _ = try await updateLibraryAsset(media: media, id: id, LibraryAssetUpdateWrite(archived: archived))
     }
 
     /// Refused with `LibraryRefusal.assetHasPlacements` while a placement still
@@ -218,7 +223,7 @@ public extension ASCClient {
 public extension ASCClient {
     /// The placements on one localization, in the order the store shows them,
     /// with the assets they place.
-    func placements(
+    internal func placements(
         on parent: PlacementParent
     ) async throws -> (placements: [Resource<PlacementAttributes>], assets: [Resource<LibraryAssetAttributes>]) {
         let read = try await listMixed(
@@ -240,7 +245,7 @@ public extension ASCClient {
         media: LibraryMedia,
         assetID: String,
         on parent: PlacementParent
-    ) async throws -> Resource<PlacementAttributes> {
+    ) async throws -> String {
         let body = WriteRequest.create(
             "appAssetLibraryPlacements",
             attributes: PlacementWrite(placementType: type.rawValue, placementGroup: group),
@@ -249,7 +254,7 @@ public extension ASCClient {
                 parent.relationshipName: parent.relationship
             ]
         )
-        return try await create(body, as: PlacementAttributes.self)
+        return try await create(body, as: PlacementAttributes.self).id
     }
 
     /// The asset and its other placements stay.

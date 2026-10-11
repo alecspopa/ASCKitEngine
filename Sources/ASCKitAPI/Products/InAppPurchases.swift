@@ -7,7 +7,7 @@ import Foundation
 /// type that comes back is `inAppPurchases`. The v1 relationship still answers
 /// and returns a poorer resource, so asking for the wrong one reads as a short
 /// list rather than as an error.
-public struct InAppPurchaseAttributes: Decodable, Sendable {
+struct InAppPurchaseAttributes: Decodable, Sendable {
     /// The internal name, which only App Store Connect shows.
     public let name: String?
 
@@ -30,7 +30,7 @@ public struct InAppPurchaseAttributes: Decodable, Sendable {
 ///
 /// The id encodes the product as well as the country, so a point read for one
 /// product is not valid on another.
-public struct PricePointAttributes: Decodable, Sendable {
+struct PricePointAttributes: Decodable, Sendable {
     public let customerPrice: String?
     public let proceeds: String?
 
@@ -47,7 +47,7 @@ public struct PricePointAttributes: Decodable, Sendable {
     public let planType: String?
 }
 
-public extension ASCClient {
+extension ASCClient {
     // MARK: - Products
 
     func inAppPurchases(appID: String) async throws -> [Resource<InAppPurchaseAttributes>] {

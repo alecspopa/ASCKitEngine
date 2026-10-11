@@ -113,10 +113,7 @@ struct Pull: AsyncParsableCommand {
     /// The territory table gives every price its currency, so a table App
     /// Store Connect has moved past shows a wrong symbol.
     private func reportTerritories(client: ASCClient) async throws {
-        let remote = try await client.territories()
-        let drift = TerritoryDrift.compare(
-            remote: Dictionary(uniqueKeysWithValues: remote.map { ($0.id, $0.attributes?.currency) })
-        )
+        let drift = try await TerritoryDrift.compare(remote: client.territoryCurrencies())
         guard drift.agrees == false else { return }
 
         print("")

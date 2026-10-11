@@ -2,10 +2,10 @@ import Foundation
 
 /// App Store Connect wraps everything in JSON:API, so every payload has the
 /// same shape: a `data` member holding a type, an id and an attributes bag.
-public struct Resource<Attributes: Decodable & Sendable>: Decodable, Sendable {
-    public let type: String
-    public let id: String
-    public let attributes: Attributes?
+struct Resource<Attributes: Decodable & Sendable>: Decodable, Sendable {
+    let type: String
+    let id: String
+    let attributes: Attributes?
 
     /// What this resource points at, by id.
     ///
@@ -13,25 +13,25 @@ public struct Resource<Attributes: Decodable & Sendable>: Decodable, Sendable {
     /// because a price point names its territory only in its relationships, and
     /// reading it there saves parsing the top-level `included` array on every
     /// list of thousands.
-    public let relationships: [String: RelationshipData]?
+    let relationships: [String: RelationshipData]?
 
     /// The id of a to-one relationship, such as the territory a price point is
     /// in. Nil when the relationship is missing or points at many.
-    public func related(_ name: String) -> String? {
+    func related(_ name: String) -> String? {
         guard case let .one(identifier)? = relationships?[name]?.data else { return nil }
         return identifier?.id
     }
 }
 
 /// A relationship as it comes back: one identifier, or many, or nothing.
-public struct RelationshipData: Decodable, Sendable {
-    public let data: Payload?
+struct RelationshipData: Decodable, Sendable {
+    let data: Payload?
 
-    public enum Payload: Decodable, Sendable {
+    enum Payload: Decodable, Sendable {
         case one(Identifier?)
         case many([Identifier])
 
-        public init(from decoder: any Decoder) throws {
+        init(from decoder: any Decoder) throws {
             let container = try decoder.singleValueContainer()
             if container.decodeNil() {
                 self = .one(nil)

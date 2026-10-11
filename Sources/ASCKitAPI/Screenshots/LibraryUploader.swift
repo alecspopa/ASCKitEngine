@@ -170,8 +170,8 @@ public struct LibraryUploader: Sendable {
         _ ids: [LibraryMedia: [String]],
         libraryID: String,
         poll: PollSettings = PollSettings()
-    ) async throws -> [String: Resource<LibraryAssetAttributes>] {
-        var known: [String: Resource<LibraryAssetAttributes>] = [:]
+    ) async throws -> [String: ProcessedAsset] {
+        var known: [String: ProcessedAsset] = [:]
         var waiting = ids.filter { $0.value.isEmpty == false }
 
         for attempt in 1 ... max(1, poll.attempts) {
@@ -183,28 +183,29 @@ public struct LibraryUploader: Sendable {
             for (media, assetIDs) in waiting {
                 let read = try await client.libraryAssets(libraryID: libraryID, media: media, ids: assetIDs)
                 for asset in read {
-                    known[asset.id] = asset
+                    known[asset.id] = ProcessedAsset(
+                        state: asset.attributes?.state,
+                        details: asset.attributes?.stateDetails?.map(\.asErrorDetail) ?? []
+                    )
                 }
                 let stillProcessing = assetIDs.filter { id in
-                    known[id]?.attributes?.state?.isProcessing ?? true
+                    known[id]?.state?.isProcessing ?? true
                 }
                 waiting[media] = stillProcessing.isEmpty ? nil : stillProcessing
             }
         }
         return known
     }
-}
 
-public extension LibraryUploader.Committed {
-    /// Apple's reason for a failed asset, as the error a push reports.
-    static func failure(
-        fileName: String,
-        asset: Resource<LibraryAssetAttributes>
-    ) -> UploadError {
-        UploadError.appleRejectedTheImage(
-            fileName: fileName,
-            details: asset.attributes?.stateDetails?.map(\.asErrorDetail) ?? []
-        )
+    /// Where App Store Connect got to with one asset, and its reasons.
+    public struct ProcessedAsset: Sendable {
+        public let state: LibraryAssetState?
+        public let details: [ASCErrorDetail]
+
+        /// Apple's reason for a failed asset, as the error a push reports.
+        public func failure(fileName: String) -> UploadError {
+            UploadError.appleRejectedTheImage(fileName: fileName, details: details)
+        }
     }
 }
 

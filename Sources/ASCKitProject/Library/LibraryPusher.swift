@@ -233,19 +233,14 @@ public struct LibraryPusher: Sendable {
         let byID = Dictionary(approved.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var archived: [RemoteLibraryAsset] = []
         for (media, group) in Dictionary(grouping: approved, by: \.media).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
-            guard let read = try? await client.libraryAssets(
+            guard let unplaced = try? await client.unplacedApprovedAssetIDs(
                 libraryID: libraryID, media: media, ids: group.map(\.id).sorted()
             ) else { continue }
 
-            for resource in read.sorted(by: { $0.id < $1.id }) {
-                // A reply with no placements list says nothing, so the asset stays.
-                guard case let .many(placements)? = resource.relationships?["placements"]?.data,
-                      placements.isEmpty,
-                      resource.attributes?.state == .approved
-                else { continue }
+            for id in unplaced {
                 do {
-                    _ = try await client.archiveLibraryAsset(media: media, id: resource.id)
-                    if let asset = byID[resource.id] { archived.append(asset) }
+                    _ = try await client.archiveLibraryAsset(media: media, id: id)
+                    if let asset = byID[id] { archived.append(asset) }
                 } catch {
                     // The asset stays as it is. The push itself worked.
                     continue
@@ -260,7 +255,7 @@ public struct LibraryPusher: Sendable {
         box: RecordBox,
         libraryID: String,
         md5s: [String]
-    ) async -> [String: Resource<LibraryAssetAttributes>] {
+    ) async -> [String: LibraryUploader.ProcessedAsset] {
         let record = await box.record
         let ids = md5s.compactMap { record.assets[$0] }
         guard ids.isEmpty == false else { return [:] }
@@ -268,7 +263,7 @@ public struct LibraryPusher: Sendable {
         let byMedia = Dictionary(grouping: ids, by: \.media).mapValues { $0.map(\.assetID) }
         let states = await (try? LibraryUploader(client: client)
             .waitUntilProcessed(byMedia, libraryID: libraryID, poll: poll)) ?? [:]
-        await box.update(states: states.compactMapValues { $0.attributes?.state })
+        await box.update(states: states.compactMapValues(\.state))
         return states
     }
 
@@ -279,7 +274,7 @@ public struct LibraryPusher: Sendable {
         _ target: Target,
         box: RecordBox,
         failedUploads: [String: String],
-        processed: [String: Resource<LibraryAssetAttributes>]
+        processed: [String: LibraryUploader.ProcessedAsset]
     ) async throws -> [String] {
         let record = await box.record
         var ids: [String] = []
@@ -300,9 +295,9 @@ public struct LibraryPusher: Sendable {
             else {
                 throw LibraryPushError.uploadFailed(fileName: file.fileName, reason: nil)
             }
-            if let asset = processed[id], let state = asset.attributes?.state {
+            if let asset = processed[id], let state = asset.state {
                 if state == .failed {
-                    throw LibraryUploader.Committed.failure(fileName: file.fileName, asset: asset)
+                    throw asset.failure(fileName: file.fileName)
                 }
                 if state.isProcessing {
                     throw UploadError.stillProcessing(fileName: file.fileName, afterAttempts: poll.attempts)
@@ -365,7 +360,7 @@ public struct LibraryPusher: Sendable {
                 assetID: assetID,
                 on: target.parent
             )
-            ordered.append(made.id)
+            ordered.append(made)
         }
 
         // Nothing moved when only a poster frame changed.

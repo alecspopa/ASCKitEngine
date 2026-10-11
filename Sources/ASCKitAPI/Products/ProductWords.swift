@@ -10,7 +10,7 @@ import Foundation
 /// it. The web page of App Store Connect does the same when somebody saves an
 /// approved product. A draft goes to App Review only when a review submission
 /// holds it, so making one sends nothing to review.
-public struct ProductVersionAttributes: Decodable, Sendable {
+struct ProductVersionAttributes: Decodable, Sendable {
     public let state: ProductVersionState?
 
     /// Apple's own counter, 1 for the first.
@@ -29,7 +29,7 @@ public struct ProductVersionAttributes: Decodable, Sendable {
 /// The name is 30 characters and the description is 45. Both are needed in
 /// every language a product ships in: unlike a listing field, leaving one out
 /// is not "leave it alone", it is a product that cannot be submitted.
-public struct ProductWordsAttributes: Decodable, Sendable {
+struct ProductWordsAttributes: Decodable, Sendable {
     public let locale: String?
     public let name: String?
     public let description: String?
@@ -116,7 +116,7 @@ public enum WordsOwner: Sendable {
 
 // MARK: - Reading
 
-public extension ASCClient {
+extension ASCClient {
     /// Every version this product holds, each with its state.
     ///
     /// Every one, not only the draft: which version to read is decided here,
@@ -206,7 +206,7 @@ public extension ASCClient {
     /// Makes a draft of the words, copied from the version before it.
     ///
     /// App Store Connect answers 409 when the product already holds a draft.
-    func createWordsVersion(
+    internal func createWordsVersion(
         of owner: WordsOwner,
         parentID: String
     ) async throws -> Resource<ProductVersionAttributes> {

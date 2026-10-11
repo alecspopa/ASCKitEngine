@@ -35,22 +35,22 @@ public struct ExperimentState: RawRepresentable, Sendable, Hashable, Codable {
     public var isEditable: Bool { Self.editable.contains(self) }
 }
 
-public struct ExperimentAttributes: Decodable, Sendable {
+struct ExperimentAttributes: Decodable, Sendable {
     public let name: String?
     public let state: ExperimentState?
     public let platform: Platform?
     public let trafficProportion: Int?
 }
 
-public struct TreatmentAttributes: Decodable, Sendable {
+struct TreatmentAttributes: Decodable, Sendable {
     public let name: String?
 }
 
-public struct TreatmentLocalizationAttributes: Decodable, Sendable {
+struct TreatmentLocalizationAttributes: Decodable, Sendable {
     public let locale: String?
 }
 
-public extension ASCClient {
+extension ASCClient {
     /// Every test of an app that is not over yet.
     ///
     /// Asked of App Store Connect with a filter, so a long history of finished

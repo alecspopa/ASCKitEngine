@@ -31,22 +31,8 @@ public struct TextPusher: Sendable {
     /// The fields named in a refusal, from either place App Store Connect puts
     /// them: the source pointer, and the wording of the detail.
     static func refusedFields(in error: any Error) -> Set<MetadataField> {
-        guard let ascError = error as? ASCError, case .conflict = ascError else { return [] }
-
-        var fields: Set<MetadataField> = []
-        for detail in ascError.details {
-            if let pointer = detail.pointer,
-               let name = pointer.split(separator: "/").last,
-               let field = MetadataField(rawValue: String(name)) {
-                fields.insert(field)
-            }
-            if let text = detail.detail ?? detail.title {
-                for field in MetadataField.allCases where text.contains("'\(field.rawValue)'") {
-                    fields.insert(field)
-                }
-            }
-        }
-        return fields
+        guard let ascError = error as? ASCError else { return [] }
+        return Set(ascError.refusedFields(among: MetadataField.allCases.map(\.rawValue)).compactMap(MetadataField.init))
     }
 
     private let client: ASCClient

@@ -248,8 +248,8 @@ struct AssetLibraryTests {
         ])
         let client = try ASCClient.stubbed(transport: transport)
 
-        _ = try await client.renameLibraryAsset(media: .image, id: "f400", referenceName: "Menu screen (Fall 2026)")
-        let archived = try await client.archiveLibraryAsset(media: .image, id: "f400")
+        try await client.renameLibraryAsset(media: .image, id: "f400", referenceName: "Menu screen (Fall 2026)")
+        try await client.archiveLibraryAsset(media: .image, id: "f400")
 
         #expect(try await LibraryJSON.body(of: transport.request(at: 0)) == LibraryJSON.object("""
         {"data":{"type":"appAssetLibraryImages","id":"f400","attributes":{"referenceName":"Menu screen (Fall 2026)"}}}
@@ -257,7 +257,6 @@ struct AssetLibraryTests {
         #expect(try await LibraryJSON.body(of: transport.request(at: 1)) == LibraryJSON.object("""
         {"data":{"type":"appAssetLibraryImages","id":"f400","attributes":{"archived":true}}}
         """))
-        #expect(archived.attributes?.state == .archived)
     }
 
     @Test(arguments: LibraryMedia.allCases)
@@ -369,7 +368,7 @@ struct PlacementTests {
             on: .versionLocalization(id: "b3a9")
         )
 
-        #expect(created.id == "2e00")
+        #expect(created == "2e00")
         let request = await transport.request(at: 0)
         #expect(request.httpMethod == "POST")
         #expect(request.url?.path == "/v1/appAssetLibraryPlacements")

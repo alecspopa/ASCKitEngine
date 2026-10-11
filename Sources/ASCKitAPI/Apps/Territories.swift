@@ -6,20 +6,19 @@ import Foundation
 /// currency is the only attribute. That currency is the one App Store Connect
 /// bills in, which is not always the country's own, so it is read here rather
 /// than worked out from the country.
-public struct TerritoryAttributes: Decodable, Sendable {
-    public let currency: String?
+struct TerritoryAttributes: Decodable, Sendable {
+    let currency: String?
 }
 
 public extension ASCClient {
-    /// Every territory, about 175 of them.
+    /// The currency of every territory, about 175 of them, keyed by the
+    /// territory's code. Nil for a territory App Store Connect names no
+    /// currency for.
     ///
     /// One page. The limit is asked for anyway, because the default is 50 and
     /// three round trips for a list that never changes is three too many.
-    func territories() async throws -> [Resource<TerritoryAttributes>] {
-        try await list(
-            "/v1/territories",
-            query: [.maxPageSize],
-            as: TerritoryAttributes.self
-        )
+    func territoryCurrencies() async throws -> [String: String?] {
+        let territories = try await list("/v1/territories", query: [.maxPageSize], as: TerritoryAttributes.self)
+        return Dictionary(territories.map { ($0.id, $0.attributes?.currency) }, uniquingKeysWith: { first, _ in first })
     }
 }

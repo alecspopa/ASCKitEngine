@@ -74,7 +74,7 @@ public struct RemoteLibraryAsset: Sendable, Equatable {
     }
 
     /// Nil for a resource that is neither an image nor a video.
-    public init?(_ resource: Resource<LibraryAssetAttributes>) {
+    init?(_ resource: Resource<LibraryAssetAttributes>) {
         guard let media = LibraryMedia(resourceType: resource.type) else { return nil }
         let attributes = resource.attributes
         self.init(
