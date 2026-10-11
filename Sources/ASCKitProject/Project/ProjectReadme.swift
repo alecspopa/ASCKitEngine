@@ -277,6 +277,10 @@ enum ProjectReadme {
     `usesSourceScreenshots` to say it shows the source language's.
     `asckit check` lists the ones still empty.
 
+    The list works the other way too. A push takes the screenshots and the
+    previews of a device class the list leaves out off App Store Connect. The
+    plan names each of those sets before the push.
+
     ### A waiting file with an alpha channel
 
     App Store Connect refuses a screenshot that carries one, so ASCKit refuses

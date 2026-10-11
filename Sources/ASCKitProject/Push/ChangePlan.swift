@@ -229,11 +229,22 @@ public struct ChangePlan: Sendable {
         /// How the slot compares in the App Asset Library.
         public let library: LibrarySlot
 
-        public init(locale: String, deviceClass: DeviceClass, localFiles: [ScreenshotFile], library: LibrarySlot) {
+        /// False for a device class the project does not list. Its set is
+        /// planned empty, so a push takes its images off.
+        public let isListed: Bool
+
+        public init(
+            locale: String,
+            deviceClass: DeviceClass,
+            localFiles: [ScreenshotFile],
+            library: LibrarySlot,
+            isListed: Bool = true
+        ) {
             self.locale = locale
             self.deviceClass = deviceClass
             self.localFiles = localFiles
             self.library = library
+            self.isListed = isListed
             action = LibraryPlanner.action(for: library)
         }
 
@@ -252,11 +263,21 @@ public struct ChangePlan: Sendable {
         public let localFiles: [PreviewFile]
         public let library: LibrarySlot
 
-        public init(locale: String, deviceClass: DeviceClass, localFiles: [PreviewFile], library: LibrarySlot) {
+        /// False for a device class the project does not list.
+        public let isListed: Bool
+
+        public init(
+            locale: String,
+            deviceClass: DeviceClass,
+            localFiles: [PreviewFile],
+            library: LibrarySlot,
+            isListed: Bool = true
+        ) {
             self.locale = locale
             self.deviceClass = deviceClass
             self.localFiles = localFiles
             self.library = library
+            self.isListed = isListed
             action = LibraryPlanner.action(for: library)
         }
 

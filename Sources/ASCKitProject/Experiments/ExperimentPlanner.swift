@@ -23,10 +23,9 @@ public enum ExperimentPlanner {
 
             for treatment in experiment.treatments {
                 let treatmentFolder = treatmentNames[treatment.id] ?? treatment.name
-                let deviceClasses = config.screenshotDeviceClasses(
-                    for: .treatment(experiment: experimentFolder, treatment: treatmentFolder),
-                    platform: experiment.platform
-                )
+                let place = LibraryContentPlace.treatment(experiment: experimentFolder, treatment: treatmentFolder)
+                let deviceClasses = config.screenshotDeviceClasses(for: place, platform: experiment.platform)
+                let unlisted = config.unlistedScreenshotDeviceClasses(for: place, platform: experiment.platform)
 
                 for localization in treatment.localizations.sorted(by: { $0.locale < $1.locale }) {
                     creativeSets += creativePlans(
@@ -68,6 +67,12 @@ public enum ExperimentPlanner {
                             library: library
                         ))
                     }
+                    let removals = unlistedPlans(
+                        unlisted, experiment: experiment, treatment: treatment, localization: localization,
+                        record: record
+                    )
+                    sets += removals.sets
+                    previewSets += removals.previewSets
                 }
             }
         }
@@ -130,6 +135,47 @@ public enum ExperimentPlanner {
                 library: library
             )
         }
+    }
+
+    /// The sets of device classes the project does not list, each planned
+    /// empty.
+    private static func unlistedPlans(
+        _ deviceClasses: [DeviceClass],
+        experiment: RemoteExperiment,
+        treatment: RemoteTreatment,
+        localization: RemoteTreatmentLocalization,
+        record: AssetRecord
+    ) -> (sets: [ExperimentPlan.SetPlan], previewSets: [ExperimentPlan.PreviewSetPlan]) {
+        let sets = LibraryPlanner.unlistedScreenshotSets(
+            deviceClasses, placements: localization.placements, locale: localization.locale, record: record
+        ).map {
+            ExperimentPlan.SetPlan(
+                experimentID: experiment.id,
+                experimentName: experiment.name,
+                treatmentID: treatment.id,
+                treatmentName: treatment.name,
+                locale: localization.locale,
+                treatmentLocalizationID: localization.id,
+                deviceClass: $0.deviceClass,
+                localFiles: [],
+                library: $0.library
+            )
+        }
+        let previewSets = LibraryPlanner.unlistedPreviewSets(
+            deviceClasses, placements: localization.placements, locale: localization.locale, record: record
+        ).map {
+            ExperimentPlan.PreviewSetPlan(
+                experimentName: experiment.name,
+                treatmentID: treatment.id,
+                treatmentName: treatment.name,
+                locale: localization.locale,
+                treatmentLocalizationID: localization.id,
+                deviceClass: $0.deviceClass,
+                localFiles: [],
+                library: $0.library
+            )
+        }
+        return (sets, previewSets)
     }
 
     /// Folders holding images that nothing will upload, and why.

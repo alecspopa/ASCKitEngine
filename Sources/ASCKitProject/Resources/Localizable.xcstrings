@@ -1198,6 +1198,9 @@
     "%@, new draft" : {
       "comment" : "Progress line while a push makes a new draft of a product's words. The value is an in-app purchase product id or a subscription group name, and it stays as it is."
     },
+    "%@. The project does not list this device." : {
+      "comment" : "Text in the publish plan beside a screenshot or preview set, shown as fixed-width text. The value is the change, such as \"remove all 3 images\". The project does not list this device, so a push takes its images off App Store Connect."
+    },
     "%@.json could not be read." : {
       "comment" : "Problem message in the problem list. The value is a language code, which is also the file name."
     },

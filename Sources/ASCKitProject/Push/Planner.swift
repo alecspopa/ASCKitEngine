@@ -157,13 +157,14 @@ public enum Planner {
     ) -> [ChangePlan.ScreenshotPlan] {
         var plans: [ChangePlan.ScreenshotPlan] = []
 
+        let place = LibraryContentPlace.version(local.versionString)
         for locale in config.writtenLocales.sorted() {
             // A language that will not be published gets no screenshots
             // either, and neither does one this version has no page for.
             guard local.appInformation[locale]?.status.canPublish == true else { continue }
             guard remote.versionLocalizations[locale] != nil else { continue }
 
-            for deviceClass in config.screenshotDeviceClasses(for: .version(local.versionString)) {
+            for deviceClass in config.screenshotDeviceClasses(for: place) {
                 // The tick wins over files in the folder. App Store Connect
                 // shows the source language's on a language with none, so the
                 // language's own images come off.
@@ -179,6 +180,15 @@ public enum Planner {
                 plans.append(ChangePlan.ScreenshotPlan(
                     locale: locale, deviceClass: deviceClass, localFiles: files, library: library
                 ))
+            }
+
+            plans += LibraryPlanner.unlistedScreenshotSets(
+                config.unlistedScreenshotDeviceClasses(for: place),
+                placements: remote.placements, locale: locale, record: record
+            ).map {
+                ChangePlan.ScreenshotPlan(
+                    locale: locale, deviceClass: $0.deviceClass, localFiles: [], library: $0.library, isListed: false
+                )
             }
         }
         return plans
@@ -209,6 +219,15 @@ public enum Planner {
                 plans.append(ChangePlan.PreviewPlan(
                     locale: locale, deviceClass: deviceClass, localFiles: files, library: library
                 ))
+            }
+
+            plans += LibraryPlanner.unlistedPreviewSets(
+                config.unlistedScreenshotDeviceClasses(for: .version(local.versionString)),
+                placements: remote.placements, locale: locale, record: record
+            ).map {
+                ChangePlan.PreviewPlan(
+                    locale: locale, deviceClass: $0.deviceClass, localFiles: [], library: $0.library, isListed: false
+                )
             }
         }
         return plans

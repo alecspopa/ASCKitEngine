@@ -267,7 +267,7 @@ public enum ChangePlanFormatter {
         var lines = [String(localized: Words.screenshots)]
         for item in changing {
             let words = describeOrderOnly(item.library) ?? describe(item.action)
-            lines.append("  \(item.locale), \(item.deviceClass.displayName): \(words)")
+            lines.append("  \(item.locale), \(item.deviceClass.displayName): \(withReason(words, isListed: item.isListed))")
         }
         return lines + [""]
     }

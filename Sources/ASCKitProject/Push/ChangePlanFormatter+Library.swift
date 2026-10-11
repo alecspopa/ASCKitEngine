@@ -8,9 +8,14 @@ extension ChangePlanFormatter {
         var lines = [String(localized: Words.previews)]
         for item in changing {
             let words = describeOrderOnly(item.library) ?? describeVideos(item.action)
-            lines.append("  \(item.locale), \(item.deviceClass.displayName): \(words)")
+            lines.append("  \(item.locale), \(item.deviceClass.displayName): \(withReason(words, isListed: item.isListed))")
         }
         return lines + [""]
+    }
+
+    /// Without the reason, the removal reads like a set somebody emptied.
+    static func withReason(_ words: String, isListed: Bool) -> String {
+        isListed ? words : String(localized: "\(words). The project does not list this device.", bundle: .module)
     }
 
     static func creativeLines(_ plan: ChangePlan) -> [String] {

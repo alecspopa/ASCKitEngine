@@ -210,6 +210,38 @@ public enum LibraryPlanner {
 
     // swiftlint:enable function_parameter_count
 
+    /// The screenshot sets of device classes the project does not list, each
+    /// planned empty. A device class with nothing on App Store Connect gets
+    /// no set.
+    public static func unlistedScreenshotSets(
+        _ deviceClasses: [DeviceClass],
+        placements: [RemotePlacement],
+        locale: String,
+        record: AssetRecord
+    ) -> [(deviceClass: DeviceClass, library: LibrarySlot)] {
+        deviceClasses.compactMap { deviceClass in
+            screenshotSet(
+                files: [], placements: placements, locale: locale, deviceClass: deviceClass,
+                emptied: true, record: record
+            ).map { (deviceClass, $0) }
+        }
+    }
+
+    /// The preview sets of device classes the project does not list, each
+    /// planned empty.
+    public static func unlistedPreviewSets(
+        _ deviceClasses: [DeviceClass],
+        placements: [RemotePlacement],
+        locale: String,
+        record: AssetRecord
+    ) -> [(deviceClass: DeviceClass, library: LibrarySlot)] {
+        deviceClasses.filter(\.takesPreviews).compactMap { deviceClass in
+            previewSet(
+                files: [], placements: placements, locale: locale, deviceClass: deviceClass, record: record
+            ).map { (deviceClass, $0) }
+        }
+    }
+
     /// The placements of one slot, from all the placements of one language.
     public static func current(
         in placements: [RemotePlacement],

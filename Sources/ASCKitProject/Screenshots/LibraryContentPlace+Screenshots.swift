@@ -52,13 +52,28 @@ public extension ProjectConfig {
     /// A custom product page takes the iPhone and iPad screenshots only: App
     /// Store Connect's reference data names no watch or iMessage group for it.
     func screenshotDeviceClasses(for place: LibraryContentPlace, platform: Platform? = nil) -> [DeviceClass] {
+        Self.deviceClasses(resolvedDeviceClasses, takenBy: place, platform: platform)
+    }
+
+    /// The device classes a place takes that the project does not list. A push
+    /// takes their images off App Store Connect. A group that no device class
+    /// names stays as it is.
+    func unlistedScreenshotDeviceClasses(for place: LibraryContentPlace, platform: Platform? = nil) -> [DeviceClass] {
+        Self.deviceClasses(DeviceClass.all.filter { ships($0) == false }, takenBy: place, platform: platform)
+    }
+
+    private static func deviceClasses(
+        _ deviceClasses: [DeviceClass],
+        takenBy place: LibraryContentPlace,
+        platform: Platform?
+    ) -> [DeviceClass] {
         switch place {
         case .version:
-            resolvedDeviceClasses
+            deviceClasses
         case .treatment:
-            resolvedDeviceClasses.filter { platform == nil || $0.platform == platform }
+            deviceClasses.filter { platform == nil || $0.platform == platform }
         case .customPage:
-            resolvedDeviceClasses.filter { $0.platform == .ios && $0.takesPreviews }
+            deviceClasses.filter { $0.platform == .ios && $0.takesPreviews }
         }
     }
 }

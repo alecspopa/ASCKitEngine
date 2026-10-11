@@ -185,7 +185,9 @@ the next push. What the screenshot shows stays in English in every language.
 ```
 
 Leave `issuerId` out for an individual key. The language list and the device
-classes live here, so every project sets its own.
+classes live here, so every project sets its own. A push takes the screenshots
+and the previews of a device class this list leaves out off App Store Connect,
+and the plan names each of those sets first.
 
 `ignoredLocales` names the languages the app is built in and the store page is
 not. See "Languages ASCKit leaves alone" below.

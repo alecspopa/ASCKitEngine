@@ -24,6 +24,7 @@ public enum CustomPagePlanner {
             guard let version = page.version else { continue }
             let folder = names[page.id] ?? page.name
             let deviceClasses = config.screenshotDeviceClasses(for: .customPage(folder))
+            let unlisted = config.unlistedScreenshotDeviceClasses(for: .customPage(folder))
 
             if let change = deepLinkChange(page: page, version: version, settings: local.settings[folder]) {
                 deepLinks.append(change)
@@ -56,6 +57,22 @@ public enum CustomPagePlanner {
                         localFiles: files,
                         library: library
                     ))
+                }
+                sets += LibraryPlanner.unlistedScreenshotSets(
+                    unlisted, placements: localization.placements, locale: localization.locale, record: record
+                ).map {
+                    .init(
+                        pageID: page.id, pageName: page.name, locale: localization.locale,
+                        localizationID: localization.id, deviceClass: $0.deviceClass, localFiles: [], library: $0.library
+                    )
+                }
+                previewSets += LibraryPlanner.unlistedPreviewSets(
+                    unlisted, placements: localization.placements, locale: localization.locale, record: record
+                ).map {
+                    .init(
+                        pageID: page.id, pageName: page.name, locale: localization.locale,
+                        localizationID: localization.id, deviceClass: $0.deviceClass, localFiles: [], library: $0.library
+                    )
                 }
             }
         }

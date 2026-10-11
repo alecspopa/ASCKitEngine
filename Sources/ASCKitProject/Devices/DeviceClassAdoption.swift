@@ -107,8 +107,8 @@ public enum DeviceClassAdoption {
     /// for, and this is how one of those leaves.
     ///
     /// Removes no files. The folders stay where they are, and the checker
-    /// reports them as folders for a device class nobody lists, so nothing is
-    /// lost by taking a line out and putting it back.
+    /// reports them as folders for a device class nobody lists. The next push
+    /// takes the device class's images off App Store Connect.
     @discardableResult
     public static func drop(_ deviceClass: DeviceClass, in project: Project) throws -> ProjectConfig {
         var config = project.config
