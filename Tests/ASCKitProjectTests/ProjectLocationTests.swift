@@ -16,14 +16,7 @@ final class ProjectLocationTests {
     }
 
     func config() -> ProjectConfig {
-        ProjectConfig(
-            bundleID: "com.example.Demo",
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: "en-US",
-            locales: ["en-US"],
-            deviceClasses: [DeviceClass.iPhone69.id]
-        )
+        .fixture()
     }
 
     /// A repository folder: an Xcode project, and a listing folder beside it.

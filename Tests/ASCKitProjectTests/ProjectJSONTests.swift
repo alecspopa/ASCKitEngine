@@ -1,3 +1,4 @@
+import ASCKitTestSupport
 import Foundation
 import Testing
 @testable import ASCKitProject
@@ -20,8 +21,9 @@ struct ProjectJSONTests {
     }
 
     @Test func writeRoundTripsDatesAsISO8601() throws {
-        let url = FileManager.default.temporaryDirectory.appending(path: "json-\(UUID().uuidString).json")
-        defer { try? FileManager.default.removeItem(at: url) }
+        let folder = try TestFolders.make(prefix: "json")
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "sample.json")
         let value = Sample(name: "x", count: 1, when: Date(timeIntervalSince1970: 1_700_000_000))
 
         try ProjectJSON.write(value, to: url, datesAsISO8601: true, atomic: true)

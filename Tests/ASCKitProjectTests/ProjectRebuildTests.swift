@@ -16,14 +16,7 @@ final class ProjectRebuildTests {
     }
 
     func config(sourceLocale: String = "en-US", locales: [String]? = nil) -> ProjectConfig {
-        ProjectConfig(
-            bundleID: "com.example.Demo",
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: sourceLocale,
-            locales: locales ?? [sourceLocale],
-            deviceClasses: [DeviceClass.iPhone69.id]
-        )
+        .fixture(sourceLocale: sourceLocale, locales: locales)
     }
 
     /// A project with content in it, which is the only interesting case.

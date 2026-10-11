@@ -51,10 +51,9 @@ final class TreatmentLanguageCheckTests {
             experiment: slot.experiment, treatment: slot.treatment,
             locale: slot.locale, deviceClassID: slot.deviceClassID
         )
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try PNGWriter.write(
-            to: directory.appending(path: "01-a-iPhone-6.9-\(slot.locale.replacingOccurrences(of: "-", with: "_")).png"),
-            width: 1320, height: 2868, hasAlpha: false, seed: slot.locale
+        try PNGWriter.writeScreenshot(
+            named: "01-a-iPhone-6.9-\(slot.locale.replacingOccurrences(of: "-", with: "_")).png",
+            in: directory, seed: slot.locale
         )
     }
 

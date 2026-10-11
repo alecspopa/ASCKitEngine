@@ -80,7 +80,7 @@ struct AssetRecordTests {
 
         var second = first
         second.record(md5: "def", Self.entry("a2"))
-        #expect(throws: (any Error).self) { try AssetRecordStore.save(second, in: project) }
+        #expect(throws: CocoaError.self) { try AssetRecordStore.save(second, in: project) }
 
         #expect(try AssetRecordStore.load(in: project) == first)
     }

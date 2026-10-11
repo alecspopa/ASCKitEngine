@@ -174,7 +174,7 @@ final class PrivateKeyStoreTests {
 
     @Test func refusesAKeyThatCannotSign() {
         let broken = "-----BEGIN PRIVATE KEY-----\nnot base64\n-----END PRIVATE KEY-----"
-        #expect(throws: (any Error).self) {
+        #expect(throws: JWTSignerError.self) {
             try PrivateKeyStore.readKey(pem: broken, fileName: "AuthKey_2X9R4HXF34.p8")
         }
     }

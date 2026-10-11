@@ -32,17 +32,7 @@ final class AlphaRemovalTests {
         height: Int = 2868,
         hasAlpha: Bool = true
     ) throws -> URL {
-        let folder = try fixture.load().rootURL.appending(path: ProjectScaffold.inboxName)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-
-        let url = folder.appending(path: fileName)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
-        )
-        try PNGWriter.write(
-            to: url, width: width, height: height, hasAlpha: hasAlpha, seed: fileName
-        )
-        return url
+        try fixture.putInInbox(named: fileName, width: width, height: height, hasAlpha: hasAlpha)
     }
 
     private func plan() throws -> Inbox.Plan {

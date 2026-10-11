@@ -15,14 +15,7 @@ final class ProjectScaffoldTests {
     }
 
     func config(sourceLocale: String = "en-US") -> ProjectConfig {
-        ProjectConfig(
-            bundleID: "com.example.Demo",
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: sourceLocale,
-            locales: [sourceLocale],
-            deviceClasses: [DeviceClass.iPhone69.id]
-        )
+        .fixture(sourceLocale: sourceLocale)
     }
 
     @Test func writesAProjectTheToolCanOpen() throws {

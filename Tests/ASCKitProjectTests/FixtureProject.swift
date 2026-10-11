@@ -1,3 +1,4 @@
+import ASCKitTestSupport
 import CoreGraphics
 import Foundation
 import ImageIO
@@ -11,28 +12,12 @@ struct FixtureProject {
     let version: String
 
     /// Fixtures are built under the package's own `.build/test-fixtures`,
-    /// not in the system temporary folder. They stay inside the repository
-    /// where they can be looked at when a test fails, and `.build` is already
-    /// ignored by git so nothing dirties the working tree.
-    /// Made once, by `static let`, so parallel tests never race each other
-    /// creating the same parent. Each test then makes only its own uniquely
-    /// named folder inside it, which nothing else can be making at the time.
-    static let fixturesRoot: URL = {
-        // #filePath is .../Tests/ASCKitProjectTests/FixtureProject.swift
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appending(path: ".build")
-            .appending(path: "test-fixtures")
-        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        return url
-    }()
+    /// not in the system temporary folder. See `TestFolders`.
+    static var fixturesRoot: URL { TestFolders.root }
 
     init(version: String = "1.0") throws {
         self.version = version
-        rootURL = Self.fixturesRoot.appending(path: "asckit-fixture-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: rootURL, withIntermediateDirectories: false)
+        rootURL = try TestFolders.make(prefix: "asckit-fixture")
     }
 
     /// Another version inside a project that already exists.
@@ -184,9 +169,65 @@ struct FixtureProject {
     }
 }
 
+// MARK: - Shared fixtures
+
+extension ProjectConfig {
+    /// The demo app most tests need. Pass only what the test is about.
+    static func fixture(
+        bundleID: String = "com.example.Demo",
+        sourceLocale: String = "en-US",
+        locales: [String]? = nil,
+        ignoredLocales: [String] = [],
+        deviceClasses: [String] = [DeviceClass.iPhone69.id]
+    ) -> ProjectConfig {
+        ProjectConfig(
+            bundleID: bundleID,
+            keyID: "ABC123",
+            issuerID: "issuer",
+            sourceLocale: sourceLocale,
+            locales: locales ?? [sourceLocale],
+            ignoredLocales: ignoredLocales,
+            deviceClasses: deviceClasses
+        )
+    }
+}
+
+extension FixtureProject {
+    /// Writes a screenshot into the inbox, in a subfolder when one is given.
+    @discardableResult
+    func putInInbox(
+        named fileName: String,
+        in subfolder: String? = nil,
+        width: Int = 1290,
+        height: Int = 2796,
+        hasAlpha: Bool = false
+    ) throws -> URL {
+        var folder = try load().rootURL.appending(path: ProjectScaffold.inboxName)
+        if let subfolder { folder.append(path: subfolder) }
+        let url = folder.appending(path: fileName)
+        // A file name can carry its own folders, as a dropped folder does.
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
+        )
+        try PNGWriter.write(to: url, width: width, height: height, hasAlpha: hasAlpha, seed: fileName)
+        return url
+    }
+}
+
 /// Writes a real PNG, so the alpha channel and the pixel size the validator
 /// reads are the ones a design tool would actually produce.
 enum PNGWriter {
+    /// A full-size iPhone screenshot in a folder that may not exist yet.
+    static func writeScreenshot(
+        named name: String, in directory: URL, hasAlpha: Bool = false, seed: String? = nil
+    ) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try write(
+            to: directory.appending(path: name), width: 1320, height: 2868,
+            hasAlpha: hasAlpha, seed: seed ?? name
+        )
+    }
+
     static func write(
         to url: URL,
         width: Int,

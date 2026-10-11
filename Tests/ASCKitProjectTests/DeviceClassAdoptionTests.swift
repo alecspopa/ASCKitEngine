@@ -26,17 +26,8 @@ final class DeviceClassAdoptionTests {
     }
 
     @discardableResult
-    private func putInInbox(named fileName: String, width: Int, height: Int) throws -> URL {
-        let folder = try fixture.load().rootURL.appending(path: ProjectScaffold.inboxName)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-
-        let url = folder.appending(path: fileName)
-        try PNGWriter.write(to: url, width: width, height: height, hasAlpha: false, seed: fileName)
-        return url
-    }
-
     private func putIPadImage(named fileName: String) throws {
-        try putInInbox(named: fileName, width: 2064, height: 2752)
+        try fixture.putInInbox(named: fileName, width: 2064, height: 2752)
     }
 
     private func folderExists(locale: String, deviceClassID: String) throws -> Bool {
@@ -60,7 +51,7 @@ final class DeviceClassAdoptionTests {
     /// A name nobody can read says nothing about a device class, so there is
     /// nothing here to offer and renaming is the only way out.
     @Test func offersNothingForAFileNamedWrong() throws {
-        try putInInbox(named: "screenshot.png", width: 2064, height: 2752)
+        try fixture.putInInbox(named: "screenshot.png", width: 2064, height: 2752)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.hasInvalidNames)
@@ -70,7 +61,7 @@ final class DeviceClassAdoptionTests {
     /// The device class is listed and the image is the wrong size. Listing it
     /// again would change nothing, so nothing is offered.
     @Test func offersNothingWhenTheImageItselfIsRefused() throws {
-        try putInInbox(named: "01-small-iPhone-6.9-en_US.png", width: 800, height: 600)
+        try fixture.putInInbox(named: "01-small-iPhone-6.9-en_US.png", width: 800, height: 600)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.refusals.count == 1)

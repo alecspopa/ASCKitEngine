@@ -21,14 +21,7 @@ final class ChangePlanDigestTests {
     // MARK: - Building the two sides
 
     func config() -> ProjectConfig {
-        ProjectConfig(
-            bundleID: "com.example.Demo",
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: "en-US",
-            locales: ["en-US"],
-            deviceClasses: []
-        )
+        .fixture(deviceClasses: [])
     }
 
     func listing(

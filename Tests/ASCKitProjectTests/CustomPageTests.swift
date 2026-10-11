@@ -56,8 +56,7 @@ final class CustomPageTests {
 
     func writeImage(_ name: String, in slot: CustomPageSlot) throws {
         let directory = project.customPageURL(page: slot.page, locale: slot.locale, deviceClassID: slot.deviceClassID)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try PNGWriter.write(to: directory.appending(path: name), width: 1320, height: 2868, hasAlpha: false, seed: name)
+        try PNGWriter.writeScreenshot(named: name, in: directory)
     }
 
     func plan(_ remote: RemoteCustomPages) -> CustomPagePlan {

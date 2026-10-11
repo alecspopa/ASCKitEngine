@@ -24,15 +24,7 @@ final class IgnoredLocalesTests {
         locales: [String] = ["en-US", "de-DE", "ro"],
         ignoredLocales: [String] = []
     ) -> ProjectConfig {
-        ProjectConfig(
-            bundleID: "com.example.Demo",
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: "en-US",
-            locales: locales,
-            ignoredLocales: ignoredLocales,
-            deviceClasses: [DeviceClass.iPhone69.id]
-        )
+        .fixture(locales: locales, ignoredLocales: ignoredLocales)
     }
 
     // MARK: - Writing the decision

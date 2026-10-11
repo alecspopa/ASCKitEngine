@@ -62,11 +62,7 @@ final class ExperimentTests {
             experiment: slot.experiment, treatment: slot.treatment,
             locale: slot.locale, deviceClassID: slot.deviceClassID
         )
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try PNGWriter.write(
-            to: directory.appending(path: name), width: 1320, height: 2868,
-            hasAlpha: alpha, seed: name
-        )
+        try PNGWriter.writeScreenshot(named: name, in: directory, hasAlpha: alpha)
     }
 
     // MARK: - Folder names

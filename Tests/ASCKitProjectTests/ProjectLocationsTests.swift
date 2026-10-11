@@ -18,14 +18,7 @@ final class ProjectLocationsTests {
     var root: URL { fixture.rootURL.appending(path: "ASCKit") }
 
     func config(bundleID: String = "com.example.Demo") -> ProjectConfig {
-        ProjectConfig(
-            bundleID: bundleID,
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: "en-US",
-            locales: ["en-US"],
-            deviceClasses: [DeviceClass.iPhone69.id]
-        )
+        .fixture(bundleID: bundleID)
     }
 
     /// A repository with an Xcode project building the apps given. A nil

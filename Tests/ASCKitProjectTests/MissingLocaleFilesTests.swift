@@ -19,14 +19,7 @@ final class MissingLocaleFilesTests {
     }
 
     func config(locales: [String] = ["en-US", "de-DE"]) -> ProjectConfig {
-        ProjectConfig(
-            bundleID: "com.example.Demo",
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: "en-US",
-            locales: locales,
-            deviceClasses: [DeviceClass.iPhone69.id]
-        )
+        .fixture(locales: locales)
     }
 
     @Test func writesAFileForALanguageThatHasNone() throws {

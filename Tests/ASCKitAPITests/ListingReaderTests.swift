@@ -343,13 +343,12 @@ struct ListingReaderTests {
         let transport = OneBadLocaleTransport()
         let client = try ASCClient.stubbed(transport: transport, retryPolicy: .none)
 
-        let thrown = await #expect(throws: (any Error).self) {
+        let thrown = await #expect(throws: ASCError.self) {
             _ = try await client.listing(bundleID: "com.example.Demo")
         }
 
         let error = try #require(thrown)
         #expect(error.isCancellation == false)
-        #expect(error is ASCError)
         #expect(await transport.slowRequestFinished, "the other language was left to finish")
     }
 }

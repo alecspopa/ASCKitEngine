@@ -18,14 +18,7 @@ final class PlannerTests {
     // MARK: - Building the two sides
 
     func config(locales: [String] = ["en-US"], deviceClasses: [String] = []) -> ProjectConfig {
-        ProjectConfig(
-            bundleID: "com.example.Demo",
-            keyID: "ABC123",
-            issuerID: "issuer",
-            sourceLocale: "en-US",
-            locales: locales,
-            deviceClasses: deviceClasses
-        )
+        .fixture(locales: locales, deviceClasses: deviceClasses)
     }
 
     /// App Store Connect holds a localization for every language its store page

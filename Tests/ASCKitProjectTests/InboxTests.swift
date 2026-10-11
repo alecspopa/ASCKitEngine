@@ -23,23 +23,6 @@ final class InboxTests {
         fixture.remove()
     }
 
-    @discardableResult
-    func putInInbox(
-        named fileName: String,
-        in subfolder: String? = nil,
-        width: Int = 1290,
-        height: Int = 2796,
-        hasAlpha: Bool = false
-    ) throws -> URL {
-        var folder = try fixture.load().rootURL.appending(path: ProjectScaffold.inboxName)
-        if let subfolder { folder.append(path: subfolder) }
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-
-        let url = folder.appending(path: fileName)
-        try PNGWriter.write(to: url, width: width, height: height, hasAlpha: hasAlpha, seed: fileName)
-        return url
-    }
-
     /// The Trash is somebody's real Trash, so a test that fills it cleans up
     /// after itself.
     func empty(_ trashed: [URL]) {
@@ -59,8 +42,8 @@ final class InboxTests {
     // MARK: - Reading the folder
 
     @Test func readsWhatIsWaitingInNameOrder() throws {
-        try putInInbox(named: "02-shared-iPhone-6.9-en_US.png")
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "02-shared-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
 
         let waiting = try Inbox.waiting(in: fixture.load())
         #expect(waiting.map(\.fileName) == [
@@ -71,7 +54,7 @@ final class InboxTests {
     /// The folder holds its own `.gitignore`, and a person can drop anything
     /// else in a folder they can see.
     @Test func saysNothingAboutAFileThatIsNotAnImage() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
 
         let folder = try fixture.load().rootURL.appending(path: ProjectScaffold.inboxName)
         try Data("not an image".utf8).write(to: folder.appending(path: "notes.txt"))
@@ -83,9 +66,9 @@ final class InboxTests {
     /// A design tool exports one folder per language, and a person drops the
     /// whole export in.
     @Test func readsTheSubfoldersInNameOrder() throws {
-        try putInInbox(named: "02-shared-iPhone-6.9-de_DE.png", in: "v7/de-DE")
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png", in: "v7/en-US")
-        try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
+        try fixture.putInInbox(named: "02-shared-iPhone-6.9-de_DE.png", in: "v7/de-DE")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png", in: "v7/en-US")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
 
         let waiting = try Inbox.waiting(in: fixture.load())
         #expect(waiting.map(\.fileName) == [
@@ -104,7 +87,7 @@ final class InboxTests {
     /// The name is the whole instruction, so a refusal has to say what to type
     /// rather than only that something is wrong.
     @Test func refusesAnImageWhoseNameSaysNoLanguage() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9.png")
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.arrivals.isEmpty)
@@ -114,7 +97,7 @@ final class InboxTests {
     }
 
     @Test func refusesALanguageThisProjectDoesNotShip() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-ja.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-ja.png")
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.arrivals.isEmpty)
@@ -124,7 +107,7 @@ final class InboxTests {
     }
 
     @Test func refusesAnImageWhoseNameSaysNoDevice() throws {
-        try putInInbox(named: "01-hero-en_US.png")
+        try fixture.putInInbox(named: "01-hero-en_US.png")
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.arrivals.isEmpty)
@@ -132,7 +115,7 @@ final class InboxTests {
     }
 
     @Test func sendsEachImageWhereItsNameSaysItGoes() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.arrivals.count == 1)
@@ -142,8 +125,8 @@ final class InboxTests {
     }
 
     @Test func splitsOneBatchAcrossTheDeviceClassesTheNamesName() throws {
-        try putInInbox(named: "01-phone-iPhone-6.9-en_US.png", width: 1290, height: 2796)
-        try putInInbox(named: "01-pad-iPad-13-en_US.png", width: 2064, height: 2752)
+        try fixture.putInInbox(named: "01-phone-iPhone-6.9-en_US.png", width: 1290, height: 2796)
+        try fixture.putInInbox(named: "01-pad-iPad-13-en_US.png", width: 2064, height: 2752)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.refusals.isEmpty)
@@ -155,7 +138,7 @@ final class InboxTests {
     /// The name says one device class and the image is the size of another, so
     /// the reason has to be the size rather than the name.
     @Test func refusesAnImageTheDeviceClassInItsNameWouldNotTake() throws {
-        try putInInbox(named: "01-small-iPhone-6.9-en_US.png", width: 800, height: 600)
+        try fixture.putInInbox(named: "01-small-iPhone-6.9-en_US.png", width: 800, height: 600)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.arrivals.isEmpty)
@@ -168,7 +151,7 @@ final class InboxTests {
     /// The size is right and the file is still refused, so the reason has to
     /// name the alpha channel rather than the size.
     @Test func saysTheAlphaChannelIsWhyWhenTheSizeIsRight() throws {
-        try putInInbox(named: "01-clear-iPhone-6.9-en_US.png", hasAlpha: true)
+        try fixture.putInInbox(named: "01-clear-iPhone-6.9-en_US.png", hasAlpha: true)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.arrivals.isEmpty)
@@ -176,7 +159,7 @@ final class InboxTests {
     }
 
     @Test func refusesADeviceClassThisProjectDoesNotList() throws {
-        try putInInbox(named: "01-hero-iPhone-6.5-en_US.png", width: 1284, height: 2778)
+        try fixture.putInInbox(named: "01-hero-iPhone-6.5-en_US.png", width: 1284, height: 2778)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.arrivals.isEmpty)
@@ -188,8 +171,8 @@ final class InboxTests {
     // MARK: - Filing it
 
     @Test func filesEveryImageIntoTheLanguageItsNameNamesAndNumbersTheSet() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
-        try putInInbox(named: "02-shared-iPhone-6.9-de_DE.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
+        try fixture.putInInbox(named: "02-shared-iPhone-6.9-de_DE.png")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -204,7 +187,7 @@ final class InboxTests {
     }
 
     @Test func filesAnImageFromASubfolder() throws {
-        let waiting = try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
+        let waiting = try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -218,7 +201,7 @@ final class InboxTests {
     /// The Finder writes a `.DS_Store` into a folder a person opened, so a
     /// folder with only that in it is empty.
     @Test func removesTheSubfoldersFilingEmptied() throws {
-        let waiting = try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
+        let waiting = try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
         try Data().write(to: waiting.deletingLastPathComponent().appending(path: ".DS_Store"))
 
         let project = try fixture.load()
@@ -233,8 +216,8 @@ final class InboxTests {
     /// A refused image stays in its folder for a person to fix, and an empty
     /// folder that held no filed image is somebody else's.
     @Test func keepsASubfolderThatStillHoldsAFile() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
-        try putInInbox(named: "01-hero-iPhone-6.9-ja.png", in: "v7/ja")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png", in: "v7/de-DE")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-ja.png", in: "v7/ja")
 
         let project = try fixture.load()
         let inbox = Inbox.url(in: project)
@@ -277,7 +260,7 @@ final class InboxTests {
 
     @Test func givesTheNewPicturesToTheLanguageThatCopiesThisOne() throws {
         try makeSpanishProject()
-        try putInInbox(named: "02-shared-iPhone-6.9-es_MX.png")
+        try fixture.putInInbox(named: "02-shared-iPhone-6.9-es_MX.png")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -301,7 +284,7 @@ final class InboxTests {
             locale: "es-MX", deviceClassID: DeviceClass.iPhone69.id,
             named: "02-shared.png", width: 1290, height: 2796
         )
-        try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -314,8 +297,8 @@ final class InboxTests {
     /// One batch, two languages. Every image carries its own destination, so
     /// nothing has to be dropped in one folder at a time.
     @Test func splitsOneBatchAcrossTheLanguagesTheNamesName() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
-        try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -327,8 +310,8 @@ final class InboxTests {
     }
 
     @Test func filesOneBatchIntoTheDeviceClassesTheNamesName() throws {
-        try putInInbox(named: "01-phone-iPhone-6.9-en_US.png", width: 1290, height: 2796)
-        try putInInbox(named: "01-pad-iPad-13-en_US.png", width: 2064, height: 2752)
+        try fixture.putInInbox(named: "01-phone-iPhone-6.9-en_US.png", width: 1290, height: 2796)
+        try fixture.putInInbox(named: "01-pad-iPad-13-en_US.png", width: 2064, height: 2752)
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -353,8 +336,8 @@ final class InboxTests {
             width: 1290,
             height: 2796
         )
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
-        try putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-de_DE.png")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(
@@ -382,7 +365,7 @@ final class InboxTests {
             width: 1290,
             height: 2796
         )
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(
@@ -400,7 +383,7 @@ final class InboxTests {
     /// A filed image that is still in the inbox would be filed a second time
     /// the next time somebody files the folder.
     @Test func takesTheInboxCopyAwayOnceItIsFiled() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -413,8 +396,8 @@ final class InboxTests {
     /// A refused image is not a filed image, so it stays where a person can see
     /// it and do something about it.
     @Test func leavesARefusedImageInTheFolder() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
-        try putInInbox(named: "01-small-iPhone-6.9-en_US.png", width: 800, height: 600)
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-small-iPhone-6.9-en_US.png", width: 800, height: 600)
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -433,7 +416,7 @@ final class InboxTests {
                 named: String(format: "%02d-old.png", number), width: 1290, height: 2796
             )
         }
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
 
         let project = try fixture.load()
         #expect(throws: ContentWriteError.self) {

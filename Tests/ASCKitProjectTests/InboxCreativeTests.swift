@@ -23,18 +23,6 @@ final class InboxCreativeTests {
         fixture.remove()
     }
 
-    @discardableResult
-    func putInInbox(named fileName: String, width: Int, height: Int, hasAlpha: Bool = false) throws -> URL {
-        let folder = try fixture.load().rootURL.appending(path: ProjectScaffold.inboxName)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let url = folder.appending(path: fileName)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
-        )
-        try PNGWriter.write(to: url, width: width, height: height, hasAlpha: hasAlpha, seed: fileName)
-        return url
-    }
-
     func empty(_ trashed: [URL]) {
         for url in trashed {
             try? FileManager.default.removeItem(at: url)
@@ -51,8 +39,8 @@ final class InboxCreativeTests {
     // MARK: - Reading the names
 
     @Test func readsAHeaderAndSearchResultsByTheirNames() throws {
-        try putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
-        try putInInbox(named: "search-results-en_US.png", width: 3840, height: 2560)
+        try fixture.putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "search-results-en_US.png", width: 3840, height: 2560)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.refusals.isEmpty)
@@ -64,7 +52,7 @@ final class InboxCreativeTests {
 
     @Test(arguments: [(3840, 1646), (5244, 2950)])
     func takesEitherHeaderSize(width: Int, height: Int) throws {
-        try putInInbox(named: "header-de_DE.png", width: width, height: height)
+        try fixture.putInInbox(named: "header-de_DE.png", width: width, height: height)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.refusals.isEmpty)
@@ -72,7 +60,7 @@ final class InboxCreativeTests {
     }
 
     @Test func takesSearchResultsInsideTheRange() throws {
-        try putInInbox(named: "search-results-en_US.png", width: 1920, height: 1280)
+        try fixture.putInInbox(named: "search-results-en_US.png", width: 1920, height: 1280)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.refusals.isEmpty)
@@ -81,7 +69,7 @@ final class InboxCreativeTests {
 
     /// A word or a number before the role says nothing.
     @Test func dropsWhatComesBeforeTheRole() throws {
-        try putInInbox(named: "01-moondane-header-en_US.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "01-moondane-header-en_US.png", width: 3840, height: 1646)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.map(\.role) == [.header])
@@ -89,7 +77,7 @@ final class InboxCreativeTests {
 
     /// A name with a device class is a screenshot, whatever it shows.
     @Test func readsANameWithADeviceClassAsAScreenshot() throws {
-        try putInInbox(named: "03-header-iPhone-6.9-en_US.png", width: 1290, height: 2796)
+        try fixture.putInInbox(named: "03-header-iPhone-6.9-en_US.png", width: 1290, height: 2796)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.isEmpty)
@@ -99,7 +87,7 @@ final class InboxCreativeTests {
     /// The refusal names the pattern of a header, because a header has no
     /// device class to add.
     @Test func refusesAHeaderWithNoLanguageWithTheHeaderPattern() throws {
-        try putInInbox(named: "header.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "header.png", width: 3840, height: 1646)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.isEmpty)
@@ -112,8 +100,8 @@ final class InboxCreativeTests {
     /// each. The folder says the language.
     @Test(arguments: ["de-DE", "de_DE", "de", "export/de-DE"])
     func readsTheLanguageOfTheFolder(folder: String) throws {
-        try putInInbox(named: "\(folder)/header.png", width: 3840, height: 1646)
-        try putInInbox(named: "en-US/header.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "\(folder)/header.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "en-US/header.png", width: 3840, height: 1646)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.refusals.isEmpty)
@@ -121,7 +109,7 @@ final class InboxCreativeTests {
     }
 
     @Test func readsTheLanguageOfTheFolderForAScreenshot() throws {
-        try putInInbox(named: "de-DE/01-overview-iPhone-6.9.png", width: 1290, height: 2796)
+        try fixture.putInInbox(named: "de-DE/01-overview-iPhone-6.9.png", width: 1290, height: 2796)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.refusals.isEmpty)
@@ -129,14 +117,14 @@ final class InboxCreativeTests {
     }
 
     @Test func takesTheLanguageOfTheNameOverTheFolder() throws {
-        try putInInbox(named: "de-DE/header-en_US.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "de-DE/header-en_US.png", width: 3840, height: 1646)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.map(\.locale) == ["en-US"])
     }
 
     @Test func refusesALanguageThisProjectDoesNotShip() throws {
-        try putInInbox(named: "header-ja.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "header-ja.png", width: 3840, height: 1646)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.isEmpty)
@@ -144,7 +132,7 @@ final class InboxCreativeTests {
     }
 
     @Test func refusesTheWrongSizeAndSaysTheSizesItTakes() throws {
-        try putInInbox(named: "header-en_US.png", width: 1290, height: 2796)
+        try fixture.putInInbox(named: "header-en_US.png", width: 1290, height: 2796)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.isEmpty)
@@ -153,7 +141,7 @@ final class InboxCreativeTests {
     }
 
     @Test func refusesAnAlphaChannelAndOffersToClearIt() throws {
-        try putInInbox(named: "header-en_US.png", width: 3840, height: 1646, hasAlpha: true)
+        try fixture.putInInbox(named: "header-en_US.png", width: 3840, height: 1646, hasAlpha: true)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.isEmpty)
@@ -162,8 +150,8 @@ final class InboxCreativeTests {
     }
 
     @Test func refusesASecondFileForOneRole() throws {
-        try putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
-        try putInInbox(named: "header-en_US.jpg", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "header-en_US.jpg", width: 3840, height: 1646)
 
         let plan = try Inbox.plan(in: fixture.load())
         #expect(plan.creative.count == 1)
@@ -174,8 +162,8 @@ final class InboxCreativeTests {
     // MARK: - Filing it
 
     @Test func filesTheArtIntoTheCreativeFolderOfTheVersion() throws {
-        let waiting = try putInInbox(named: "header-de_DE.png", width: 3840, height: 1646)
-        try putInInbox(named: "search-results-de_DE.png", width: 3840, height: 2560)
+        let waiting = try fixture.putInInbox(named: "header-de_DE.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "search-results-de_DE.png", width: 3840, height: 2560)
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
@@ -193,7 +181,7 @@ final class InboxCreativeTests {
         let folder = project.creativeURL(.version("1.0"), locale: "en-US")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         try PNGWriter.write(to: folder.appending(path: "header.jpg"), width: 3840, height: 1646, hasAlpha: false, seed: "old")
-        try putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
 
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)
         defer { empty(outcome.trashed) }
@@ -202,8 +190,8 @@ final class InboxCreativeTests {
     }
 
     @Test func filesScreenshotsAndArtInOneBatch() throws {
-        try putInInbox(named: "01-hero-iPhone-6.9-en_US.png", width: 1290, height: 2796)
-        try putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
+        try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png", width: 1290, height: 2796)
+        try fixture.putInInbox(named: "header-en_US.png", width: 3840, height: 1646)
 
         let project = try fixture.load()
         let outcome = try Inbox.file(Inbox.plan(in: project), version: "1.0", listing: nil, in: project)

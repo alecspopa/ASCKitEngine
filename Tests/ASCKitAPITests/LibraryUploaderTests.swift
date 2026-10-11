@@ -6,11 +6,17 @@ import Testing
 /// Answers by path, and counts how many requests are open at the same time.
 actor CountingTransport: Transport {
     private let reply: @Sendable (URLRequest) -> StubTransport.Reply
+    private let gate: Int?
+    private var released = false
+    private var waiting: [CheckedContinuation<Void, Never>] = []
     private(set) var open = 0
     private(set) var mostOpen = 0
     private(set) var requests: [URLRequest] = []
 
-    init(reply: @escaping @Sendable (URLRequest) -> StubTransport.Reply) {
+    /// With a `gate`, the first requests wait until that many are open at once,
+    /// so a test about the limit does not depend on how fast the machine is.
+    init(gate: Int? = nil, reply: @escaping @Sendable (URLRequest) -> StubTransport.Reply) {
+        self.gate = gate
         self.reply = reply
     }
 
@@ -18,7 +24,17 @@ actor CountingTransport: Transport {
         requests.append(request)
         open += 1
         mostOpen = max(mostOpen, open)
-        // Long enough for every upload the limit allows to be in flight.
+        if let gate, !released {
+            if open >= gate {
+                released = true
+                waiting.forEach { $0.resume() }
+                waiting = []
+            } else {
+                await withCheckedContinuation { waiting.append($0) }
+            }
+        }
+        // Still open for a moment after the gate, so a request over the limit
+        // would show up as well.
         try await Task.sleep(for: .milliseconds(20))
         open -= 1
 
@@ -52,8 +68,7 @@ struct LibraryUploaderTests {
     let folder: URL
 
     init() throws {
-        folder = URL(fileURLWithPath: NSTemporaryDirectory()).appending(path: "asckit-library-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        folder = try TestFolders.make(prefix: "asckit-library")
     }
 
     func removeFolder() {
@@ -225,10 +240,12 @@ struct LibraryUploaderTests {
 
     // MARK: - Many files
 
-    @Test(arguments: [1, 2, 4])
+    // The gate waits for the limit to be reached, so a limit that is never
+    // reached would hang. The time limit turns that into a failure.
+    @Test(.timeLimit(.minutes(1)), arguments: [1, 2, 4])
     func uploadsNoMoreFilesAtOnceThanTheLimit(limit: Int) async throws {
         defer { removeFolder() }
-        let transport = CountingTransport { _ in .ok("") }
+        let transport = CountingTransport(gate: limit) { _ in .ok("") }
         let uploader = try LibraryUploader(client: ASCClient.stubbed(transport: transport))
         let items = try (1 ... 8).map { try item("file-\($0).png", bytes: 10) }
 
