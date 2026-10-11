@@ -128,7 +128,7 @@ public enum VersionSeed {
 /// right size is read.
 private final class FileIndex {
     private let bySize: [Int: [URL]]
-    private var checksums: [URL: String] = [:]
+    private var checksums = ChecksumCache()
 
     init(project: Project, skipping version: String) {
         var bySize: [Int: [URL]] = [:]
@@ -151,13 +151,6 @@ private final class FileIndex {
     }
 
     func file(md5: String, size: Int) -> URL? {
-        bySize[size]?.first { self.checksum(of: $0) == md5.lowercased() }
-    }
-
-    private func checksum(of url: URL) -> String? {
-        if let known = checksums[url] { return known }
-        let computed = try? FileChecksum.md5(of: url)
-        checksums[url] = computed
-        return computed
+        bySize[size]?.first { checksums.md5(of: $0) == md5.lowercased() }
     }
 }

@@ -335,13 +335,7 @@ public enum WarningSilence {
         to location: Location,
         in project: Project
     ) throws {
-        let url = location.url(in: project)
-
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-        try ProjectJSON.write(Stored(warnings: warnings.sorted()), to: url)
+        try ProjectJSON.write(Stored(warnings: warnings.sorted()), to: location.url(in: project))
     }
 }
 

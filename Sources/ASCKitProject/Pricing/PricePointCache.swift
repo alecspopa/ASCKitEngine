@@ -156,30 +156,23 @@ public struct PricePointCache: Codable, Sendable {
 public enum PricePointStore {
     static let folderName = "price-points"
 
+    /// Not pretty printed. A ladder is tens of thousands of rows, nobody
+    /// reads it, and the indentation would be most of the file.
+    private static func file(productID: String) -> CacheFile<PricePointCache> {
+        CacheFile(path: "\(folderName)/\(productID).json", pretty: false)
+    }
+
     public static func url(productID: String, in project: Project) -> URL {
-        project.cacheURL
-            .appending(path: folderName)
-            .appending(path: "\(productID).json")
+        file(productID: productID).url(in: project)
     }
 
     /// Nil when nothing has read this product's prices yet, which is every
     /// product until somebody runs a command that needs them.
     public static func load(productID: String, in project: Project) -> PricePointCache? {
-        let url = url(productID: productID, in: project)
-        guard let data = try? Data(contentsOf: url) else { return nil }
-        return try? JSONDecoder().decode(PricePointCache.self, from: data)
+        file(productID: productID).load(in: project)
     }
 
     public static func save(_ cache: PricePointCache, in project: Project) throws {
-        let url = url(productID: cache.productID, in: project)
-        try ProjectScaffold.makeCache(at: project.cacheURL)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-
-        // Not pretty printed. A ladder is tens of thousands of rows, nobody
-        // reads it, and the indentation would be most of the file.
-        try ProjectJSON.write(cache, to: url, pretty: false)
+        try file(productID: cache.productID).save(cache, in: project)
     }
 }

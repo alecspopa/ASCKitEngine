@@ -53,18 +53,18 @@ public struct CustomPageSnapshot: Codable, Sendable, Equatable {
 }
 
 public enum CustomPageSnapshotStore {
+    private static let file = CacheFile<CustomPageSnapshot>(path: "custom-product-pages.json", datesAsISO8601: true)
+
     public static func url(in project: Project) -> URL {
-        project.cacheURL.appending(path: "custom-product-pages.json")
+        file.url(in: project)
     }
 
     /// Nil until something has read the pages.
     public static func load(in project: Project) -> CustomPageSnapshot? {
-        guard let data = try? Data(contentsOf: url(in: project)) else { return nil }
-        return try? ProjectJSON.decoder(datesAsISO8601: true).decode(CustomPageSnapshot.self, from: data)
+        file.load(in: project)
     }
 
     public static func save(_ snapshot: CustomPageSnapshot, in project: Project) throws {
-        try ProjectScaffold.makeCache(at: project.cacheURL)
-        try ProjectJSON.write(snapshot, to: url(in: project), datesAsISO8601: true)
+        try file.save(snapshot, in: project)
     }
 }

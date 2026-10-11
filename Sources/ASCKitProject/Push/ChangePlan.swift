@@ -639,7 +639,7 @@ public extension ChangePlan {
             feed(item.locale, item.reason.english)
         }
 
-        let hex = hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        let hex = hasher.finalize().hexString
         return "sha256:\(hex)"
     }
 }

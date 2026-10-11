@@ -63,8 +63,6 @@ public enum MissingLocaleFiles {
     /// and a version with no file at all has no gaps, only a first file that
     /// has to be somebody's decision.
     private static func hasStarted(version: String, in project: Project) -> Bool {
-        let folder = project.informationURL(version: version)
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
-        return names.contains { $0.lowercased().hasSuffix(".json") }
+        DirectoryListing.jsonFiles(in: project.informationURL(version: version)).isEmpty == false
     }
 }

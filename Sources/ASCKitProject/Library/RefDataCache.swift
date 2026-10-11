@@ -4,19 +4,19 @@ import Foundation
 /// The last reference data App Store Connect sent, kept in the project's
 /// cache so that a check without a network connection uses Apple's own sizes.
 public enum RefDataCache {
+    private static let file = CacheFile<AssetLibraryRefData>(path: "asset-library-refdata.json", atomic: true)
+
     public static func url(in project: Project) -> URL {
-        project.cacheURL.appending(path: "asset-library-refdata.json")
+        file.url(in: project)
     }
 
     /// Nil when nothing has read it yet, or when the file is damaged. Either
     /// way the built-in sizes apply.
     public static func load(in project: Project) -> AssetLibraryRefData? {
-        guard let data = try? Data(contentsOf: url(in: project)) else { return nil }
-        return try? JSONDecoder().decode(AssetLibraryRefData.self, from: data)
+        file.load(in: project)
     }
 
     public static func save(_ refData: AssetLibraryRefData, in project: Project) throws {
-        try ProjectScaffold.makeCache(at: project.cacheURL)
-        try ProjectJSON.write(refData, to: url(in: project), atomic: true)
+        try file.save(refData, in: project)
     }
 }

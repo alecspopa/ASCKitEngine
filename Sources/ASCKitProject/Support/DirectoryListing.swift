@@ -39,4 +39,11 @@ enum DirectoryListing {
             .filter { strayFileNames.contains($0.lastPathComponent) == false && extra.contains($0.lastPathComponent) == false }
             .sortedNaturally()
     }
+
+    /// The JSON files of a folder, in name order.
+    static func jsonFiles(in directory: URL) -> [URL] {
+        files(in: directory)
+            .filter { $0.pathExtension.lowercased() == "json" }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+    }
 }

@@ -133,17 +133,11 @@ public enum LibraryContentWriter {
 
     // swiftlint:enable function_parameter_count
 
+    /// The videos of one slot, as the reader lists them. Only a video takes
+    /// part in a reorder or a removal.
     static func previews(in folder: URL) -> [PreviewFile] {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
-        let frames = PosterFrames.load(in: folder) ?? [:]
-        return names
-            .filter { MediaExtensions.video.contains(($0 as NSString).pathExtension.lowercased()) && $0.hasPrefix(".") == false }
-            .sorted { $0.isNaturallyBefore($1) }
-            .map { name in
-                var file = VideoInspector.inspect(url: folder.appending(path: name))
-                file.posterFrame = frames[name]
-                return file
-            }
+        PreviewFolder.files(in: folder, frames: PosterFrames.load(in: folder))
+            .filter { MediaExtensions.video.contains(($0.fileName as NSString).pathExtension.lowercased()) }
     }
 
     // MARK: - Header and search results

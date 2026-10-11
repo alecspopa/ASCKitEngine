@@ -205,31 +205,24 @@ public enum SiblingScreenshots {
             uniquingKeysWith: { first, _ in first }
         )
 
-        var digests: [URL: String] = [:]
+        var checksums = ChecksumCache()
         for file in mine {
+            // A file that cannot be read has no fingerprint. The two sets then
+            // count as different, which offers the copy rather than hiding a
+            // file nobody can read.
             guard
                 let twin = byImageName[ScreenshotNaming.imageName(of: file.fileName)],
                 file.byteCount == twin.byteCount,
                 file.pixelWidth == twin.pixelWidth,
                 file.pixelHeight == twin.pixelHeight,
-                let mineDigest = digest(of: file.url, into: &digests),
-                let theirDigest = digest(of: twin.url, into: &digests),
+                let mineDigest = checksums.md5(of: file.url),
+                let theirDigest = checksums.md5(of: twin.url),
                 mineDigest == theirDigest
             else {
                 return false
             }
         }
         return true
-    }
-
-    /// A file that cannot be read has no fingerprint. Answering nil makes the
-    /// two sets count as different, which offers the copy rather than hiding a
-    /// file nobody can read.
-    private static func digest(of url: URL, into digests: inout [URL: String]) -> String? {
-        if let known = digests[url] { return known }
-        guard let made = try? FileChecksum.md5(of: url) else { return nil }
-        digests[url] = made
-        return made
     }
 
     // MARK: - Taking one

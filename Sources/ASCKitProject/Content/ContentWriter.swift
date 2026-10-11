@@ -38,13 +38,7 @@ public enum ContentWriter {
         version: String,
         in project: Project
     ) throws {
-        let url = project.informationURL(version: version, locale: information.locale)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-
-        try ProjectJSON.write(information, to: url)
+        try ProjectJSON.write(information, to: project.informationURL(version: version, locale: information.locale))
     }
 
     // MARK: - In-app purchases
@@ -60,13 +54,7 @@ public enum ContentWriter {
             throw ContentWriteError.badProductID(product.productID, reason: reason)
         }
 
-        let url = project.productURL(productID: product.productID)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-
-        try ProjectJSON.write(product, to: url)
+        try ProjectJSON.write(product, to: project.productURL(productID: product.productID))
     }
 
     public static func writeSubscriptionGroup(_ group: SubscriptionGroup, in project: Project) throws {
@@ -74,13 +62,7 @@ public enum ContentWriter {
             throw ContentWriteError.badGroupName(group.referenceName, reason: reason)
         }
 
-        let url = project.subscriptionGroupURL(name: group.referenceName)
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
-
-        try ProjectJSON.write(group, to: url)
+        try ProjectJSON.write(group, to: project.subscriptionGroupURL(name: group.referenceName))
     }
 
     // MARK: - Screenshots

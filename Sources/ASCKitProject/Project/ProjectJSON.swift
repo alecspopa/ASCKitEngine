@@ -17,6 +17,7 @@ enum ProjectJSON {
         return decoder
     }
 
+    /// Makes the folder the file goes in first, so no caller has to.
     static func write(
         _ value: some Encodable,
         to url: URL,
@@ -25,6 +26,18 @@ enum ProjectJSON {
         atomic: Bool = false
     ) throws {
         let data = try encoder(pretty: pretty, datesAsISO8601: datesAsISO8601).encode(value)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try data.write(to: url, options: atomic ? .atomic : [])
+    }
+
+    /// Nil when the file is not there or does not decode. Use it only where
+    /// both mean the same thing, such as a cache.
+    static func read<Value: Decodable>(
+        _ type: Value.Type,
+        from url: URL,
+        datesAsISO8601: Bool = false
+    ) -> Value? {
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return try? decoder(datesAsISO8601: datesAsISO8601).decode(type, from: data)
     }
 }

@@ -77,15 +77,20 @@ public struct PreviewFolder: Sendable {
                 let frames = PosterFrames.load(in: deviceDirectory)
                 if frames == nil { folder.unreadablePosterFrames.insert(slot) }
                 if let frames, frames.isEmpty == false { folder.posterFrames[slot] = frames }
-
-                folder.previews[slot] = DirectoryListing.files(in: deviceDirectory, keys: fileKeys, ignoring: ignoredFileNames).map { url in
-                    var file = VideoInspector.inspect(url: url)
-                    file.posterFrame = frames?[url.lastPathComponent]
-                    return file
-                }
+                folder.previews[slot] = files(in: deviceDirectory, frames: frames)
             }
         }
         return folder
+    }
+
+    /// Every file of one slot, with its poster frame. A file that is not a
+    /// video is kept, so a check can report it.
+    static func files(in slotDirectory: URL, frames: [String: String]?) -> [PreviewFile] {
+        DirectoryListing.files(in: slotDirectory, keys: fileKeys, ignoring: ignoredFileNames).map { url in
+            var file = VideoInspector.inspect(url: url)
+            file.posterFrame = frames?[url.lastPathComponent]
+            return file
+        }
     }
 
     public func previews(locale: String, deviceClassID: String) -> [PreviewFile] {

@@ -157,7 +157,7 @@ extension Validator {
 
         // One source language file can be the twin of more than one file here,
         // so its fingerprint is kept rather than read again.
-        var digests: [URL: String] = [:]
+        var checksums = ChecksumCache()
         var copies = 0
 
         for file in files {
@@ -170,8 +170,10 @@ extension Validator {
                 file.pixelWidth != nil,
                 file.pixelWidth == twin.pixelWidth,
                 file.pixelHeight == twin.pixelHeight,
-                let mine = digest(of: file.url, into: &digests),
-                let theirs = digest(of: twin.url, into: &digests),
+                // A file that cannot be read has no fingerprint, and
+                // `validateFile` already reports it.
+                let mine = checksums.md5(of: file.url),
+                let theirs = checksums.md5(of: twin.url),
                 mine == theirs
             else {
                 continue
@@ -197,15 +199,6 @@ extension Validator {
             path: folder,
             kind: .screenshotsCopiedFromSource
         )]
-    }
-
-    /// A file that cannot be read has no fingerprint, and `validateFile`
-    /// already reports it. Answering nil here leaves that one report alone.
-    private func digest(of url: URL, into digests: inout [URL: String]) -> String? {
-        if let known = digests[url] { return known }
-        guard let made = try? FileChecksum.md5(of: url) else { return nil }
-        digests[url] = made
-        return made
     }
 
     /// What every set is checked for, in a version, a treatment or a custom

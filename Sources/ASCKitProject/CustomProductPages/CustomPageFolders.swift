@@ -98,8 +98,7 @@ public enum CustomPageFolders {
         return written
     }
 
-    static func write(_ value: some Encodable, to url: URL) throws {
-        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+    private static func write(_ value: some Encodable, to url: URL) throws {
         try ProjectJSON.write(value, to: url, atomic: true)
     }
 }

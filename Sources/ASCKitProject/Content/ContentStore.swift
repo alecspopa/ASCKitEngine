@@ -35,7 +35,7 @@ public enum ContentStore {
         var copy: [String: AppInformation] = [:]
         var unreadable: [String: String] = [:]
 
-        for file in jsonFiles(in: informationURL) {
+        for file in DirectoryListing.jsonFiles(in: informationURL) {
             let locale = file.deletingPathExtension().lastPathComponent
             do {
                 var loaded = try JSONDecoder().decode(AppInformation.self, from: Data(contentsOf: file))
@@ -48,13 +48,5 @@ public enum ContentStore {
             }
         }
         return (copy, unreadable)
-    }
-
-    // MARK: - Directory reading
-
-    private static func jsonFiles(in directory: URL) -> [URL] {
-        DirectoryListing.entries(in: directory)
-            .filter { DirectoryListing.isDirectory($0) == false && $0.pathExtension.lowercased() == "json" }
-            .sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 }

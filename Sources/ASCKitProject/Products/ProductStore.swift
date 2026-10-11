@@ -88,7 +88,7 @@ public enum ProductStore {
         var misnamed: [String: String] = [:]
 
         let decoder = JSONDecoder()
-        for file in jsonFiles(in: project.productsURL) {
+        for file in DirectoryListing.jsonFiles(in: project.productsURL) {
             let name = file.deletingPathExtension().lastPathComponent
             guard name != silenceFileName else { continue }
 
@@ -109,7 +109,7 @@ public enum ProductStore {
 
         var groups: [String: SubscriptionGroup] = [:]
         var unreadableGroups: [String: String] = [:]
-        for file in jsonFiles(in: project.subscriptionGroupsURL) {
+        for file in DirectoryListing.jsonFiles(in: project.subscriptionGroupsURL) {
             let name = file.deletingPathExtension().lastPathComponent
             do {
                 var loaded = try decoder.decode(SubscriptionGroup.self, from: Data(contentsOf: file))
@@ -174,11 +174,5 @@ public enum ProductStore {
             )
         }
         return nil
-    }
-
-    private static func jsonFiles(in directory: URL) -> [URL] {
-        DirectoryListing.files(in: directory)
-            .filter { $0.pathExtension.lowercased() == "json" }
-            .sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 }

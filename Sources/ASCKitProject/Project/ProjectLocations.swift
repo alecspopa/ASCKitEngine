@@ -103,7 +103,6 @@ public struct ProjectLocations: Sendable, Equatable {
     }
 
     public func save() throws {
-        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         try ProjectJSON.write(
             File(projects: entries),
             to: root.appending(path: Self.fileName),

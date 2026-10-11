@@ -17,10 +17,33 @@ public enum FileChecksum {
         while let chunk = try handle.read(upToCount: 1 << 20), chunk.isEmpty == false {
             hasher.update(data: chunk)
         }
-        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        return hasher.finalize().hexString
     }
 
     public static func md5(of data: Data) -> String {
-        Insecure.MD5.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        Insecure.MD5.hash(data: data).hexString
+    }
+}
+
+/// The MD5 of each file, read once however often it is asked for.
+///
+/// One file can be the twin of several others, and reading it again for each
+/// comparison would make a check cost as much as a copy.
+struct ChecksumCache {
+    private var known: [URL: String] = [:]
+
+    /// Nil for a file that cannot be read. The caller decides what that means.
+    mutating func md5(of url: URL) -> String? {
+        if let checksum = known[url] { return checksum }
+        let checksum = try? FileChecksum.md5(of: url)
+        known[url] = checksum
+        return checksum
+    }
+}
+
+extension Sequence<UInt8> {
+    /// Lowercase hex, two digits for each byte.
+    var hexString: String {
+        map { String(format: "%02x", $0) }.joined()
     }
 }

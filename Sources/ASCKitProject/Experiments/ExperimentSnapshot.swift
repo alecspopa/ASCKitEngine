@@ -123,18 +123,18 @@ public extension ExperimentSnapshot.Experiment {
 }
 
 public enum ExperimentSnapshotStore {
+    private static let file = CacheFile<ExperimentSnapshot>(path: "experiments.json", datesAsISO8601: true)
+
     public static func url(in project: Project) -> URL {
-        project.cacheURL.appending(path: "experiments.json")
+        file.url(in: project)
     }
 
     /// Nil until something has read the draft tests.
     public static func load(in project: Project) -> ExperimentSnapshot? {
-        guard let data = try? Data(contentsOf: url(in: project)) else { return nil }
-        return try? ProjectJSON.decoder(datesAsISO8601: true).decode(ExperimentSnapshot.self, from: data)
+        file.load(in: project)
     }
 
     public static func save(_ snapshot: ExperimentSnapshot, in project: Project) throws {
-        try ProjectScaffold.makeCache(at: project.cacheURL)
-        try ProjectJSON.write(snapshot, to: url(in: project), datesAsISO8601: true)
+        try file.save(snapshot, in: project)
     }
 }

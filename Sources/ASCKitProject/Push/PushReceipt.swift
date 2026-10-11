@@ -208,11 +208,6 @@ public enum PushHistory {
 
     @discardableResult
     public static func write(_ receipt: PushReceipt, to project: Project) throws -> URL {
-        try FileManager.default.createDirectory(
-            at: project.historyURL,
-            withIntermediateDirectories: true
-        )
-
         let url = project.historyURL.appending(path: fileName(for: receipt))
         try ProjectJSON.write(receipt, to: url, datesAsISO8601: true)
         return url
