@@ -69,7 +69,6 @@ extension ASCClient {
     func customPages(appID: String) async throws -> [Resource<CustomPageAttributes>] {
         try await list(
             "/v1/apps/\(appID)/appCustomProductPages",
-            query: [.maxPageSize],
             as: CustomPageAttributes.self
         )
     }
@@ -94,7 +93,6 @@ extension ASCClient {
     func customPageKeywordIDs(localizationID: String) async throws -> [String] {
         try await list(
             "/v1/appCustomProductPageLocalizations/\(localizationID)/relationships/searchKeywords",
-            query: [.maxPageSize],
             as: NoAttributes.self
         ).map(\.id)
     }
@@ -105,8 +103,7 @@ extension ASCClient {
             "/v1/apps/\(appID)/searchKeywords",
             query: [
                 URLQueryItem(name: "filter[locale]", value: locale),
-                URLQueryItem(name: "filter[platform]", value: platform.rawValue),
-                .maxPageSize
+                URLQueryItem(name: "filter[platform]", value: platform.rawValue)
             ],
             as: NoAttributes.self
         ).map(\.id)
@@ -116,7 +113,6 @@ extension ASCClient {
     func versionKeywordIDs(localizationID: String) async throws -> [String] {
         try await list(
             "/v1/appStoreVersionLocalizations/\(localizationID)/searchKeywords",
-            query: [.maxPageSize],
             as: NoAttributes.self
         ).map(\.id)
     }

@@ -130,7 +130,9 @@ public struct ASCClient: Sendable {
         _ query: [URLQueryItem],
         collect: (Page) -> Void
     ) async throws {
-        var next: URL? = url(path, query: query)
+        // A list that names no page size gets the largest, so it makes fewer requests.
+        let hasLimit = query.contains { $0.name == "limit" }
+        var next: URL? = url(path, query: hasLimit ? query : query + [.maxPageSize])
         while let current = next {
             let raw = try await send(method: HTTPMethod.get, url: current, body: nil).0
             let page = try decode(Page.self, from: raw)

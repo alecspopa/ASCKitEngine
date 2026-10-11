@@ -293,8 +293,7 @@ public extension ASCClient {
     }
 
     private static let priceQuery = [
-        URLQueryItem(name: "include", value: "inAppPurchasePricePoint,territory"),
-        .maxPageSize
+        URLQueryItem(name: "include", value: "inAppPurchasePricePoint,territory")
     ]
 
     /// A price says what it costs only through the price point it points at, so

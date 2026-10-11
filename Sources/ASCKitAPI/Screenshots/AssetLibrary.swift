@@ -230,8 +230,7 @@ public extension ASCClient {
             "/v1/\(parent.resourceType)/\(parent.id)/placements",
             query: [
                 URLQueryItem(name: "include", value: "image,video"),
-                URLQueryItem(name: "sort", value: "placementGroupPosition"),
-                .maxPageSize
+                URLQueryItem(name: "sort", value: "placementGroupPosition")
             ],
             as: PlacementAttributes.self,
             including: LibraryAssetAttributes.self
