@@ -78,8 +78,8 @@ public enum LibraryReport {
     static func libraryLines(_ library: RemoteAssetLibrary?) -> [String] {
         guard let library else { return ["This app has no asset library on App Store Connect."] }
 
-        let images = library.assets.filter { $0.media == .image }.count
-        let videos = library.assets.filter { $0.media == .video }.count
+        let images = library.assets.count { $0.media == .image }
+        let videos = library.assets.count { $0.media == .video }
         var lines = ["Asset library \(library.id). Images: \(images). Videos: \(videos)."]
         for asset in library.assets.sorted(by: { ($0.fileName ?? "") < ($1.fileName ?? "") }) {
             let placed = library.placementIDs[asset.id]?.count ?? 0

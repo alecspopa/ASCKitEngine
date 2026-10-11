@@ -218,7 +218,7 @@ extension Validator {
         of curve: PriceCurve,
         product: Product,
         path: String,
-        now: Date = Date()
+        now: Date = .now
     ) -> [Problem] {
         guard let taken = CalendarDay.date(from: curve.provenance.takenOn) else { return [] }
 

@@ -86,17 +86,17 @@ public enum ChangePlanFormatter {
             parts.append(String(localized: "\(plan.textChanges.count) fields", bundle: .module))
         }
 
-        let sets = plan.screenshotPlans.filter(\.changesAnything).count
+        let sets = plan.screenshotPlans.count(where: \.changesAnything)
         if sets > 0 {
             parts.append(String(localized: "\(sets) screenshot sets", bundle: .module))
         }
 
-        let previews = plan.previewPlans.filter(\.changesAnything).count
+        let previews = plan.previewPlans.count(where: \.changesAnything)
         if previews > 0 {
             parts.append(String(localized: "\(previews) app preview sets", bundle: .module))
         }
 
-        let art = plan.creativePlans.filter(\.changesAnything).count
+        let art = plan.creativePlans.count(where: \.changesAnything)
         if art > 0 {
             parts.append(String(localized: "\(art) header and search results assets", bundle: .module))
         }

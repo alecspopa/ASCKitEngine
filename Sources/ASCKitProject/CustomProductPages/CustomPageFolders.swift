@@ -36,22 +36,18 @@ public enum CustomPageFolders {
     /// Makes the empty folders a person drops images into, for every language
     /// of every page that takes changes. Returns the folders it made.
     ///
-    /// Only the iPhone and iPad device classes, because a custom product page
-    /// is only on the iOS App Store.
+    /// Only the device classes a page takes, as
+    /// `ProjectConfig.screenshotDeviceClasses(for:platform:)` says.
     @discardableResult
     public static func scaffold(_ remote: RemoteCustomPages, in project: Project) throws -> [URL] {
         var made: [URL] = []
-        let deviceClasses = project.config.resolvedDeviceClasses.filter { $0.platform == .ios }
         let names = folderNames(for: remote)
 
         for page in remote.pages where page.isEditable {
+            let place = LibraryContentPlace.customPage(names[page.id] ?? page.name)
             for localization in page.version?.localizations ?? [] {
-                for deviceClass in deviceClasses {
-                    let url = project.customPageURL(
-                        page: names[page.id] ?? page.name,
-                        locale: localization.locale,
-                        deviceClassID: deviceClass.id
-                    )
+                for deviceClass in project.config.screenshotDeviceClasses(for: place) {
+                    let url = project.screenshotsURL(place, locale: localization.locale, deviceClassID: deviceClass.id)
                     guard FileManager.default.fileExists(atPath: url.path) == false else { continue }
                     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
                     made.append(url)
@@ -224,7 +220,7 @@ public enum CustomPageContentStore {
 
         for page in DirectoryListing.directories(in: project.customPagesURL) {
             let folder = page.lastPathComponent
-            loadImages(of: page, into: &content)
+            loadImages(of: folder, in: project, into: &content)
 
             let settingsURL = page.appending(path: CustomPageFolders.settingsFileName)
             if FileManager.default.fileExists(atPath: settingsURL.path) {
@@ -248,27 +244,16 @@ public enum CustomPageContentStore {
         return content
     }
 
-    private static func loadImages(of page: URL, into content: inout CustomPageContent) {
-        let folder = page.lastPathComponent
-
-        let previews = PreviewFolder.load(from: page.appending(path: Project.previewsFolderName))
-        for (slot, files) in previews.previews {
-            content.previews[CustomPageSlot(page: folder, locale: slot.locale, deviceClassID: slot.deviceClassID)] = files
-        }
-
-        let art = CreativeFolder.load(from: page.appending(path: CreativeFolder.folderName))
-        if art.isEmpty == false {
-            content.creative[folder] = art
-        }
-
-        let sets = ScreenshotFolder.load(from: page, skipping: LibraryContentPlace.customPage(folder).reservedFolderNames)
+    private static func loadImages(of page: String, in project: Project, into content: inout CustomPageContent) {
+        let images = project.images(of: .customPage(page))
         let slot = { (set: ScreenshotSlot) in
-            CustomPageSlot(page: folder, locale: set.locale, deviceClassID: set.deviceClassID)
+            CustomPageSlot(page: page, locale: set.locale, deviceClassID: set.deviceClassID)
         }
-        for (set, files) in sets.screenshots {
-            content.screenshots[slot(set)] = files
-        }
-        content.emptied.formUnion(sets.emptied.map(slot))
+
+        for (set, files) in images.screenshots { content.screenshots[slot(set)] = files }
+        for (set, files) in images.previews { content.previews[slot(set)] = files }
+        content.emptied.formUnion(images.emptied.map(slot))
+        if images.creative.isEmpty == false { content.creative[page] = images.creative }
     }
 
     private static func read<Value: Decodable>(_ type: Value.Type, from url: URL) throws -> Value {

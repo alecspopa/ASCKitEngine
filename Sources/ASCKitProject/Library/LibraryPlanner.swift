@@ -103,7 +103,7 @@ public struct LibrarySlot: Sendable, Equatable {
     public var placementsToAdd: Int { wanted.count - kept.count }
 
     /// Files whose bytes no asset holds yet.
-    public var uploads: Int { wanted.filter { $0 == nil }.count }
+    public var uploads: Int { wanted.count { $0 == nil } }
 
     public var isUnchanged: Bool {
         wanted.allSatisfy { $0 != nil } && wanted == current.map(\.asset?.id) && posterFrames.isEmpty

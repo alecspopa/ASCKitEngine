@@ -54,22 +54,20 @@ public enum ExperimentFolders {
         in project: Project
     ) throws -> [URL] {
         var made: [URL] = []
-        let deviceClasses = project.config.resolvedDeviceClasses
         let experimentNames = folderNames(for: remote)
 
         for experiment in remote.experiments where experiment.isEditable {
             let treatmentNames = folderNames(for: experiment.treatments.map { ($0.id, $0.name) })
-            let fitting = deviceClasses.filter { experiment.platform == nil || $0.platform == experiment.platform }
 
             for treatment in experiment.treatments {
+                let place = LibraryContentPlace.treatment(
+                    experiment: experimentNames[experiment.id] ?? experiment.name,
+                    treatment: treatmentNames[treatment.id] ?? treatment.name
+                )
+                let deviceClasses = project.config.screenshotDeviceClasses(for: place, platform: experiment.platform)
                 for localization in treatment.localizations {
-                    for deviceClass in fitting {
-                        let url = project.experimentURL(
-                            experiment: experimentNames[experiment.id] ?? experiment.name,
-                            treatment: treatmentNames[treatment.id] ?? treatment.name,
-                            locale: localization.locale,
-                            deviceClassID: deviceClass.id
-                        )
+                    for deviceClass in deviceClasses {
+                        let url = project.screenshotsURL(place, locale: localization.locale, deviceClassID: deviceClass.id)
                         guard FileManager.default.fileExists(atPath: url.path) == false else { continue }
                         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
                         made.append(url)
@@ -186,42 +184,24 @@ public enum ExperimentContentStore {
         var creative: [String: CreativeFolder] = [:]
         var emptied: Set<ExperimentSlot> = []
 
-        for experiment in DirectoryListing.directories(in: project.experimentsURL) {
-            for treatment in DirectoryListing.directories(in: experiment) {
-                let folder = PreviewFolder.load(from: treatment.appending(path: previewsFolderName))
-                for (slot, files) in folder.previews {
-                    previews[ExperimentSlot(
-                        experiment: experiment.lastPathComponent,
-                        treatment: treatment.lastPathComponent,
-                        locale: slot.locale,
-                        deviceClassID: slot.deviceClassID
-                    )] = files
-                }
-
-                let art = CreativeFolder.load(from: treatment.appending(path: CreativeFolder.folderName))
-                if art.isEmpty == false {
-                    creative[ExperimentContent.creativeKey(
-                        experiment: experiment.lastPathComponent,
-                        treatment: treatment.lastPathComponent
-                    )] = art
-                }
-
-                let place = LibraryContentPlace.treatment(
-                    experiment: experiment.lastPathComponent, treatment: treatment.lastPathComponent
-                )
-                let sets = ScreenshotFolder.load(from: treatment, skipping: place.reservedFolderNames)
+        for experimentFolder in DirectoryListing.directories(in: project.experimentsURL) {
+            for treatmentFolder in DirectoryListing.directories(in: experimentFolder) {
+                let experiment = experimentFolder.lastPathComponent
+                let treatment = treatmentFolder.lastPathComponent
+                let images = project.images(of: .treatment(experiment: experiment, treatment: treatment))
                 let slot = { (set: ScreenshotSlot) in
                     ExperimentSlot(
-                        experiment: experiment.lastPathComponent,
-                        treatment: treatment.lastPathComponent,
-                        locale: set.locale,
-                        deviceClassID: set.deviceClassID
+                        experiment: experiment, treatment: treatment,
+                        locale: set.locale, deviceClassID: set.deviceClassID
                     )
                 }
-                for (set, files) in sets.screenshots {
-                    screenshots[slot(set)] = files
+
+                for (set, files) in images.screenshots { screenshots[slot(set)] = files }
+                for (set, files) in images.previews { previews[slot(set)] = files }
+                emptied.formUnion(images.emptied.map(slot))
+                if images.creative.isEmpty == false {
+                    creative[ExperimentContent.creativeKey(experiment: experiment, treatment: treatment)] = images.creative
                 }
-                emptied.formUnion(sets.emptied.map(slot))
             }
         }
         return ExperimentContent(screenshots: screenshots, previews: previews, creative: creative, emptied: emptied)
