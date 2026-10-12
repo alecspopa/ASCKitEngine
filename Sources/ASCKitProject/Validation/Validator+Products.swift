@@ -259,11 +259,13 @@ extension Validator {
     ) -> [Problem] {
         let filePath = path(for: product.productID)
         return validateWords(
-            name: field.rawValue,
-            value: value,
-            length: field.length(of: value),
-            maximum: field.maximumLength,
-            locale: locale,
+            Words(
+                name: field.rawValue,
+                value: value,
+                length: field.length(of: value),
+                maximum: field.maximumLength,
+                locale: locale
+            ),
             rules: WordRules(
                 empty: .productTextEmpty,
                 overLimit: .productTextOverLimit,

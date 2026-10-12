@@ -108,24 +108,6 @@ public extension NewProject {
         return .create
     }
 
-    /// Moves a project kept in the repository to the destination.
-    ///
-    /// The new folder and the registry come first and the Trash last, so a
-    /// failure never leaves the person with no project.
-    static func replaceLegacy(
-        _ plan: ProjectRebuild.Plan,
-        config: ProjectConfig,
-        version: String,
-        to destination: URL,
-        repo: URL,
-        locations: inout ProjectLocations
-    ) throws {
-        try ProjectScaffold.create(at: destination, config: config, version: version)
-        locations.register(bundleID: config.bundleID, data: destination, repo: repo)
-        try locations.save()
-        try FileManager.default.trashItem(at: plan.folderURL, resultingItemURL: nil)
-    }
-
     // MARK: - The language the listing is written in
 
     private func sourceLanguage(named source: String?) throws(ChoiceError) -> String {
@@ -141,5 +123,26 @@ public extension NewProject {
         case .none:
             throw .sourceNotOnTheAppStore(region: development.region)
         }
+    }
+}
+
+// MARK: - Moving a project out of the repository
+
+public extension ProjectLocations {
+    /// Moves a project kept in the repository to the destination.
+    ///
+    /// The new folder and the registry come first and the Trash last, so a
+    /// failure never leaves the person with no project.
+    mutating func replaceLegacy(
+        _ plan: ProjectRebuild.Plan,
+        config: ProjectConfig,
+        version: String,
+        to destination: URL,
+        repo: URL
+    ) throws {
+        try ProjectScaffold.create(at: destination, config: config, version: version)
+        register(bundleID: config.bundleID, data: destination, repo: repo)
+        try save()
+        try FileManager.default.trashItem(at: plan.folderURL, resultingItemURL: nil)
     }
 }

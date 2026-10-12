@@ -41,6 +41,13 @@ public struct PriceWrite: Sendable, Hashable {
 // MARK: - The bodies a price write sends
 
 extension ASCClient {
+    /// Where a price resource sits: its own type, and what it points at.
+    private struct PriceResource {
+        let type: String
+        let pricePoint: (relationship: String, type: String)
+        let owner: (relationship: String, identifier: Identifier)
+    }
+
     /// The prices of one write, which do not exist yet.
     ///
     /// Each one travels in `included` under a local id, and the main resource
@@ -48,24 +55,24 @@ extension ASCClient {
     /// never comes back.
     private static func includedPrices(
         _ prices: [PriceWrite],
-        resourceType: String,
-        pricePoint: (relationship: String, type: String),
-        owner: (relationship: String, identifier: Identifier),
+        as resource: PriceResource,
         localID: (PriceWrite) -> String,
         attributes: (PriceWrite) -> [String: JSONValue]
     ) -> (identifiers: [Identifier], included: [IncludedResource]) {
         let ordered = prices.sorted {
             ($0.territory, $0.planType.rawValue) < ($1.territory, $1.planType.rawValue)
         }
-        let identifiers = ordered.map { Identifier(type: resourceType, id: localID($0)) }
+        let identifiers = ordered.map { Identifier(type: resource.type, id: localID($0)) }
         let included = ordered.map { price in
             IncludedResource(
-                type: resourceType,
+                type: resource.type,
                 id: localID(price),
                 attributes: attributes(price),
                 relationships: [
-                    owner.relationship: .one(owner.identifier),
-                    pricePoint.relationship: .one(Identifier(type: pricePoint.type, id: price.pricePointID)),
+                    resource.owner.relationship: .one(resource.owner.identifier),
+                    resource.pricePoint.relationship: .one(
+                        Identifier(type: resource.pricePoint.type, id: price.pricePointID)
+                    ),
                     "territory": .one(Identifier(type: "territories", id: price.territory))
                 ]
             )
@@ -97,9 +104,11 @@ extension ASCClient {
         let purchase = Identifier(type: "inAppPurchases", id: purchaseID)
         let written = includedPrices(
             prices,
-            resourceType: "inAppPurchasePrices",
-            pricePoint: ("inAppPurchasePricePoint", "inAppPurchasePricePoints"),
-            owner: ("inAppPurchaseV2", purchase),
+            as: PriceResource(
+                type: "inAppPurchasePrices",
+                pricePoint: ("inAppPurchasePricePoint", "inAppPurchasePricePoints"),
+                owner: ("inAppPurchaseV2", purchase)
+            ),
             localID: { "${price-\($0.territory)}" },
             attributes: { ["startDate": startDate(of: $0)] }
         )
@@ -171,9 +180,11 @@ extension ASCClient {
     ) -> CompoundWriteRequest<NoAttributes> {
         let written = includedPrices(
             prices,
-            resourceType: "subscriptionPrices",
-            pricePoint: ("subscriptionPricePoint", "subscriptionPricePoints"),
-            owner: ("subscription", Identifier(type: "subscriptions", id: subscriptionID)),
+            as: PriceResource(
+                type: "subscriptionPrices",
+                pricePoint: ("subscriptionPricePoint", "subscriptionPricePoints"),
+                owner: ("subscription", Identifier(type: "subscriptions", id: subscriptionID))
+            ),
             localID: { "${price-\($0.territory)-\($0.planType.rawValue)}" },
             attributes: {
                 [

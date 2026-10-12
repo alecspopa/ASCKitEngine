@@ -216,9 +216,9 @@ struct Init: ParsableCommand {
             }
 
             describe(plan)
-            try NewProject.replaceLegacy(
+            try locations.replaceLegacy(
                 plan, config: config, version: version,
-                to: destination, repo: folderURL, locations: &locations
+                to: destination, repo: folderURL
             )
             print("Wrote \(destination.path).")
             print("Moved \(plan.folderURL.path) to the Trash.")

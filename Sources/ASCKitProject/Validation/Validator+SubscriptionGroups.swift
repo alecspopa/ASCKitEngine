@@ -115,11 +115,13 @@ extension Validator {
 
         let filePath = groupPath(for: group.referenceName)
         return validateWords(
-            name: field.rawValue,
-            value: value,
-            length: field.length(of: value),
-            maximum: field.maximumLength,
-            locale: locale,
+            Words(
+                name: field.rawValue,
+                value: value,
+                length: field.length(of: value),
+                maximum: field.maximumLength,
+                locale: locale
+            ),
             rules: WordRules(
                 empty: .groupTextEmpty,
                 overLimit: .groupTextOverLimit,

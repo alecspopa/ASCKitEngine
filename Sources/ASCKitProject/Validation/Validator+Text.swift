@@ -10,43 +10,48 @@ extension Validator {
         let emptyFix: LocalizedStringResource
     }
 
+    /// One field's words in one language, and what they are measured against.
+    struct Words {
+        let name: String
+        let value: String
+        let length: Int
+        let maximum: Int
+        let locale: String
+    }
+
     /// The checks that the words of a product and of a subscription group
     /// share: empty, over the limit, and a space at either end.
     ///
     /// `problem` makes one problem, so each caller names its own product or
     /// group and its own field.
     func validateWords(
-        name: String,
-        value: String,
-        length: Int,
-        maximum: Int,
-        locale: String,
+        _ words: Words,
         rules: WordRules,
         problem: (Problem.Severity, Problem.Kind, LocalizedStringResource, LocalizedStringResource) -> Problem
     ) -> [Problem] {
-        if value.isEmpty {
+        if words.value.isEmpty {
             return [problem(
                 .error, rules.empty,
-                LocalizedStringResource("\(name) is empty in \(locale).", bundle: .here),
+                LocalizedStringResource("\(words.name) is empty in \(words.locale).", bundle: .here),
                 rules.emptyFix
             )]
         }
 
         var problems: [Problem] = []
-        if length > maximum {
+        if words.length > words.maximum {
             problems.append(problem(
                 .error, rules.overLimit,
                 LocalizedStringResource("""
-                \(name) is \(length) characters in \(locale), and the \
-                limit is \(maximum).
+                \(words.name) is \(words.length) characters in \(words.locale), and the \
+                limit is \(words.maximum).
                 """, bundle: .here),
-                LocalizedStringResource("Cut \(length - maximum) characters.", bundle: .here)
+                LocalizedStringResource("Cut \(words.length - words.maximum) characters.", bundle: .here)
             ))
         }
-        if value.trimmingCharacters(in: .whitespacesAndNewlines) != value {
+        if words.value.trimmingCharacters(in: .whitespacesAndNewlines) != words.value {
             problems.append(problem(
                 .warning, rules.edgeSpace,
-                LocalizedStringResource("\(name) in \(locale) starts or ends with a space.", bundle: .here),
+                LocalizedStringResource("\(words.name) in \(words.locale) starts or ends with a space.", bundle: .here),
                 LocalizedStringResource("Trim it. App Store Connect keeps the space and counts it.", bundle: .here)
             ))
         }
