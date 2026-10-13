@@ -445,6 +445,15 @@ shows this art only on iOS and iPadOS 27 and later.
 A Product Page Optimization treatment takes the same `previews` and `creative`
 folders.
 
+One rule covers screenshots, previews and art, in a version, a treatment and a
+custom product page. A push puts up the files of a set. A set with no files
+keeps what App Store Connect holds. A read writes no images, and a new version
+starts with the images of the last one. A push takes the images off only when
+somebody emptied the set on purpose. A remove leaves a hidden `.asckit-emptied`
+file in the set's folder to say so. For the art it is `.asckit-emptied-header`
+or `.asckit-emptied-search-results`. Search results with no file of their own
+go with an emptied header.
+
 ### What App Store Connect holds for an empty set
 
 A set with no files here is the one a person cannot see. The folder is empty,

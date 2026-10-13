@@ -183,31 +183,58 @@ struct CreativePlanTests {
         #expect(LibraryPusher.uploads(in: targets).count == 1, "one upload, two placements")
     }
 
-    /// App Store Connect shows the primary language's art on a language with
-    /// none, so a language with no files takes off what was placed there.
-    @Test func leavesALanguageWithNoArtToThePrimaryLanguage() throws {
+    /// A new version starts with the art of the last one, and a read writes
+    /// no art, so a language with no file keeps what App Store Connect shows.
+    @Test func leavesTheArtOfALanguageWithNoFile() throws {
         defer { files.remove() }
         var folder = CreativeFolder()
         folder.files["en-US"] = try [.header: [art("header.png")]]
 
         let plans = CreativePlanner.plans(
             folder: folder, locales: ["en-GB", "en-US"],
-            placements: [Self.placed("p1", asset: "a1", type: .productPageHeader, locale: "en-GB")],
+            placements: [Self.placed("p1", asset: "a1", type: .productPageHeader, locale: "en-GB"),
+                         Self.placed("p2", asset: "a1", type: .searchResults, locale: "en-GB")],
             record: AssetRecord()
         )
 
-        #expect(plans.map(\.id) == ["en-GB|header", "en-US|header", "en-US|search-results"])
-        #expect(plans.first?.file == nil)
+        #expect(plans.map(\.id) == ["en-US|header", "en-US|search-results"])
+    }
+
+    @Test func takesOffTheArtOfARoleEmptiedOnPurpose() {
+        var folder = CreativeFolder()
+        folder.emptied["en-US"] = [.searchResults]
+        let plans = CreativePlanner.plans(
+            folder: folder, locales: ["en-US"],
+            placements: [Self.placed("p1", asset: "a1", type: .productPageHeader),
+                         Self.placed("p2", asset: "a1", type: .searchResults)],
+            record: AssetRecord()
+        )
+        #expect(plans.map(\.id) == ["en-US|search-results"])
         #expect(plans.first?.action == .replace(removing: 1, adding: 0))
     }
 
-    @Test func takesOffAPlacementWhoseFileIsGone() {
+    /// Search results with no file show the header, so they go with it.
+    @Test func takesOffTheSearchResultsWithAnEmptiedHeader() {
+        var folder = CreativeFolder()
+        folder.emptied["en-US"] = [.header]
         let plans = CreativePlanner.plans(
-            folder: CreativeFolder(), locales: ["en-US"],
-            placements: [Self.placed("p1", asset: "a1", type: .productPageHeader)],
+            folder: folder, locales: ["en-US"],
+            placements: [Self.placed("p1", asset: "a1", type: .productPageHeader),
+                         Self.placed("p2", asset: "a1", type: .searchResults)],
             record: AssetRecord()
         )
-        #expect(plans.first?.action == .replace(removing: 1, adding: 0))
+        #expect(plans.map(\.id) == ["en-US|header", "en-US|search-results"])
+        #expect(plans.allSatisfy { $0.action == .replace(removing: 1, adding: 0) })
+    }
+
+    /// Search results with no file show the header file, whatever their mark.
+    @Test func keepsTheSearchResultsWhileAHeaderFileIsHere() throws {
+        defer { files.remove() }
+        var folder = CreativeFolder()
+        folder.files["en-US"] = try [.header: [art("header.png")]]
+        folder.emptied["en-US"] = [.searchResults]
+
+        #expect(folder.isEmptied(locale: "en-US", role: .searchResults) == false)
     }
 
     @Test func leavesAHeaderTheLibraryAlreadyShows() throws {
@@ -402,11 +429,12 @@ struct CreativeSummaryTests {
         #expect(ChangePlanFormatter.summary(plan).contains("2 header and search results assets"))
     }
 
-    @Test func takesTheArtOffALanguageWithNone() throws {
+    @Test func takesTheArtOffALanguageEmptiedOnPurpose() throws {
         let files = try LibraryFiles()
         defer { files.remove() }
         var folder = CreativeFolder()
         folder.files["en-US"] = try [.header: [CreativePlanTests().art("header.png")]]
+        folder.emptied["en-GB"] = [.header]
         let creative = CreativePlanner.plans(
             folder: folder, locales: ["en-GB", "en-US"],
             placements: [CreativePlanTests.placed("p1", asset: "a1", type: .productPageHeader, locale: "en-GB")],

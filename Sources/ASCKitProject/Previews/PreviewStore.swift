@@ -66,6 +66,9 @@ public struct PreviewFolder: Sendable {
     /// not there, which a check reports.
     public var posterFrames: [ScreenshotSlot: [String: String]] = [:]
 
+    /// Sets that hold an `EmptiedMark`.
+    public var emptied: Set<ScreenshotSlot> = []
+
     public init() {}
 
     public static func load(from root: URL) -> PreviewFolder {
@@ -78,6 +81,7 @@ public struct PreviewFolder: Sendable {
                 if frames == nil { folder.unreadablePosterFrames.insert(slot) }
                 if let frames, frames.isEmpty == false { folder.posterFrames[slot] = frames }
                 folder.previews[slot] = files(in: deviceDirectory, frames: frames)
+                if EmptiedMark.isSet(in: deviceDirectory) { folder.emptied.insert(slot) }
             }
         }
         return folder

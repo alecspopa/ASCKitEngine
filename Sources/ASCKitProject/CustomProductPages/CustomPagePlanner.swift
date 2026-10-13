@@ -142,16 +142,12 @@ public enum CustomPagePlanner {
         return change.changesAnything ? change : nil
     }
 
-    /// Only a language with art of its own on disk, so a page that took its
-    /// art from App Store Connect keeps it.
     private static func creativePlans(
         at place: Place,
         local: CustomPageContent,
         record: AssetRecord
     ) -> [CustomPagePlan.CreativeSetPlan] {
         let folder = local.creative[place.folder] ?? CreativeFolder()
-        guard folder.files[place.localization.locale]?.isEmpty == false else { return [] }
-
         return CreativePlanner.plans(
             folder: folder, locales: [place.localization.locale], placements: place.localization.placements,
             record: record
@@ -170,12 +166,11 @@ public enum CustomPagePlanner {
     ) -> [CustomPagePlan.PreviewSetPlan] {
         let localization = place.localization
         return deviceClasses.filter(\.takesPreviews).compactMap { deviceClass in
-            let files = local.previews(in: CustomPageSlot(
-                page: place.folder, locale: localization.locale, deviceClassID: deviceClass.id
-            ))
+            let slot = CustomPageSlot(page: place.folder, locale: localization.locale, deviceClassID: deviceClass.id)
+            let files = local.previews(in: slot)
             guard let library = LibraryPlanner.previewSet(
                 files: files, placements: localization.placements, locale: localization.locale,
-                deviceClass: deviceClass, record: record
+                deviceClass: deviceClass, emptied: local.emptiedPreviews.contains(slot), record: record
             ) else { return nil }
 
             return CustomPagePlan.PreviewSetPlan(

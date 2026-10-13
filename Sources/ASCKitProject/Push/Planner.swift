@@ -208,12 +208,13 @@ public enum Planner {
 
             for deviceClass in config.resolvedDeviceClasses where deviceClass.takesPreviews {
                 // The tick covers the previews of the device class too.
-                let files = config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id)
-                    ? []
-                    : local.previews(locale: locale, deviceClassID: deviceClass.id)
+                let ticked = config.usesSourceScreenshots(locale: locale, deviceClassID: deviceClass.id)
+                let files = ticked ? [] : local.previews(locale: locale, deviceClassID: deviceClass.id)
+                let emptied = ticked
+                    || local.previewFolder.emptied.contains(ScreenshotSlot(locale: locale, deviceClassID: deviceClass.id))
                 guard let library = LibraryPlanner.previewSet(
                     files: files, placements: remote.placements, locale: locale,
-                    deviceClass: deviceClass, record: record
+                    deviceClass: deviceClass, emptied: emptied, record: record
                 ) else { continue }
 
                 plans.append(ChangePlan.PreviewPlan(
@@ -236,11 +237,12 @@ public enum Planner {
     // MARK: - Languages that show the source language's
 
     /// The art folder without the languages that show the source language's
-    /// art. Their placements still plan, so a push takes them off.
+    /// art. The tick empties them, so a push takes their placements off.
     private static func usedCreative(_ folder: CreativeFolder, config: ProjectConfig) -> CreativeFolder {
         var used = folder
         for locale in config.creativeSources.keys {
             used.files[locale] = nil
+            used.emptied[locale] = Set(CreativeRole.allCases)
         }
         return used
     }

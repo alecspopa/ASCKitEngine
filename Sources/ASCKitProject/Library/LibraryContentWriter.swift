@@ -36,6 +36,7 @@ public enum LibraryContentWriter {
         for url in urls {
             try FileManager.default.copyItem(at: url, to: folder.appending(path: url.lastPathComponent))
         }
+        if urls.isEmpty == false { try EmptiedMark.set(false, in: folder) }
         return previews(in: folder)
     }
 
@@ -101,7 +102,40 @@ public enum LibraryContentWriter {
             frames[name] = nil
         }
         try PosterFrames.save(frames, in: folder)
-        return previews(in: folder)
+        let left = previews(in: folder)
+        // Taking the last video off says the set is meant to be empty.
+        if names.isEmpty == false, left.isEmpty { try EmptiedMark.set(true, in: folder) }
+        return left
+    }
+
+    /// Moves every preview of one set to the Trash, and marks the set as
+    /// emptied on purpose, so a push takes App Store Connect's previews off.
+    ///
+    /// On a set with no file, it only marks the set. That is the way to take
+    /// off the previews a read showed and never wrote to disk.
+    public static func removeAllPreviews(
+        locale: String,
+        deviceClass: DeviceClass,
+        at place: LibraryContentPlace,
+        in project: Project
+    ) throws {
+        let folder = project.previewsURL(place, locale: locale, deviceClassID: deviceClass.id)
+        let names = previews(in: folder).map(\.fileName)
+        if names.isEmpty == false {
+            _ = try removePreviews(named: names, locale: locale, deviceClass: deviceClass, at: place, in: project)
+        }
+        try EmptiedMark.set(true, in: folder)
+    }
+
+    /// Takes the mark off an emptied preview set, so a push leaves App Store
+    /// Connect's previews on it alone.
+    public static func keepRemotePreviews(
+        locale: String,
+        deviceClass: DeviceClass,
+        at place: LibraryContentPlace,
+        in project: Project
+    ) throws {
+        try EmptiedMark.set(false, in: project.previewsURL(place, locale: locale, deviceClassID: deviceClass.id))
     }
 
     // swiftlint:disable function_parameter_count
@@ -156,20 +190,38 @@ public enum LibraryContentWriter {
         }
         let folder = project.creativeURL(place, locale: locale)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        try removeCreative(role: role, locale: locale, at: place, in: project)
+        try trashCreative(role: role, in: folder)
 
         let target = folder.appending(path: "\(role.rawValue).\(ext)")
         try FileManager.default.copyItem(at: url, to: target)
+        try EmptiedMark.set(false, in: folder, name: EmptiedMark.name(role))
         return CreativeFile.inspect(url: target)
     }
 
-    /// Moves every file of one role to the Trash. Nothing there is no error.
-    /// Returns where the files went in the Trash.
+    /// Moves every file of one role to the Trash, and marks the role as
+    /// emptied on purpose, so a push takes App Store Connect's art off. With
+    /// no file, it only marks the role. Returns where the files went in the
+    /// Trash.
     @discardableResult
     public static func removeCreative(
         role: CreativeRole, locale: String, at place: LibraryContentPlace, in project: Project
     ) throws -> [URL] {
         let folder = project.creativeURL(place, locale: locale)
+        let trashed = try trashCreative(role: role, in: folder)
+        try EmptiedMark.set(true, in: folder, name: EmptiedMark.name(role))
+        return trashed
+    }
+
+    /// Takes the mark off an emptied role, so a push leaves App Store
+    /// Connect's art on it alone.
+    public static func keepRemoteCreative(
+        role: CreativeRole, locale: String, at place: LibraryContentPlace, in project: Project
+    ) throws {
+        try EmptiedMark.set(false, in: project.creativeURL(place, locale: locale), name: EmptiedMark.name(role))
+    }
+
+    @discardableResult
+    private static func trashCreative(role: CreativeRole, in folder: URL) throws -> [URL] {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
         var trashed: [URL] = []
         for name in names where (name as NSString).deletingPathExtension == role.rawValue {

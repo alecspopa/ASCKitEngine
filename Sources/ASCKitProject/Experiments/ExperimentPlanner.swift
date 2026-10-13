@@ -115,13 +115,14 @@ public enum ExperimentPlanner {
         record: AssetRecord
     ) -> [ExperimentPlan.PreviewSetPlan] {
         deviceClasses.filter(\.takesPreviews).compactMap { deviceClass in
-            let files = local.previews(in: ExperimentSlot(
+            let slot = ExperimentSlot(
                 experiment: folders.experiment, treatment: folders.treatment,
                 locale: localization.locale, deviceClassID: deviceClass.id
-            ))
+            )
+            let files = local.previews(in: slot)
             guard let library = LibraryPlanner.previewSet(
                 files: files, placements: localization.placements, locale: localization.locale,
-                deviceClass: deviceClass, record: record
+                deviceClass: deviceClass, emptied: local.emptiedPreviews.contains(slot), record: record
             ) else { return nil }
 
             return ExperimentPlan.PreviewSetPlan(

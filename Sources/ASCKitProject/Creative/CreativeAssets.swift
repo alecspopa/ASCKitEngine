@@ -63,12 +63,18 @@ public struct CreativeFolder: Sendable {
     /// Files whose name is no role, by locale.
     public var strays: [String: [String]] = [:]
 
+    /// Roles that hold an `EmptiedMark`, by locale.
+    public var emptied: [String: Set<CreativeRole>] = [:]
+
     public init() {}
 
     public static func load(from root: URL) -> CreativeFolder {
         var folder = CreativeFolder()
         for localeURL in DirectoryListing.directories(in: root) {
             let locale = localeURL.lastPathComponent
+            for role in CreativeRole.allCases where EmptiedMark.isSet(in: localeURL, name: EmptiedMark.name(role)) {
+                folder.emptied[locale, default: []].insert(role)
+            }
             let entries = DirectoryListing.entries(in: localeURL, keys: [])
             for url in entries.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
                 guard let role = CreativeRole(rawValue: url.deletingPathExtension().lastPathComponent) else {
@@ -85,7 +91,19 @@ public struct CreativeFolder: Sendable {
         files[locale]?[role]?.first
     }
 
-    public var isEmpty: Bool { files.isEmpty && strays.isEmpty }
+    public var isEmpty: Bool { files.isEmpty && strays.isEmpty && emptied.isEmpty }
+
+    /// Whether a push takes App Store Connect's art for the role off. Search
+    /// results with no file of their own show the header, so they go with an
+    /// emptied header and stay while a header file is here.
+    public func isEmptied(locale: String, role: CreativeRole) -> Bool {
+        let marks = emptied[locale] ?? []
+        guard role == .searchResults, file(locale: locale, role: .searchResults) == nil else {
+            return marks.contains(role)
+        }
+        guard file(locale: locale, role: .header) == nil else { return false }
+        return marks.contains(.searchResults) || marks.contains(.header)
+    }
 }
 
 public extension Project {
@@ -114,13 +132,13 @@ public struct CreativePlan: Sendable, Identifiable {
 public enum CreativePlanner {
     /// The roles of every language, against the placements of `DEFAULT_PROFILE`.
     ///
-    /// A language with no file for a role and no placement for it is left out.
-    /// A placement with no file is removed, the way a screenshot is. A
-    /// language with a header and no search results file shows the header
-    /// in search results too.
+    /// A role with a file goes up. A role with no file takes App Store
+    /// Connect's art off only when somebody emptied it on purpose, the way a
+    /// screenshot set does. A language with a header and no search results
+    /// file shows the header in search results too.
     ///
-    /// A language in `usesSourceCreative` has no files, so it gets no
-    /// placements, and App Store Connect shows the primary language's art.
+    /// The planner marks every role of a language in `usesSourceCreative` as
+    /// emptied, and App Store Connect shows the primary language's art.
     public static func plans(
         folder: CreativeFolder,
         locales: [String],
@@ -137,20 +155,14 @@ public enum CreativePlanner {
                     usesHeader = file != nil
                 }
 
-                let current = LibraryPlanner.current(
-                    in: placements, locale: locale, group: CreativeRole.group, type: role.placementType
-                )
-                guard file != nil || current.isEmpty == false else { continue }
+                guard let library = LibraryPlanner.plannedSlot(
+                    files: file.map { [$0.libraryFile] } ?? [], placements: placements, locale: locale,
+                    group: CreativeRole.group, type: role.placementType,
+                    emptied: folder.isEmptied(locale: locale, role: role), record: record
+                ) else { continue }
 
                 plans.append(CreativePlan(
-                    locale: locale,
-                    role: role,
-                    file: file,
-                    usesHeader: usesHeader,
-                    library: LibraryPlanner.slot(
-                        files: file.map { [$0.libraryFile] } ?? [], current: current, record: record,
-                        group: CreativeRole.group, type: role.placementType
-                    )
+                    locale: locale, role: role, file: file, usesHeader: usesHeader, library: library
                 ))
             }
         }

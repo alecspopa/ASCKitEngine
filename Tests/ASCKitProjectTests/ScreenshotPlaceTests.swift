@@ -65,7 +65,7 @@ final class ScreenshotPlaceTests {
             named: ["01-shop-iPhone-6.9-en_US.png"], locale: "en-US", deviceClass: deviceClass, at: place, in: project
         )
         #expect(left.map(\.fileName) == ["01-hero-iPhone-6.9-en_US.png"])
-        #expect(FileManager.default.fileExists(atPath: folder.appending(path: ScreenshotFolder.emptiedMarkerName).path) == false)
+        #expect(EmptiedMark.isSet(in: folder) == false)
     }
 
     @Test(arguments: places)

@@ -164,13 +164,29 @@ public enum LibraryPlanner {
     }
 
     // swiftlint:disable function_parameter_count
-    /// One screenshot set of a version, a treatment or a custom product page,
-    /// or nil when a push leaves it alone.
+    /// One slot of a version, a treatment or a custom product page, or nil
+    /// when a push leaves it alone. Screenshots, previews and art all plan
+    /// through here.
     ///
-    /// The same rule in every place. A set with files goes up. An empty set
-    /// takes App Store Connect's images off only when `emptied` says somebody
-    /// emptied it on purpose. A read writes no image files, so a set that is
-    /// only empty since a read keeps what App Store Connect holds.
+    /// A slot with files goes up. An empty slot takes App Store Connect's
+    /// images off only when `emptied` says somebody emptied it on purpose. A
+    /// read writes no image files, so a slot that is only empty since a read
+    /// keeps what App Store Connect holds.
+    public static func plannedSlot(
+        files: [LibraryFile],
+        placements: [RemotePlacement],
+        locale: String,
+        group: String,
+        type: PlacementType,
+        emptied: Bool,
+        record: AssetRecord
+    ) -> LibrarySlot? {
+        let current = current(in: placements, locale: locale, group: group, type: type)
+        guard files.isEmpty == false || (emptied && current.isEmpty == false) else { return nil }
+        return slot(files: files, current: current, record: record, group: group, type: type)
+    }
+
+    /// One screenshot set, by the rule of `plannedSlot`.
     public static func screenshotSet(
         files: [ScreenshotFile],
         placements: [RemotePlacement],
@@ -179,32 +195,27 @@ public enum LibraryPlanner {
         emptied: Bool,
         record: AssetRecord
     ) -> LibrarySlot? {
-        let type = deviceClass.screenshotPlacementType
-        let current = current(in: placements, locale: locale, group: deviceClass.placementGroup, type: type)
-        guard files.isEmpty == false || (emptied && current.isEmpty == false) else { return nil }
-        return slot(
-            files: files.map(\.libraryFile), current: current, record: record,
-            group: deviceClass.placementGroup, type: type
+        plannedSlot(
+            files: files.map(\.libraryFile), placements: placements, locale: locale,
+            group: deviceClass.placementGroup, type: deviceClass.screenshotPlacementType,
+            emptied: emptied, record: record
         )
     }
 
-    /// The previews of one device class in one language, or nil when there
-    /// is nothing on either side.
-    ///
-    /// Unlike screenshots, an empty folder takes the previews on the store
-    /// off. The same rule holds for a version, a test and a custom page.
+    /// The previews of one device class in one language, by the rule of
+    /// `plannedSlot`.
     public static func previewSet(
         files: [PreviewFile],
         placements: [RemotePlacement],
         locale: String,
         deviceClass: DeviceClass,
+        emptied: Bool,
         record: AssetRecord
     ) -> LibrarySlot? {
-        let current = current(in: placements, locale: locale, group: deviceClass.placementGroup, type: .appPreview)
-        guard files.isEmpty == false || current.isEmpty == false else { return nil }
-        return slot(
-            files: files.map(\.libraryFile), current: current, record: record,
-            group: deviceClass.placementGroup, type: .appPreview
+        plannedSlot(
+            files: files.map(\.libraryFile), placements: placements, locale: locale,
+            group: deviceClass.placementGroup, type: .appPreview,
+            emptied: emptied, record: record
         )
     }
 
@@ -237,7 +248,8 @@ public enum LibraryPlanner {
     ) -> [(deviceClass: DeviceClass, library: LibrarySlot)] {
         deviceClasses.filter(\.takesPreviews).compactMap { deviceClass in
             previewSet(
-                files: [], placements: placements, locale: locale, deviceClass: deviceClass, record: record
+                files: [], placements: placements, locale: locale, deviceClass: deviceClass,
+                emptied: true, record: record
             ).map { (deviceClass, $0) }
         }
     }

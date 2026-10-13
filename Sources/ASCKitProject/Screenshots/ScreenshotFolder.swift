@@ -12,13 +12,8 @@ public struct ScreenshotFolder: Sendable {
     /// Every language folder found, an empty one too.
     public var locales: Set<String> = []
 
-    /// Sets that hold the marker a remove leaves when it empties a set on
-    /// purpose. Only these take App Store Connect's images off on a push. A
-    /// set that is empty because a read wrote no files leaves them alone.
+    /// Sets that hold an `EmptiedMark`.
     public var emptied: Set<ScreenshotSlot> = []
-
-    /// Hidden, so a listing of the set never shows it.
-    public static let emptiedMarkerName = ".asckit-emptied"
 
     public init() {}
 
@@ -35,9 +30,7 @@ public struct ScreenshotFolder: Sendable {
                 let slot = ScreenshotSlot(locale: locale, deviceClassID: deviceDirectory.lastPathComponent)
                 folder.screenshots[slot] = DirectoryListing.files(in: deviceDirectory, keys: imageKeys)
                     .map(ImageInspector.inspect)
-                if FileManager.default.fileExists(atPath: deviceDirectory.appending(path: emptiedMarkerName).path) {
-                    folder.emptied.insert(slot)
-                }
+                if EmptiedMark.isSet(in: deviceDirectory) { folder.emptied.insert(slot) }
             }
         }
         return folder

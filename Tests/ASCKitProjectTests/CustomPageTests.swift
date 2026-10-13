@@ -195,7 +195,9 @@ final class CustomPageTests {
 
     /// Previews work as they do for a version and a test: an empty folder
     /// takes the previews on the store off.
-    @Test func removesThePreviewsOfAnEmptyFolder() throws {
+    /// A read writes no videos, so an empty folder keeps the store's previews
+    /// until somebody empties it on purpose.
+    @Test func removesThePreviewsOfAFolderEmptiedOnPurpose() throws {
         let placement = RemotePlacement(
             id: "p1", locale: "en-US", type: .appPreview, group: deviceClass.placementGroup,
             state: .parentPrepareForSubmission,
@@ -204,7 +206,14 @@ final class CustomPageTests {
         let english = RemoteCustomPageLocalization(
             id: "cloc-en", locale: "en-US", promotionalText: nil, placements: [placement]
         )
+        try ContentWriter.writeCustomPageText(
+            CustomPageText(locale: "en-US", promotionalText: "New words."), page: "Night sky", in: project
+        )
+        #expect(plan(remote(english: english)).changingPreviewSets.isEmpty)
 
+        try LibraryContentWriter.removeAllPreviews(
+            locale: "en-US", deviceClass: deviceClass, at: .customPage("Night sky"), in: project
+        )
         let plan = plan(remote(english: english))
 
         let set = try #require(plan.changingPreviewSets.first)

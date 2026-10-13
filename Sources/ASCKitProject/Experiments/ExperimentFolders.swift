@@ -139,6 +139,9 @@ public struct ExperimentContent: Sendable {
     /// Sets somebody emptied on purpose, as `ScreenshotFolder.emptied` says.
     public let emptied: Set<ExperimentSlot>
 
+    /// Preview sets somebody emptied on purpose.
+    public let emptiedPreviews: Set<ExperimentSlot>
+
     /// The key of `creative` for one treatment.
     public static func creativeKey(experiment: String, treatment: String) -> String {
         "\(experiment)/\(treatment)"
@@ -148,12 +151,14 @@ public struct ExperimentContent: Sendable {
         screenshots: [ExperimentSlot: [ScreenshotFile]] = [:],
         previews: [ExperimentSlot: [PreviewFile]] = [:],
         creative: [String: CreativeFolder] = [:],
-        emptied: Set<ExperimentSlot> = []
+        emptied: Set<ExperimentSlot> = [],
+        emptiedPreviews: Set<ExperimentSlot> = []
     ) {
         self.screenshots = screenshots
         self.previews = previews
         self.creative = creative
         self.emptied = emptied
+        self.emptiedPreviews = emptiedPreviews
     }
 
     public func screenshots(in slot: ExperimentSlot) -> [ScreenshotFile] {
@@ -183,6 +188,7 @@ public enum ExperimentContentStore {
         var previews: [ExperimentSlot: [PreviewFile]] = [:]
         var creative: [String: CreativeFolder] = [:]
         var emptied: Set<ExperimentSlot> = []
+        var emptiedPreviews: Set<ExperimentSlot> = []
 
         for experimentFolder in DirectoryListing.directories(in: project.experimentsURL) {
             for treatmentFolder in DirectoryListing.directories(in: experimentFolder) {
@@ -196,14 +202,22 @@ public enum ExperimentContentStore {
                     )
                 }
 
-                for (set, files) in images.screenshots { screenshots[slot(set)] = files }
-                for (set, files) in images.previews { previews[slot(set)] = files }
+                for (set, files) in images.screenshots {
+                    screenshots[slot(set)] = files
+                }
+                for (set, files) in images.previews {
+                    previews[slot(set)] = files
+                }
                 emptied.formUnion(images.emptied.map(slot))
+                emptiedPreviews.formUnion(images.emptiedPreviews.map(slot))
                 if images.creative.isEmpty == false {
                     creative[ExperimentContent.creativeKey(experiment: experiment, treatment: treatment)] = images.creative
                 }
             }
         }
-        return ExperimentContent(screenshots: screenshots, previews: previews, creative: creative, emptied: emptied)
+        return ExperimentContent(
+            screenshots: screenshots, previews: previews, creative: creative,
+            emptied: emptied, emptiedPreviews: emptiedPreviews
+        )
     }
 }

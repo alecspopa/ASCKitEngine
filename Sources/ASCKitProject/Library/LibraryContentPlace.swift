@@ -15,6 +15,7 @@ struct PlaceImages {
     var previews: [ScreenshotSlot: [PreviewFile]] = [:]
     var creative = CreativeFolder()
     var emptied: Set<ScreenshotSlot> = []
+    var emptiedPreviews: Set<ScreenshotSlot> = []
 }
 
 public extension Project {
@@ -55,11 +56,13 @@ extension Project {
     /// a treatment and a custom page.
     func images(of place: LibraryContentPlace) -> PlaceImages {
         let sets = screenshotFolder(place)
+        let previews = PreviewFolder.load(from: previewsURL(place))
         return PlaceImages(
             screenshots: sets.screenshots,
-            previews: PreviewFolder.load(from: previewsURL(place)).previews,
+            previews: previews.previews,
             creative: CreativeFolder.load(from: creativeURL(place)),
-            emptied: sets.emptied
+            emptied: sets.emptied,
+            emptiedPreviews: previews.emptied
         )
     }
 }

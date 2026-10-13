@@ -194,6 +194,9 @@ public struct CustomPageContent: Sendable {
     /// Sets somebody emptied on purpose, as `ScreenshotFolder.emptied` says.
     public var emptied: Set<CustomPageSlot> = []
 
+    /// Preview sets somebody emptied on purpose.
+    public var emptiedPreviews: Set<CustomPageSlot> = []
+
     public init() {}
 
     public func screenshots(in slot: CustomPageSlot) -> [ScreenshotFile] {
@@ -250,9 +253,14 @@ public enum CustomPageContentStore {
             CustomPageSlot(page: page, locale: set.locale, deviceClassID: set.deviceClassID)
         }
 
-        for (set, files) in images.screenshots { content.screenshots[slot(set)] = files }
-        for (set, files) in images.previews { content.previews[slot(set)] = files }
+        for (set, files) in images.screenshots {
+            content.screenshots[slot(set)] = files
+        }
+        for (set, files) in images.previews {
+            content.previews[slot(set)] = files
+        }
         content.emptied.formUnion(images.emptied.map(slot))
+        content.emptiedPreviews.formUnion(images.emptiedPreviews.map(slot))
         if images.creative.isEmpty == false { content.creative[page] = images.creative }
     }
 

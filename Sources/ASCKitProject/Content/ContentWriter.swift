@@ -330,7 +330,6 @@ public enum ContentWriter {
             try FileManager.default.trashItem(at: file.url, resultingItemURL: &landed)
             if let landed = landed as URL? { trashed.append(landed) }
         }
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try setEmptied(true, in: directory)
         return trashed
     }
@@ -346,15 +345,8 @@ public enum ContentWriter {
         try setEmptied(false, in: project.screenshotsURL(place, locale: locale, deviceClassID: deviceClass.id))
     }
 
-    /// The mark lives in the set's own folder, so it moves and goes with it.
     private static func setEmptied(_ emptied: Bool, in directory: URL) throws {
-        let marker = directory.appending(path: ScreenshotFolder.emptiedMarkerName)
-        let exists = FileManager.default.fileExists(atPath: marker.path)
-        if emptied, exists == false {
-            try Data().write(to: marker)
-        } else if emptied == false, exists {
-            try FileManager.default.removeItem(at: marker)
-        }
+        try EmptiedMark.set(emptied, in: directory)
     }
 
     // MARK: - Putting old names right

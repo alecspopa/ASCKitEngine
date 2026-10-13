@@ -204,7 +204,44 @@ struct LibraryContentWriterTests {
         #expect(art?.file(locale: "en-US", role: .header)?.fileName == "header.png")
 
         try LibraryContentWriter.removeCreative(role: .header, locale: "en-US", at: place, in: project)
-        #expect(ExperimentContentStore.load(in: project).creative["Bigger buttons/Treatment A"] == nil)
+        let emptied = ExperimentContentStore.load(in: project).creative["Bigger buttons/Treatment A"]
+        #expect(emptied?.file(locale: "en-US", role: .header) == nil)
+        #expect(emptied?.emptied["en-US"] == [.header])
+    }
+
+    @Test func marksARemovedRoleAndClearsTheMarkWithANewFile() throws {
+        defer { fixture.remove() }
+        let place = LibraryContentPlace.version("1.0")
+        try LibraryContentWriter.removeCreative(role: .header, locale: "en-US", at: place, in: project)
+        #expect(CreativeFolder.load(from: project.creativeURL(version: "1.0")).emptied["en-US"] == [.header])
+
+        _ = try LibraryContentWriter.setCreative(from: source("a.png"), role: .header, locale: "en-US",
+                                                 at: place, in: project)
+        #expect(CreativeFolder.load(from: project.creativeURL(version: "1.0")).emptied.isEmpty)
+
+        try LibraryContentWriter.removeCreative(role: .header, locale: "en-US", at: place, in: project)
+        try LibraryContentWriter.keepRemoteCreative(role: .header, locale: "en-US", at: place, in: project)
+        #expect(CreativeFolder.load(from: project.creativeURL(version: "1.0")).emptied.isEmpty)
+    }
+
+    @Test func marksAPreviewSetWhenItsLastVideoGoes() throws {
+        defer { fixture.remove() }
+        let place = LibraryContentPlace.version("1.0")
+        _ = try LibraryContentWriter.addPreviews(from: [source("01-a.mov")], locale: "en-US",
+                                                 deviceClass: .iPhone69, at: place, in: project)
+        _ = try LibraryContentWriter.removePreviews(named: ["01-a.mov"], locale: "en-US",
+                                                    deviceClass: .iPhone69, at: place, in: project)
+        let slot = ScreenshotSlot(locale: "en-US", deviceClassID: "iphone-6.9")
+        #expect(PreviewFolder.load(from: project.previewsURL(version: "1.0")).emptied == [slot])
+
+        _ = try LibraryContentWriter.addPreviews(from: [source("01-a.mov")], locale: "en-US",
+                                                 deviceClass: .iPhone69, at: place, in: project)
+        #expect(PreviewFolder.load(from: project.previewsURL(version: "1.0")).emptied.isEmpty)
+
+        try LibraryContentWriter.removeAllPreviews(locale: "en-US", deviceClass: .iPhone69, at: place, in: project)
+        #expect(PreviewFolder.load(from: project.previewsURL(version: "1.0")).previews[slot]?.isEmpty == true)
+        try LibraryContentWriter.keepRemotePreviews(locale: "en-US", deviceClass: .iPhone69, at: place, in: project)
+        #expect(PreviewFolder.load(from: project.previewsURL(version: "1.0")).emptied.isEmpty)
     }
 
     @Test func keepsATreatmentsPreviewsOutOfItsLanguages() {
