@@ -213,9 +213,6 @@
         }
       }
     },
-    "%@ also goes into search results, because this language has no search results file. Only a universal image fits both." : {
-      "comment" : "Problem in a check. The value is the header file name."
-    },
     "%@ and %@ are different languages, so the pictures say different words. Screenshots are copied only between languages such as es-ES and es-MX. To show another language's screenshots, put %@ in usesSourceScreenshots." : {
       "comment" : "Error sentence when a person copies screenshots between languages. The first and the second values are language codes. Do not translate es-ES, es-MX or usesSourceScreenshots. usesSourceScreenshots is a JSON key.",
       "localizations" : {
@@ -3751,9 +3748,6 @@
     "Use %@ instead. App Store Connect uses the three-letter code." : {
       "comment" : "Fix in the problem list. The value is a three-letter country code. Do not translate App Store Connect."
     },
-    "Use a 5244x2950 png, or add a search-results file for this language." : {
-      "comment" : "How to fix a header that cannot show in search results. Keep search-results as it is: it is a file name."
-    },
     "Use a universal link or a link with your app's own scheme, such as myapp://moon." : {
       "comment" : "Fix for a deep link that is not an address. Keep myapp://moon as it is."
     },
@@ -4164,9 +4158,6 @@
     },
     "set by hand" : {
       "comment" : "Short label at the end of a price line in the publish plan, shown as fixed-width text. A person set this price in the product file."
-    },
-    "show the header, %@" : {
-      "comment" : "Short text in the publish plan: search results show the header art. The value is its file name."
     },
     "the base price" : {
       "comment" : "Short label at the end of a price line in the publish plan, shown as fixed-width text. This country uses the base price of the product."

@@ -29,8 +29,7 @@ struct ValidatorCreativeTests {
         return Validator(config: config).validateCreativeFolder(folder, root: "c").map(\.kind)
     }
 
-    /// The problems of one header, beside a search results file so that the
-    /// header goes into no other place.
+    /// The problems of one header, beside a search results file.
     func headerKinds(_ header: CreativeFile) -> [Problem.Kind] {
         kinds(Art.folder([.header: [header], .searchResults: [Art.image("search-results.png", 1920, 1280)]]))
     }
@@ -93,13 +92,12 @@ struct ValidatorCreativeTests {
         #expect(headerKinds(broken) == [.creativeUnreadable])
     }
 
-    @Test func letsTheSearchResultsShowAUniversalHeader() {
-        #expect(kinds(Art.folder([.header: [Art.image("header.png", 5244, 2950)]])).isEmpty)
-    }
-
-    @Test(arguments: [Art.image("header.png", 3840, 1646), Art.video("header.mov", 3840, 1646)])
-    func refusesAHeaderAloneThatDoesNotFitSearchResults(header: CreativeFile) {
-        #expect(kinds(Art.folder([.header: [header]])) == [.creativeHeaderNotUniversal])
+    /// Search results with no file show the screenshots and app previews, so
+    /// a header alone can be any header size.
+    @Test(arguments: [Art.image("header.png", 3840, 1646), Art.video("header.mov", 3840, 1646),
+                      Art.image("header.png", 5244, 2950)])
+    func takesAHeaderWithNoSearchResultsFile(header: CreativeFile) {
+        #expect(kinds(Art.folder([.header: [header]])).isEmpty)
     }
 
     @Test func takesAnyHeaderSizeBesideASearchResultsFile() {
@@ -165,7 +163,8 @@ struct CreativePlanTests {
         #expect(plans.first?.file?.libraryFile.category == .creativeAssets)
     }
 
-    @Test func placesOneAssetTwiceForAUniversalHeader() throws {
+    /// Apple puts a header in search results only when somebody picks it there.
+    @Test func putsAHeaderAloneInTheHeaderOnly() throws {
         defer { files.remove() }
         var folder = CreativeFolder()
         folder.files["en-US"] = try [.header: [art("header.png")]]
@@ -173,8 +172,18 @@ struct CreativePlanTests {
         let plans = CreativePlanner.plans(folder: folder, locales: ["en-US"], placements: [],
                                           record: AssetRecord())
 
-        #expect(plans.map(\.role) == [.header, .searchResults])
-        #expect(plans.last?.usesHeader == true)
+        #expect(plans.map(\.role) == [.header])
+    }
+
+    @Test func placesOneAssetTwiceForTheSameFileInBothRoles() throws {
+        defer { files.remove() }
+        var folder = CreativeFolder()
+        let header = try art("header.png")
+        folder.files["en-US"] = [.header: [header], .searchResults: [header]]
+
+        let plans = CreativePlanner.plans(folder: folder, locales: ["en-US"], placements: [],
+                                          record: AssetRecord())
+
         let targets = plans.map {
             LibraryPusher.Target(id: $0.id, label: $0.locale, deviceClassID: $0.role.rawValue,
                                  parent: .versionLocalization(id: "l"), files: $0.file.map { [$0.libraryFile] } ?? [],
@@ -197,7 +206,7 @@ struct CreativePlanTests {
             record: AssetRecord()
         )
 
-        #expect(plans.map(\.id) == ["en-US|header", "en-US|search-results"])
+        #expect(plans.map(\.id) == ["en-US|header"])
     }
 
     @Test func takesOffTheArtOfARoleEmptiedOnPurpose() {
@@ -213,8 +222,7 @@ struct CreativePlanTests {
         #expect(plans.first?.action == .replace(removing: 1, adding: 0))
     }
 
-    /// Search results with no file show the header, so they go with it.
-    @Test func takesOffTheSearchResultsWithAnEmptiedHeader() {
+    @Test func keepsTheSearchResultsWithAnEmptiedHeader() {
         var folder = CreativeFolder()
         folder.emptied["en-US"] = [.header]
         let plans = CreativePlanner.plans(
@@ -223,18 +231,22 @@ struct CreativePlanTests {
                          Self.placed("p2", asset: "a1", type: .searchResults)],
             record: AssetRecord()
         )
-        #expect(plans.map(\.id) == ["en-US|header", "en-US|search-results"])
-        #expect(plans.allSatisfy { $0.action == .replace(removing: 1, adding: 0) })
+        #expect(plans.map(\.id) == ["en-US|header"])
+        #expect(plans.first?.action == .replace(removing: 1, adding: 0))
     }
 
-    /// Search results with no file show the header file, whatever their mark.
-    @Test func keepsTheSearchResultsWhileAHeaderFileIsHere() throws {
+    @Test func takesOffTheSearchResultsWhileAHeaderFileIsHere() throws {
         defer { files.remove() }
         var folder = CreativeFolder()
         folder.files["en-US"] = try [.header: [art("header.png")]]
         folder.emptied["en-US"] = [.searchResults]
 
-        #expect(folder.isEmptied(locale: "en-US", role: .searchResults) == false)
+        #expect(folder.isEmptied(locale: "en-US", role: .searchResults))
+        let plans = CreativePlanner.plans(
+            folder: folder, locales: ["en-US"],
+            placements: [Self.placed("p2", asset: "a1", type: .searchResults)], record: AssetRecord()
+        )
+        #expect(plans.first { $0.role == .searchResults }?.action == .replace(removing: 1, adding: 0))
     }
 
     @Test func leavesAHeaderTheLibraryAlreadyShows() throws {
@@ -286,9 +298,8 @@ struct CreativePlanTests {
             config: ProjectConfig(bundleID: "b", keyID: "K", issuerID: "I", locales: ["en-US"]),
             remote: LibraryExperimentPlanTests.remote(placements: []), record: AssetRecord()
         )
-        #expect(plan.creativeSets.map(\.plan.role) == [.header, .searchResults])
-        #expect(PushSession.targets(in: plan).map(\.parent) == [.treatmentLocalization(id: "tl-en"),
-                                                                .treatmentLocalization(id: "tl-en")])
+        #expect(plan.creativeSets.map(\.plan.role) == [.header])
+        #expect(PushSession.targets(in: plan).map(\.parent) == [.treatmentLocalization(id: "tl-en")])
     }
 }
 
@@ -315,8 +326,7 @@ struct LibraryReportLineTests {
 
         #expect(plan.libraryLines(treatmentID: "t1") == [
             "en-US/iphone-6.9 previews: remove 0, add 1",
-            "en-US header: put up header.png",
-            "en-US search-results: show the header"
+            "en-US header: put up header.png"
         ])
         #expect(plan.libraryLines(treatmentID: "another").isEmpty)
     }
@@ -426,7 +436,7 @@ struct CreativeSummaryTests {
                               missingLocales: [], screenshotPlans: [], creativePlans: creative,
                               blocked: [], skipped: [])
 
-        #expect(ChangePlanFormatter.summary(plan).contains("2 header and search results assets"))
+        #expect(ChangePlanFormatter.summary(plan).contains("1 header or search results asset"))
     }
 
     @Test func takesTheArtOffALanguageEmptiedOnPurpose() throws {
@@ -448,7 +458,6 @@ struct CreativeSummaryTests {
             "Header and search results:",
             "  en-GB, header: will be removed",
             "  en-US, header: put up header.png",
-            "  en-US, search results: show the header, header.png",
             ""
         ])
     }

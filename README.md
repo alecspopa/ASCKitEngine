@@ -437,9 +437,9 @@ versions/1.0/creative/en-US/header.png
 versions/1.0/creative/en-US/search-results.png
 ```
 
-Each one can be a `.png`, a `.jpg` or a movie. A language with a header and no
-`search-results` file shows the header in search results too. That header has to
-be a universal image, a 5244x2950 `.png`, or the check stops the push. The store
+Each one can be a `.png`, a `.jpg` or a movie. With no search results art,
+search results show the screenshots and app previews. To show the header there
+too, put the same universal image, a 5244x2950 `.png`, in both files. The store
 shows this art only on iOS and iPadOS 27 and later.
 
 A Product Page Optimization treatment takes the same `previews` and `creative`
@@ -451,8 +451,7 @@ keeps what App Store Connect holds. A read writes no images, and a new version
 starts with the images of the last one. A push takes the images off only when
 somebody emptied the set on purpose. A remove leaves a hidden `.asckit-emptied`
 file in the set's folder to say so. For the art it is `.asckit-emptied-header`
-or `.asckit-emptied-search-results`. Search results with no file of their own
-go with an emptied header.
+or `.asckit-emptied-search-results`.
 
 ### What App Store Connect holds for an empty set
 

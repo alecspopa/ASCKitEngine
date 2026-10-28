@@ -224,6 +224,19 @@ struct LibraryContentWriterTests {
         #expect(CreativeFolder.load(from: project.creativeURL(version: "1.0")).emptied.isEmpty)
     }
 
+    /// The Moondane 2.4 case: a header file, and search results emptied with no file.
+    @Test func marksSearchResultsWithNoFileBesideAHeader() throws {
+        defer { fixture.remove() }
+        let place = LibraryContentPlace.version("1.0")
+        _ = try LibraryContentWriter.setCreative(from: source("a.png"), role: .header, locale: "en-US",
+                                                 at: place, in: project)
+        try LibraryContentWriter.removeCreative(role: .searchResults, locale: "en-US", at: place, in: project)
+
+        let folder = CreativeFolder.load(from: project.creativeURL(version: "1.0"))
+        #expect(folder.isEmptied(locale: "en-US", role: .searchResults))
+        #expect(folder.isEmptied(locale: "en-US", role: .header) == false)
+    }
+
     @Test func marksAPreviewSetWhenItsLastVideoGoes() throws {
         defer { fixture.remove() }
         let place = LibraryContentPlace.version("1.0")

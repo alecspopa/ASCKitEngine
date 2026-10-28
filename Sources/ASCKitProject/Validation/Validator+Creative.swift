@@ -81,26 +81,6 @@ extension Validator {
                 guard let file = files.first else { continue }
                 problems += validateCreativeFile(file, role: role, locale: locale, path: "\(path)/\(file.fileName)")
             }
-
-            let header = folder.file(locale: locale, role: .header)
-            let search = folder.file(locale: locale, role: .searchResults)
-            // With no search results file, App Store Connect shows the header there.
-            if let header, search == nil {
-                let fitsSearch = CreativeRules.rules(for: .searchResults, refData: refData).matching(header).isEmpty == false
-                let universal = CreativeRules.rules(for: .header, refData: refData).matching(header).contains(where: \.universal)
-                if fitsSearch == false || universal == false {
-                    problems.append(creativeProblem(.error, .creativeHeaderNotUniversal, locale: locale,
-                                                    path: "\(path)/\(header.fileName)",
-                                                    LocalizedStringResource("""
-                                                    \(header.fileName) also goes into search results, \
-                                                    because this language has no search results file. Only a \
-                                                    universal image fits both.
-                                                    """, bundle: .here),
-                                                    LocalizedStringResource("""
-                                                    Use a 5244x2950 png, or add a search-results file for this language.
-                                                    """, bundle: .here)))
-                }
-            }
         }
         return problems
     }

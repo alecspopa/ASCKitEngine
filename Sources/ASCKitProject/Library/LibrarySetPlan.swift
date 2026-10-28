@@ -71,10 +71,10 @@ public extension LibrarySlot {
 public extension CreativePlan {
     /// What a push does to the art, in a few English words for a terminal.
     var summary: String {
-        switch (file, usesHeader) {
-        case (nil, _): "\(locale) \(role.rawValue): will be removed"
-        case (_?, true): "\(locale) \(role.rawValue): show the header"
-        case let (file?, false): "\(locale) \(role.rawValue): put up \(file.fileName)"
+        if let file {
+            "\(locale) \(role.rawValue): put up \(file.fileName)"
+        } else {
+            "\(locale) \(role.rawValue): will be removed"
         }
     }
 }

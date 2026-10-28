@@ -93,16 +93,9 @@ public struct CreativeFolder: Sendable {
 
     public var isEmpty: Bool { files.isEmpty && strays.isEmpty && emptied.isEmpty }
 
-    /// Whether a push takes App Store Connect's art for the role off. Search
-    /// results with no file of their own show the header, so they go with an
-    /// emptied header and stay while a header file is here.
+    /// Whether a push takes App Store Connect's art for the role off.
     public func isEmptied(locale: String, role: CreativeRole) -> Bool {
-        let marks = emptied[locale] ?? []
-        guard role == .searchResults, file(locale: locale, role: .searchResults) == nil else {
-            return marks.contains(role)
-        }
-        guard file(locale: locale, role: .header) == nil else { return false }
-        return marks.contains(.searchResults) || marks.contains(.header)
+        emptied[locale]?.contains(role) == true
     }
 }
 
@@ -119,9 +112,6 @@ public struct CreativePlan: Sendable, Identifiable {
     public let locale: String
     public let role: CreativeRole
     public let file: CreativeFile?
-
-    /// True when the search results show the header's asset.
-    public let usesHeader: Bool
     public let library: LibrarySlot
 
     public var id: String { "\(locale)|\(role.rawValue)" }
@@ -134,8 +124,8 @@ public enum CreativePlanner {
     ///
     /// A role with a file goes up. A role with no file takes App Store
     /// Connect's art off only when somebody emptied it on purpose, the way a
-    /// screenshot set does. A language with a header and no search results
-    /// file shows the header in search results too.
+    /// screenshot set does. Search results with no art show the screenshots
+    /// and app previews, so a header never goes there on its own.
     ///
     /// The planner marks every role of a language in `usesSourceCreative` as
     /// emptied, and App Store Connect shows the primary language's art.
@@ -148,22 +138,14 @@ public enum CreativePlanner {
         var plans: [CreativePlan] = []
         for locale in locales.sorted() {
             for role in CreativeRole.allCases {
-                var file = folder.file(locale: locale, role: role)
-                var usesHeader = false
-                if role == .searchResults, file == nil {
-                    file = folder.file(locale: locale, role: .header)
-                    usesHeader = file != nil
-                }
-
+                let file = folder.file(locale: locale, role: role)
                 guard let library = LibraryPlanner.plannedSlot(
                     files: file.map { [$0.libraryFile] } ?? [], placements: placements, locale: locale,
                     group: CreativeRole.group, type: role.placementType,
                     emptied: folder.isEmptied(locale: locale, role: role), record: record
                 ) else { continue }
 
-                plans.append(CreativePlan(
-                    locale: locale, role: role, file: file, usesHeader: usesHeader, library: library
-                ))
+                plans.append(CreativePlan(locale: locale, role: role, file: file, library: library))
             }
         }
         return plans

@@ -259,9 +259,6 @@ public struct Problem: Sendable, Hashable, Identifiable {
         case creativeHasAlpha
         case creativeWrongLength
         case creativeWrongFrameRate
-        /// A header with no search results file beside it, in a size that
-        /// does not fit search results.
-        case creativeHeaderNotUniversal
         /// A language set to show the source language's art has files of its own.
         case creativeBesideSourceCopy
 
