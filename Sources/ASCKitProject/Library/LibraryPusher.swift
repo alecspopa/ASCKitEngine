@@ -14,8 +14,8 @@ import Foundation
 ///    places any more.
 ///
 /// An asset file never changes after its upload, so a changed file is a new
-/// asset. It takes the name of the asset it replaces, which is renamed first.
-/// Nothing a push does here deletes an image.
+/// asset. Its name holds the MD5, so it never takes the name of the asset it
+/// replaces. Nothing a push does here deletes an image.
 public struct LibraryPusher: Sendable {
     /// One slot to fill, with the parent its placements go on.
     public struct Target: Sendable {
@@ -69,8 +69,7 @@ public struct LibraryPusher: Sendable {
         let box = RecordBox(record, uploadedAt: date, save: saveRecord)
         var result = ScreenshotPusher.Result()
 
-        let uploads = Self.uploads(in: targets)
-        await freeNames(Set(Self.referenceNames(for: uploads).values), in: targets)
+        let uploads = await takeHeldAssets(Self.uploads(in: targets), libraryID: libraryID, box: box)
         let failedUploads = await upload(uploads, libraryID: libraryID, box: box, progress: progress)
 
         let processed = await waitForProcessing(box: box, libraryID: libraryID, md5s: Array(uploads.keys))
@@ -187,38 +186,58 @@ public struct LibraryPusher: Sendable {
 
     /// The name of each upload, by MD5.
     ///
-    /// The library takes each reference name once. The language tells apart
-    /// one file name in two languages. Two uploads that would still share a
-    /// name, such as one file name in two device classes, are told apart by
-    /// the checksum.
+    /// The library takes each reference name once. The MD5 makes each file a
+    /// name of its own, and lets the next push find the asset by its name.
     static func referenceNames(for uploads: [String: (file: LibraryFile, target: Target)]) -> [String: String] {
-        var names: [String: String] = [:]
-        var used: Set<String> = []
-        for (md5, upload) in uploads.sorted(by: { ($0.value.target.id, $0.key) < ($1.value.target.id, $1.key) }) {
-            var name = "\(upload.target.label) \(upload.file.fileName)"
-            if used.contains(name) { name += " \(md5.prefix(8))" }
-            used.insert(name)
-            names[md5] = name
+        uploads.reduce(into: [:]) { names, upload in
+            names[upload.key] = "\(upload.value.target.label) \(upload.value.file.fileName) \(upload.key.prefix(8))"
         }
-        return names
     }
 
-    /// Renames the assets that a slot shows now under a name an upload takes.
-    /// That is the asset a changed file replaces.
+    /// The uploads that the library does not hold yet.
     ///
-    /// A rename that fails leaves the name taken, and the upload then says so.
-    private func freeNames(_ names: Set<String>, in targets: [Target]) async {
+    /// An asset under the name of an upload, with the same size, is that file.
+    /// It goes into the record and is not sent again. That finds an upload the
+    /// record lost, such as one from a push that stopped. An asset under the
+    /// name that cannot be placed, such as an upload that never finished, is
+    /// renamed, so that the new upload can take the name. A read that fails
+    /// leaves the uploads as they are.
+    private func takeHeldAssets(
+        _ uploads: [String: (file: LibraryFile, target: Target)],
+        libraryID: String,
+        box: RecordBox
+    ) async -> [String: (file: LibraryFile, target: Target)] {
+        guard uploads.isEmpty == false else { return uploads }
+
         var holders: [String: RemoteLibraryAsset] = [:]
-        for placement in targets.flatMap(\.slot.current) {
-            guard let asset = placement.asset, let name = asset.referenceName, names.contains(name) else { continue }
-            holders[asset.id] = asset
+        for media in Set(uploads.values.map(\.file.media)).sorted(by: { $0.rawValue < $1.rawValue }) {
+            guard let assets = try? await client.readLibraryAssets(libraryID: libraryID, media: media) else { continue }
+            for asset in assets {
+                if let name = asset.referenceName { holders[name] = asset }
+            }
         }
-        for asset in holders.values.sorted(by: { $0.id < $1.id }) {
-            let name = asset.referenceName ?? ""
-            _ = try? await client.renameLibraryAsset(
-                media: asset.media, id: asset.id, referenceName: "\(name) (replaced \(asset.id.prefix(8)))"
-            )
+
+        var left = uploads
+        for (md5, name) in Self.referenceNames(for: uploads).sorted(by: { $0.key < $1.key }) {
+            guard let held = holders[name], let upload = uploads[md5] else { continue }
+            if held.state?.canBePlaced == true, held.fileSize == upload.file.byteCount {
+                await box.record(md5: md5, AssetRecord.Entry(
+                    assetID: held.id,
+                    media: held.media,
+                    category: upload.file.category,
+                    fileName: upload.file.fileName,
+                    fileSize: upload.file.byteCount,
+                    state: held.state
+                ))
+                left[md5] = nil
+            } else {
+                // A rename that fails leaves the name taken, and the upload then says so.
+                _ = try? await client.renameLibraryAsset(
+                    media: held.media, id: held.id, referenceName: "\(name) (unused \(held.id.prefix(8)))"
+                )
+            }
         }
+        return left
     }
 
     /// Archives the assets that came off a slot, once nothing places them.

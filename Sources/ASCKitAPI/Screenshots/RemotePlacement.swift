@@ -140,6 +140,11 @@ public extension ASCClient {
         return all.sorted { ($0.first?.locale ?? "") < ($1.first?.locale ?? "") }.flatMap(\.self)
     }
 
+    /// Every image or every video in a library.
+    func readLibraryAssets(libraryID: String, media: LibraryMedia) async throws -> [RemoteLibraryAsset] {
+        try await libraryAssets(libraryID: libraryID, media: media).compactMap { RemoteLibraryAsset($0) }
+    }
+
     /// Everything in an app's library. Nil when the app has no library.
     func readAssetLibrary(appID: String) async throws -> RemoteAssetLibrary? {
         guard let libraryID = try await assetLibraryID(appID: appID) else { return nil }

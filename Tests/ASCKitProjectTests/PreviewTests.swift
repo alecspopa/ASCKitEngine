@@ -367,6 +367,7 @@ struct PreviewPlanTests {
             files: [one.libraryFile], slot: slot([one], current: [], record: AssetRecord())
         )
         let transport = StubTransport([
+            LibraryReply.empty,
             .ok("""
             {"data":{"type":"appAssetLibraryVideos","id":"v9","attributes":{"state":"AWAITING_UPLOAD",
               "uploadOperations":[{"method":"PUT","url":"https://blob.example.test/v9","length":1,"offset":0,
@@ -384,12 +385,13 @@ struct PreviewPlanTests {
         #expect(pushed.result.isCompleteSuccess)
         let calls = await LibraryPusherTests.calls(transport)
         #expect(calls == [
+            "GET /v1/appAssetLibraries/lib/videos",
             "POST /v1/appAssetLibraryVideos", "PUT /v9", "PATCH /v1/appAssetLibraryVideos/v9",
             "GET /v1/appAssetLibraries/lib/videos", "POST /v1/appAssetLibraryPlacements"
         ])
-        let reserve = try await Self.body(transport, at: 0)
+        let reserve = try await Self.body(transport, at: 1)
         #expect(reserve.contains("00:00:03:00"))
-        let place = try await Self.body(transport, at: 4)
+        let place = try await Self.body(transport, at: 5)
         #expect(place.contains(#""video""#) && place.contains("APP_PREVIEW"))
     }
 }

@@ -10,6 +10,7 @@ extension LibraryPusherTests {
         defer { files.remove() }
         let one = try files.file("01.png")
         let transport = StubTransport([
+            LibraryReply.empty,
             LibraryReply.reserved("new1"), .ok(""), LibraryReply.committed,
             LibraryReply.states([("new1", "PREPARE_FOR_SUBMISSION")]),
             LibraryReply.deleted,

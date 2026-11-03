@@ -15,6 +15,9 @@ enum LibraryReply {
         """)
     }
 
+    /// The read of the library before an upload, with nothing in it.
+    static let empty = StubTransport.Reply.ok(#"{"data":[]}"#)
+
     static let committed = StubTransport.Reply.ok(
         #"{"data":{"type":"appAssetLibraryImages","id":"x","attributes":{"state":"UPLOAD_COMPLETE"}}}"#
     )
@@ -98,6 +101,7 @@ struct LibraryPusherTests {
         defer { files.remove() }
         let one = try files.file("01.png")
         let transport = StubTransport([
+            LibraryReply.empty,
             LibraryReply.reserved("new1"), .ok(""), LibraryReply.committed,
             LibraryReply.states([("new1", "PREPARE_FOR_SUBMISSION")]),
             LibraryReply.deleted,
@@ -109,6 +113,7 @@ struct LibraryPusherTests {
 
         #expect(pushed.result.isCompleteSuccess)
         #expect(await Self.calls(transport) == [
+            "GET /v1/appAssetLibraries/lib1/images",
             "POST /v1/appAssetLibraryImages",
             "PUT /new1",
             "PATCH /v1/appAssetLibraryImages/new1",
@@ -126,6 +131,7 @@ struct LibraryPusherTests {
         let one = try files.file("01.png")
         let saved = SavedRecords()
         let transport = StubTransport([
+            LibraryReply.empty,
             LibraryReply.reserved("new1"), .ok(""), LibraryReply.committed,
             LibraryReply.states([("new1", "PREPARE_FOR_SUBMISSION")]),
             LibraryReply.placement("p-new")
@@ -250,39 +256,57 @@ struct LibraryPusherTests {
             .filter { $0.httpMethod == "POST" && $0.url?.path == "/v1/appAssetLibraryImages" }
             .compactMap { $0.httpBody.flatMap { String(data: $0, encoding: .utf8) } }
         #expect(bodies.count == 2)
-        for name in ["en-US 01.png", "de-DE 02.png"] {
+        for name in try ["en-US 01.png \(LibraryFiles.md5(english).prefix(8))", "de-DE 02.png \(LibraryFiles.md5(german).prefix(8))"] {
             #expect(bodies.contains { $0.contains(#""referenceName":"\#(name)""#) })
         }
     }
 
-    @Test func renamesTheAssetAChangedFileReplaces() async throws {
+    static func held(_ id: String, name: String, size: Int, state: String) -> StubTransport.Reply {
+        .ok(#"{"data":[{"type":"appAssetLibraryImages","id":"\#(id)","#
+            + #""attributes":{"referenceName":"\#(name)","fileSize":\#(size),"state":"\#(state)"}}]}"#)
+    }
+
+    /// The record lost the asset, such as after a push that stopped.
+    @Test func placesAnAssetTheLibraryHoldsUnderTheNameOfTheFile() async throws {
         defer { files.remove() }
-        let one = try files.file("01.png", contents: "new")
-        let old = RemotePlacement(
-            id: "p-old", locale: "en-US", type: .appScreenshot, group: Placed.group, state: .parentPrepareForSubmission,
-            asset: RemoteLibraryAsset(id: "old12345abc", media: .image, fileName: "01.png",
-                                      referenceName: "en-US|iphone-6.9 01.png", state: .prepareForSubmission)
-        )
+        let one = try files.file("01.png")
+        let name = try "en-US|iphone-6.9 01.png \(LibraryFiles.md5(one).prefix(8))"
         let transport = StubTransport([
-            .ok(#"{"data":{"type":"appAssetLibraryImages","id":"old12345abc","attributes":{}}}"#),
-            LibraryReply.reserved("new1"), .ok(""), LibraryReply.committed,
-            LibraryReply.states([("new1", "PREPARE_FOR_SUBMISSION")]),
-            LibraryReply.deleted,
+            Self.held("held1", name: name, size: one.byteCount, state: "APPROVED"),
             LibraryReply.placement("p-new")
         ])
 
-        let pushed = try await push([target(local: [one], current: [old])], transport: transport)
+        let pushed = try await push([target(local: [one])], transport: transport)
 
         #expect(pushed.result.isCompleteSuccess)
-        #expect(await Array(Self.calls(transport).prefix(2)) == [
-            "PATCH /v1/appAssetLibraryImages/old12345abc",
+        #expect(await Self.calls(transport) == ["GET /v1/appAssetLibraries/lib1/images", "POST /v1/appAssetLibraryPlacements"])
+        #expect(try pushed.record.assetID(md5: LibraryFiles.md5(one), fileSize: one.byteCount) == "held1")
+    }
+
+    @Test func renamesAnUploadThatNeverFinishedAndUploadsAgain() async throws {
+        defer { files.remove() }
+        let one = try files.file("01.png")
+        let name = try "en-US|iphone-6.9 01.png \(LibraryFiles.md5(one).prefix(8))"
+        let transport = StubTransport([
+            Self.held("held1", name: name, size: one.byteCount, state: "AWAITING_UPLOAD"),
+            .ok(#"{"data":{"type":"appAssetLibraryImages","id":"held1","attributes":{}}}"#),
+            LibraryReply.reserved("new1"), .ok(""), LibraryReply.committed,
+            LibraryReply.states([("new1", "PREPARE_FOR_SUBMISSION")]),
+            LibraryReply.placement("p-new")
+        ])
+
+        let pushed = try await push([target(local: [one])], transport: transport)
+
+        #expect(pushed.result.isCompleteSuccess)
+        #expect(await Array(Self.calls(transport).prefix(3)) == [
+            "GET /v1/appAssetLibraries/lib1/images",
+            "PATCH /v1/appAssetLibraryImages/held1",
             "POST /v1/appAssetLibraryImages"
         ])
-        let rename = try #require(await transport.request(at: 0).httpBody.flatMap { String(data: $0, encoding: .utf8) })
-        #expect(rename.contains(#""referenceName":"en-US|iphone-6.9 01.png (replaced old12345)""#))
-        let reserve = try #require(await transport.request(at: 1).httpBody.flatMap { String(data: $0, encoding: .utf8) })
-        #expect(reserve.contains(#""referenceName":"en-US|iphone-6.9 01.png""#))
-        #expect(pushed.result.archived.isEmpty, "an asset in Prepare for Submission cannot be archived")
+        let rename = try #require(await transport.request(at: 1).httpBody.flatMap { String(data: $0, encoding: .utf8) })
+        #expect(rename.contains(#""referenceName":"\#(name) (unused held1)""#))
+        let reserve = try #require(await transport.request(at: 2).httpBody.flatMap { String(data: $0, encoding: .utf8) })
+        #expect(reserve.contains(#""referenceName":"\#(name)""#))
     }
 
     static func listed(_ id: String, state: String, placements: [String]) -> StubTransport.Reply {
@@ -338,14 +362,15 @@ struct LibraryPusherTests {
     @Test func placesNothingInASlotWhoseUploadFailed() async throws {
         defer { files.remove() }
         let one = try files.file("01.png")
-        let transport = StubTransport([LibraryReply.refusal("ENTITY_ERROR")])
+        let transport = StubTransport([LibraryReply.empty, LibraryReply.refusal("ENTITY_ERROR")])
 
         let pushed = try await push([target(local: [one], current: [Placed.placement("p-old", asset: "x")])],
                                     transport: transport)
 
         #expect(pushed.result.failed.map(\.locale) == ["en-US|iphone-6.9"])
         #expect(pushed.result.failed.first?.message.contains("01.png") == true)
-        #expect(await Self.calls(transport) == ["POST /v1/appAssetLibraryImages"], "the old placement stays")
+        #expect(await Self.calls(transport) == ["GET /v1/appAssetLibraries/lib1/images", "POST /v1/appAssetLibraryImages"],
+                "the old placement stays")
         #expect(pushed.record.isEmpty)
     }
 
@@ -353,6 +378,7 @@ struct LibraryPusherTests {
         defer { files.remove() }
         let one = try files.file("01.png"), two = try files.file("02.png")
         let transport = StubTransport([
+            LibraryReply.empty,
             LibraryReply.reserved("a1"), .ok(""), LibraryReply.committed,
             LibraryReply.refusal("ENTITY_ERROR"),
             LibraryReply.states([("a1", "PREPARE_FOR_SUBMISSION")])
@@ -372,6 +398,7 @@ struct LibraryPusherTests {
         defer { files.remove() }
         let one = try files.file("01.png")
         let transport = StubTransport([
+            LibraryReply.empty,
             LibraryReply.reserved("new1"), .ok(""), LibraryReply.committed,
             LibraryReply.states([("new1", "FAILED")])
         ])
@@ -507,6 +534,7 @@ extension LibraryPusherTests {
         defer { files.remove() }
         let one = try files.file("01.png")
         let transport = StubTransport([
+            LibraryReply.empty,
             LibraryReply.reserved("new1"), .ok(""), LibraryReply.committed,
             LibraryReply.states([("new1", "PREPARE_FOR_SUBMISSION")]),
             LibraryReply.placement("p")
