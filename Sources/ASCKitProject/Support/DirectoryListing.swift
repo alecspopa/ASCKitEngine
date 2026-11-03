@@ -3,16 +3,21 @@ import Foundation
 /// One way to list a folder, so every reader skips the same files.
 enum DirectoryListing {
     /// Files that turn up in image folders but are not content. `.DS_Store` is
-    /// not here because `.skipsHiddenFiles` already drops it.
+    /// not here because `isDotName` already drops it.
     static let strayFileNames: Set<String> = ["Thumbs.db"]
 
     /// Empty when the folder is missing or cannot be read.
     static func entries(in directory: URL, keys: [URLResourceKey] = [.isDirectoryKey]) -> [URL] {
-        (try? FileManager.default.contentsOfDirectory(
+        ((try? FileManager.default.contentsOfDirectory(
             at: directory,
-            includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles]
-        )) ?? []
+            includingPropertiesForKeys: keys
+        )) ?? []).filter { isDotName($0) == false }
+    }
+
+    /// `.skipsHiddenFiles` also drops a file with the hidden flag, which some
+    /// exports set. Terminal and Git still show that file, so it is content.
+    static func isDotName(_ url: URL) -> Bool {
+        url.lastPathComponent.hasPrefix(".")
     }
 
     /// `hasDirectoryPath` only looks for a trailing slash on the string, so it

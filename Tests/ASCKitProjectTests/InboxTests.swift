@@ -78,6 +78,28 @@ final class InboxTests {
         ])
     }
 
+    /// Some exports set the hidden flag. Terminal still lists the file, so a
+    /// set that skips it says less than the folder holds.
+    @Test func readsAFileWithTheHiddenFlagButNotADotFile() throws {
+        let flagged = try fixture.putInInbox(named: "01-hero-iPhone-6.9-en_US.png")
+        var hidden = URLResourceValues()
+        hidden.isHidden = true
+        var url = flagged
+        try url.setResourceValues(hidden)
+        let folder = flagged.deletingLastPathComponent()
+        try Data().write(to: folder.appending(path: ".DS_Store"))
+
+        let set = fixture.screenshotsDirectory(locale: "en-US", deviceClassID: DeviceClass.iPhone69.id)
+        try FileManager.default.createDirectory(at: set, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: flagged, to: set.appending(path: flagged.lastPathComponent))
+        try FileManager.default.copyItem(at: folder.appending(path: ".DS_Store"), to: set.appending(path: ".DS_Store"))
+
+        #expect(try Inbox.waiting(in: fixture.load()).map(\.fileName) == ["01-hero-iPhone-6.9-en_US.png"])
+        let read = try ScreenshotFolder.load(from: fixture.load().screenshotsURL(.version(fixture.version)))
+        let slot = ScreenshotSlot(locale: "en-US", deviceClassID: DeviceClass.iPhone69.id)
+        #expect(read.screenshots[slot]?.map(\.fileName) == ["01-hero-iPhone-6.9-en_US.png"])
+    }
+
     @Test func readsAnEmptyFolderAsNothingWaiting() throws {
         #expect(try Inbox.plan(in: fixture.load()).isEmpty)
     }

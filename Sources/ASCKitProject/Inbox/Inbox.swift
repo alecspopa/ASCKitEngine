@@ -31,13 +31,17 @@ public enum Inbox {
     /// language says the language of a file whose name leaves it out.
     public static func waiting(in project: Project) -> [ScreenshotFile] {
         let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .contentModificationDateKey]
+        let root = url(in: project)
         let entries = FileManager.default.enumerator(
-            at: url(in: project),
+            at: root,
             includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+            options: [.skipsPackageDescendants]
         )?.compactMap { $0 as? URL } ?? []
 
         return entries
+            .filter { entry in
+                entry.pathComponents.dropFirst(root.pathComponents.count).allSatisfy { $0.hasPrefix(".") == false }
+            }
             .filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false }
             .sorted {
                 let (lhs, rhs) = ($0.lastPathComponent, $1.lastPathComponent)
