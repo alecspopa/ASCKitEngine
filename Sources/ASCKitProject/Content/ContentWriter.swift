@@ -73,6 +73,24 @@ public enum ContentWriter {
         try ProjectJSON.write(message, to: project.retentionMessageURL(name: message.referenceName))
     }
 
+    /// Copies a PNG or JPEG in as the message's image. The image there before
+    /// goes to the Trash.
+    @discardableResult
+    public static func setRetentionImage(from source: URL, message name: String, in project: Project) throws -> URL {
+        let ext = source.pathExtension.lowercased()
+        guard RetentionMessage.imageExtensions.contains(ext) else {
+            throw ContentWriteError.refusedImage(
+                reason: String(localized: "A retention message image is a PNG or a JPEG file.", bundle: .module)
+            )
+        }
+        for old in project.retentionImageURLs(name: name) {
+            try FileManager.default.trashItem(at: old, resultingItemURL: nil)
+        }
+        let target = project.retentionMessagesURL.appending(path: "\(name).\(ext)")
+        try FileManager.default.copyItem(at: source, to: target)
+        return target
+    }
+
     // MARK: - Screenshots
 
     /// Puts images into one set of a version, a treatment or a custom product

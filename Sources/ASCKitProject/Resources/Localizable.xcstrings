@@ -2597,6 +2597,9 @@
     "A product id cannot start with a dot, because the file would be hidden." : {
       "comment" : "Error sentence when a person names a new in-app purchase. A file name that starts with a dot is hidden."
     },
+    "A retention message image is a PNG or a JPEG file." : {
+      "comment" : "Reason an image file is refused for a retention message."
+    },
     "A retention message name cannot be empty." : {
       "comment" : "Reason a retention message name is refused."
     },

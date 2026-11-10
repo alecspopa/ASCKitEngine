@@ -125,6 +125,25 @@ final class RetentionMessageStoreTests {
         #expect(found.contains { $0.kind == .retentionImageUnreadable })
     }
 
+    @Test func setsTheImageInPlaceOfTheOneThere() throws {
+        let project = try project()
+        try write(#"{"localizations":{}}"#, name: "Cancel", in: project)
+        try Data("old".utf8).write(to: project.retentionMessagesURL.appending(path: "Cancel.jpg"))
+        let source = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).png")
+        try Data("new".utf8).write(to: source)
+        defer { try? FileManager.default.removeItem(at: source) }
+
+        try ContentWriter.setRetentionImage(from: source, message: "Cancel", in: project)
+        #expect(project.retentionImageURLs(name: "Cancel").map(\.lastPathComponent) == ["Cancel.png"])
+    }
+
+    @Test func refusesAnImageThatIsNotAPNGOrAJPEG() throws {
+        let project = try project()
+        #expect(throws: ContentWriteError.self) {
+            try ContentWriter.setRetentionImage(from: URL(fileURLWithPath: "/tmp/a.gif"), message: "Cancel", in: project)
+        }
+    }
+
     // MARK: - Pull
 
     @Test func pullTakesTheShippedLanguagesAsNeedsHuman() throws {
