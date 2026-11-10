@@ -48,6 +48,9 @@ public struct ChangePlan: Sendable {
     /// message, then language, then field.
     public let retentionTextChanges: [RetentionTextChange]
 
+    /// Retention messages whose image goes up and replaces the one there.
+    public let retentionImages: [RetentionImageChange]
+
     /// What each in-app purchase would cost, everywhere.
     public let pricePlans: [PriceChange]
 
@@ -74,6 +77,7 @@ public struct ChangePlan: Sendable {
             && productTextChanges.isEmpty
             && groupTextChanges.isEmpty
             && retentionTextChanges.isEmpty
+            && retentionImages.isEmpty
             && hasPriceChanges == false
     }
 
@@ -89,7 +93,7 @@ public struct ChangePlan: Sendable {
     /// All go out as one part of a push.
     public var hasProductTextChanges: Bool {
         productTextChanges.isEmpty == false || groupTextChanges.isEmpty == false
-            || retentionTextChanges.isEmpty == false
+            || retentionTextChanges.isEmpty == false || retentionImages.isEmpty == false
     }
 
     public var hasPriceChanges: Bool {
@@ -123,7 +127,7 @@ public struct ChangePlan: Sendable {
     }
 
     public var changedTextRetentionMessages: Int {
-        Set(retentionTextChanges.map(\.message)).count
+        Set(retentionTextChanges.map(\.message) + retentionImages.map(\.message)).count
     }
 
     public var changedPricedProducts: Int {
@@ -179,6 +183,7 @@ public struct ChangePlan: Sendable {
         productTextChanges: [ProductTextChange] = [],
         groupTextChanges: [GroupTextChange] = [],
         retentionTextChanges: [RetentionTextChange] = [],
+        retentionImages: [RetentionImageChange] = [],
         pricePlans: [PriceChange] = [],
         newProducts: [String] = [],
         newDrafts: [String] = [],
@@ -196,6 +201,7 @@ public struct ChangePlan: Sendable {
         self.productTextChanges = productTextChanges
         self.groupTextChanges = groupTextChanges
         self.retentionTextChanges = retentionTextChanges
+        self.retentionImages = retentionImages
         self.pricePlans = pricePlans
         self.newProducts = newProducts
         self.newDrafts = newDrafts
@@ -375,6 +381,27 @@ public struct ChangePlan: Sendable {
         }
 
         public var id: String { "\(message)|\(locale)|\(field.rawValue)" }
+    }
+
+    /// One retention message image that goes up, by its checksum.
+    public struct RetentionImageChange: Sendable, Hashable, Identifiable {
+        public let message: String
+        public let fileURL: URL
+        public let md5: String
+        public let fileSize: Int
+        /// The asset the record holds for these bytes. Nil uploads the file.
+        public let uploadedAssetID: String?
+
+        public init(message: String, fileURL: URL, md5: String, fileSize: Int, uploadedAssetID: String?) {
+            self.message = message
+            self.fileURL = fileURL
+            self.md5 = md5
+            self.fileSize = fileSize
+            self.uploadedAssetID = uploadedAssetID
+        }
+
+        public var id: String { message }
+        public var fileName: String { fileURL.lastPathComponent }
     }
 
     /// What one in-app purchase would cost in every country.

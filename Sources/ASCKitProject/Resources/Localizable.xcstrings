@@ -2123,6 +2123,29 @@
         }
       }
     },
+    "%lld retention message images" : {
+      "comment" : "Part of the one-line summary of the publish plan. The count is the number of retention message images that go up.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld retention message image"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld retention message images"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld screenshot sets" : {
       "comment" : "Part of the summary of the publish plan. The count is the number of screenshot sets that change. A screenshot set holds the screenshots of one device class in one language.",
       "localizations" : {

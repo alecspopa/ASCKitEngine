@@ -8,7 +8,7 @@ struct RetentionMessageTests {
 
     func readingTransport(placement: String = #"{"data":null}"#) -> StubTransport {
         StubTransport(routes: [
-            ("/relationships/placement", .ok(placement)),
+            ("/placement", .ok(placement)),
             ("/localizations", .ok("""
             {"data":[{"type":"retentionMessageLocalizations","id":"w1",
               "attributes":{"locale":"de-DE","header":"Kopf","body":"Text"}}]}
@@ -39,10 +39,14 @@ struct RetentionMessageTests {
     }
 
     @Test func readsThePlacementOfTheImage() async throws {
-        let transport = readingTransport(placement: #"{"data":{"type":"appAssetLibraryPlacements","id":"p1"}}"#)
+        let transport = readingTransport(placement: """
+        {"data":{"type":"appAssetLibraryPlacements","id":"p1",
+          "relationships":{"image":{"data":{"type":"appAssetLibraryImages","id":"a1"}}}}}
+        """)
         let client = try ASCClient.stubbed(transport: transport)
         let messages = try await client.retentionMessages(appID: "app")
         #expect(messages.first?.version?.placementID == "p1")
+        #expect(messages.first?.version?.placedAssetID == "a1")
     }
 
     @Test(arguments: [

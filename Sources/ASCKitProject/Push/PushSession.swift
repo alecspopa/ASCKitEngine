@@ -130,7 +130,8 @@ public struct PushSession: Sendable {
                 local: onDisk,
                 config: project.config,
                 remote: onStore,
-                prices: read.prices
+                prices: read.prices,
+                record: (try? AssetRecordStore.load(in: project)) ?? AssetRecord()
             )
         }
 
@@ -199,6 +200,7 @@ public struct PushSession: Sendable {
             productTextChanges: product?.textChanges ?? [],
             groupTextChanges: product?.groupTextChanges ?? [],
             retentionTextChanges: product?.retentionTextChanges ?? [],
+            retentionImages: product?.retentionImages ?? [],
             pricePlans: product?.pricePlans ?? [],
             newProducts: product?.newProducts ?? [],
             newDrafts: product?.newDrafts ?? [],
@@ -346,12 +348,14 @@ public struct PushSession: Sendable {
     ) async throws -> Outcome<ProductPusher.TextResult> {
         let planned = try plannedProducts(in: reading)
 
-        let result = await ProductPusher(client: client).pushText(
+        var result = await ProductPusher(client: client).pushText(
             planned.changes,
             to: planned.remote,
             dryRun: dryRun,
             progress: progress
         )
+        await pushRetentionImages(planned.changes, to: planned.remote, dryRun: dryRun,
+                                  progress: progress, into: &result)
 
         // A dry run wrote nothing, so there is nothing to file a record of.
         guard dryRun == false else {

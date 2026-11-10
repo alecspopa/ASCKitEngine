@@ -85,6 +85,45 @@ struct RetentionPushTests {
         #expect(changed.changes(.purchases))
     }
 
+    // MARK: - Image
+
+    func imagePlan(placedAssetID: String?, recorded: String?) throws -> ProductPlanner.Outcome {
+        let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).png")
+        try Data("image bytes".utf8).write(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        var record = AssetRecord()
+        if let recorded {
+            record.record(md5: try FileChecksum.md5(of: url),
+                          .init(assetID: recorded, media: .image, fileName: "Cancel.png", fileSize: 11))
+        }
+        let local = ProductCatalog(
+            retentionMessages: ["Cancel": RetentionMessage(referenceName: "Cancel", status: .approved)],
+            retentionImages: ["Cancel": [url]]
+        )
+        let remote = RemoteProducts(appID: "app", products: [], groupNames: [:], retentionMessages: [
+            RemoteRetentionMessage(id: "m1", referenceName: "Cancel", version: RemoteRetentionVersion(
+                id: "v1", state: .prepareForSubmission, words: [:], placementID: "p1", placedAssetID: placedAssetID
+            ))
+        ])
+        return ProductPlanner.plan(local: local, config: config, remote: remote, record: record)
+    }
+
+    @Test func leavesAnImageThatIsAlreadyPlaced() throws {
+        #expect(try imagePlan(placedAssetID: "a1", recorded: "a1").retentionImages.isEmpty)
+    }
+
+    @Test func placesAnImageTheRecordAlreadyHolds() throws {
+        let images = try imagePlan(placedAssetID: "a0", recorded: "a1").retentionImages
+        #expect(images.map(\.uploadedAssetID) == ["a1"])
+    }
+
+    @Test func uploadsAnImageTheRecordDoesNotHold() throws {
+        let images = try imagePlan(placedAssetID: nil, recorded: nil).retentionImages
+        #expect(images.count == 1)
+        #expect(images.first?.uploadedAssetID == nil)
+    }
+
     // MARK: - Push
 
     func push(_ outcome: ProductPlanner.Outcome, remote: RemoteProducts, dryRun: Bool = false)

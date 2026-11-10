@@ -102,6 +102,9 @@ public extension ChangePlan {
                 change.action.rawValue, change.oldValue ?? "", change.newValue
             )
         }
+        for image in retentionImages {
+            feed("retention-image", image.message, image.md5)
+        }
 
         // Every country goes in, not only the ones that change. A one-time
         // purchase's write sends all of them, so all of them are what somebody

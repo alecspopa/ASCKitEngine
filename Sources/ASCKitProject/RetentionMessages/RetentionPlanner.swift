@@ -8,12 +8,19 @@ import Foundation
 enum RetentionPlanner {
     struct Outcome {
         let changes: [ChangePlan.RetentionTextChange]
+        let images: [ChangePlan.RetentionImageChange]
         let blocked: [ChangePlan.Blocked]
         let skipped: [ChangePlan.Skipped]
     }
 
-    static func plan(local: ProductCatalog, config: ProjectConfig, remote: RemoteProducts) -> Outcome {
+    static func plan(
+        local: ProductCatalog,
+        config: ProjectConfig,
+        remote: RemoteProducts,
+        record: AssetRecord = AssetRecord()
+    ) -> Outcome {
         var changes: [ChangePlan.RetentionTextChange] = []
+        var images: [ChangePlan.RetentionImageChange] = []
         var blocked: [ChangePlan.Blocked] = []
         var skipped: [ChangePlan.Skipped] = []
         let onStore = remote.retentionMessagesByName
@@ -42,7 +49,8 @@ enum RetentionPlanner {
             }
 
             let wordChanges = words(of: message, against: match.version, config: config)
-            guard wordChanges.isEmpty == false else { continue }
+            let imageChange = image(of: name, in: local, against: match.version, record: record)
+            guard wordChanges.isEmpty == false || imageChange != nil else { continue }
 
             guard let version = match.version, version.acceptsChanges else {
                 let state = StateWords.readable(match.version?.state?.rawValue ?? "")
@@ -59,8 +67,31 @@ enum RetentionPlanner {
                 continue
             }
             changes += wordChanges
+            images += [imageChange].compactMap(\.self)
         }
-        return Outcome(changes: changes, blocked: blocked, skipped: skipped)
+        return Outcome(changes: changes, images: images, blocked: blocked, skipped: skipped)
+    }
+
+    /// The image goes up when the version shows another one, or none.
+    ///
+    /// A message with no image file keeps the image App Store Connect has. Two
+    /// files or a file that does not read are for the check to report.
+    private static func image(
+        of name: String,
+        in local: ProductCatalog,
+        against version: RemoteRetentionVersion?,
+        record: AssetRecord
+    ) -> ChangePlan.RetentionImageChange? {
+        guard let files = local.retentionImages[name], files.count == 1, let url = files.first,
+              let md5 = try? FileChecksum.md5(of: url),
+              let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize
+        else { return nil }
+
+        let uploaded = record.assetID(md5: md5, fileSize: size)
+        if let uploaded, uploaded == version?.placedAssetID { return nil }
+        return ChangePlan.RetentionImageChange(
+            message: name, fileURL: url, md5: md5, fileSize: size, uploadedAssetID: uploaded
+        )
     }
 
     private static func words(

@@ -44,6 +44,7 @@ public enum ProductPlanner {
         public let textChanges: [ChangePlan.ProductTextChange]
         public let groupTextChanges: [ChangePlan.GroupTextChange]
         public var retentionTextChanges: [ChangePlan.RetentionTextChange] = []
+        public var retentionImages: [ChangePlan.RetentionImageChange] = []
         public let pricePlans: [ChangePlan.PriceChange]
         public let newProducts: [String]
 
@@ -70,7 +71,8 @@ public enum ProductPlanner {
         local: ProductCatalog,
         config: ProjectConfig,
         remote: RemoteProducts,
-        prices: Prices = Prices()
+        prices: Prices = Prices(),
+        record: AssetRecord = AssetRecord()
     ) -> Outcome {
         var textChanges: [ChangePlan.ProductTextChange] = []
         var pricePlans: [ChangePlan.PriceChange] = []
@@ -143,7 +145,7 @@ public enum ProductPlanner {
         skipped += groups.skipped
         newDrafts += groups.newDrafts
 
-        let retention = RetentionPlanner.plan(local: local, config: config, remote: remote)
+        let retention = RetentionPlanner.plan(local: local, config: config, remote: remote, record: record)
         blocked += retention.blocked
         skipped += retention.skipped
 
@@ -151,6 +153,7 @@ public enum ProductPlanner {
             textChanges: textChanges,
             groupTextChanges: groups.changes,
             retentionTextChanges: retention.changes,
+            retentionImages: retention.images,
             pricePlans: pricePlans,
             newProducts: newProducts,
             newDrafts: newDrafts,

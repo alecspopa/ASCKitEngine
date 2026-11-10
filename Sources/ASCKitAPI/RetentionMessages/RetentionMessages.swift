@@ -37,11 +37,21 @@ public struct RemoteRetentionVersion: Sendable, Hashable {
     public let words: [String: RemoteRetentionWords]
     public let placementID: String?
 
-    public init(id: String, state: RetentionVersionState?, words: [String: RemoteRetentionWords], placementID: String?) {
+    /// The library image the placement shows.
+    public let placedAssetID: String?
+
+    public init(
+        id: String,
+        state: RetentionVersionState?,
+        words: [String: RemoteRetentionWords],
+        placementID: String?,
+        placedAssetID: String? = nil
+    ) {
         self.id = id
         self.state = state
         self.words = words
         self.placementID = placementID
+        self.placedAssetID = placedAssetID
     }
 
     /// Only a version that is not yet published takes a change.
@@ -106,27 +116,31 @@ public extension ASCClient {
             "/v1/retentionMessageVersions/\(version.id)/localizations", query: [.maxPageSize],
             as: RetentionWordsAttributes.self
         )
-        let placement = try await placementID(of: version.id)
+        let placement = try await placement(of: version.id)
         var byLocale: [String: RemoteRetentionWords] = [:]
         for row in try await words {
             guard let locale = row.attributes?.locale else { continue }
             byLocale[locale] = RemoteRetentionWords(id: row.id, header: row.attributes?.header, body: row.attributes?.body)
         }
         return RemoteRetentionVersion(
-            id: version.id, state: version.attributes?.state, words: byLocale, placementID: placement
+            id: version.id, state: version.attributes?.state, words: byLocale,
+            placementID: placement?.id, placedAssetID: placement?.related("image")
         )
     }
 
-    /// The linkage is `"data": null` when the version has no image.
-    private func placementID(of versionID: String) async throws -> String? {
-        struct Linkage: Decodable { let data: Identifier? }
+    /// `"data": null` when the version has no image.
+    private func placement(of versionID: String) async throws -> Resource<NoAttributes>? {
+        struct Answer: Decodable { let data: Resource<NoAttributes>? }
         let data = try await send(
             method: HTTPMethod.get,
-            url: url("/v1/retentionMessageVersions/\(versionID)/relationships/placement"),
+            url: url(
+                "/v1/retentionMessageVersions/\(versionID)/placement",
+                query: [URLQueryItem(name: "include", value: "image")]
+            ),
             body: nil
         ).0
         do {
-            return try JSONDecoder().decode(Linkage.self, from: data).data?.id
+            return try JSONDecoder().decode(Answer.self, from: data).data
         } catch {
             throw ASCError.decodingFailed(underlying: error, body: data)
         }

@@ -96,7 +96,8 @@ struct LibraryAssetUpdateWrite: Encodable, Sendable {
 
 struct PlacementWrite: Encodable, Sendable {
     let placementType: String
-    let placementGroup: String
+    /// Nil is left out of the body. A retention message image may have no group.
+    let placementGroup: String?
 }
 
 struct OrderingWrite: Encodable, Sendable {
@@ -241,7 +242,7 @@ public extension ASCClient {
 
     func createPlacement(
         type: PlacementType,
-        group: String,
+        group: String?,
         media: LibraryMedia,
         assetID: String,
         on parent: PlacementParent

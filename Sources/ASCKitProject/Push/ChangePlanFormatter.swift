@@ -122,6 +122,12 @@ public enum ChangePlanFormatter {
             ))
         }
 
+        if plan.retentionImages.isEmpty == false {
+            parts.append(String(
+                localized: "\(plan.retentionImages.count) retention message images", bundle: .module
+            ))
+        }
+
         let priced = plan.pricePlans.filter { $0.changing.isEmpty == false }
         if priced.isEmpty == false {
             let rows = priced.reduce(0) { $0 + $1.changing.count }
@@ -171,9 +177,9 @@ public enum ChangePlanFormatter {
             \(plan.textChanges.count) fields, \(plan.changedTextLocales) languages
             """, bundle: .module)
         case .purchases:
-            if plan.retentionTextChanges.isEmpty == false {
+            if plan.retentionTextChanges.isEmpty == false || plan.retentionImages.isEmpty == false {
                 let fields = plan.productTextChanges.count + plan.groupTextChanges.count
-                    + plan.retentionTextChanges.count
+                    + plan.retentionTextChanges.count + plan.retentionImages.count
                 return String(localized: """
                 \(fields) fields, \(plan.changedTextProducts) purchases, \(plan.changedTextGroups) groups, \
                 \(plan.changedTextRetentionMessages) retention messages
@@ -339,9 +345,13 @@ public enum ChangePlanFormatter {
     }
 
     private static func retentionTextLines(_ plan: ChangePlan) -> [String] {
-        guard plan.retentionTextChanges.isEmpty == false else { return [] }
+        guard plan.retentionTextChanges.isEmpty == false || plan.retentionImages.isEmpty == false else { return [] }
         var lines = [String(localized: Words.retentionMessages)]
 
+        for image in plan.retentionImages {
+            lines.append("  \(image.message)")
+            lines.append("    image: \(image.fileName)")
+        }
         for change in plan.retentionTextChanges {
             lines.append("  \(change.message), \(change.locale)")
             lines.append("    \(change.field.rawValue)")
