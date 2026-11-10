@@ -71,6 +71,19 @@ struct RetentionMessageTests {
         #expect(RetentionVersionState.waitingForReview.isEditable == false)
     }
 
+    @Test func aRefusedRetentionReadKeepsTheProducts() async throws {
+        let transport = StubTransport(routes: [
+            ("/retentionMessages", .failure(403)),
+            ("/inAppPurchasesV2", .ok(#"{"data":[]}"#)),
+            ("/subscriptionGroups", .ok(#"{"data":[]}"#)),
+            ("/apps", .ok(#"{"data":[{"type":"apps","id":"a1","attributes":{"bundleId":"com.example.MyApp"}}]}"#))
+        ])
+        let client = try ASCClient.stubbed(transport: transport)
+        let remote = try await client.products(bundleID: "com.example.MyApp")
+        #expect(remote.retentionMessages.isEmpty)
+        #expect(remote.retentionReadFailure != nil)
+    }
+
     // MARK: - Writing
 
     @Test func createsWordsOnTheVersion() async throws {

@@ -18,18 +18,23 @@ public struct RemoteProducts: Sendable {
     /// Every retention message, read with the words.
     public let retentionMessages: [RemoteRetentionMessage]
 
+    /// Why the retention messages could not be read. Nil when they were.
+    public let retentionReadFailure: String?
+
     public init(
         appID: String,
         products: [RemoteProduct],
         groupNames: [String: String],
         groups: [RemoteSubscriptionGroup] = [],
-        retentionMessages: [RemoteRetentionMessage] = []
+        retentionMessages: [RemoteRetentionMessage] = [],
+        retentionReadFailure: String? = nil
     ) {
         self.appID = appID
         self.products = products
         self.groupNames = groupNames
         self.groups = groups
         self.retentionMessages = retentionMessages
+        self.retentionReadFailure = retentionReadFailure
     }
 
     public var retentionMessagesByName: [String: RemoteRetentionMessage] {

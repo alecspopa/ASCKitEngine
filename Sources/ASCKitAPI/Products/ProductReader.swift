@@ -22,14 +22,25 @@ public extension ASCClient {
         let groups = try await subscriptions.groups
         async let withWords = includeWords ? readWords(for: found) : found
         async let groupsWithWords = includeWords ? readWords(for: groups) : groups
-        async let retention = includeWords ? retentionMessages(appID: app.id) : []
+        // A refused retention read must not stop the purchases and prices.
+        async let retention: Result<[RemoteRetentionMessage], any Error> = includeWords
+            ? Result { try await retentionMessages(appID: app.id) }
+            : .success([])
+
+        var messages: [RemoteRetentionMessage] = []
+        var failure: String?
+        switch await retention {
+        case let .success(read): messages = read
+        case let .failure(error): failure = ErrorMessage.text(for: error)
+        }
 
         return try await RemoteProducts(
             appID: app.id,
             products: withWords.sorted { $0.productID < $1.productID },
             groupNames: subscriptions.groupNames,
             groups: groupsWithWords.sorted { $0.referenceName < $1.referenceName },
-            retentionMessages: retention.sorted { $0.referenceName < $1.referenceName }
+            retentionMessages: messages.sorted { $0.referenceName < $1.referenceName },
+            retentionReadFailure: failure
         )
     }
 

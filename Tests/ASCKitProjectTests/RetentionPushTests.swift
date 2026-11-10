@@ -66,6 +66,13 @@ struct RetentionPushTests {
         #expect(outcome.blocked.count == 1)
     }
 
+    @Test func blocksTheMessagesWhenTheReadFailed() {
+        let failed = RemoteProducts(appID: "app", products: [], groupNames: [:], retentionReadFailure: "Refused.")
+        let outcome = plan(local(["en-US": .init(header: "Go", body: "b")]), failed)
+        #expect(outcome.retentionTextChanges.isEmpty)
+        #expect(outcome.blocked.count == 1)
+    }
+
     @Test func skipsAMessageNotReadyToPublish() {
         let outcome = plan(local(["en-US": .init(header: "Go", body: "b")], status: .draft), remote())
         #expect(outcome.retentionTextChanges.isEmpty)

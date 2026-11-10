@@ -2765,6 +2765,9 @@
     "App Review is done with the words of %@. The push makes a new draft of them, with a copy of the words there now, and changes the copy. Send the draft to review in App Store Connect." : {
       "comment" : "Paragraph in the publish plan. The value is a list of in-app purchase product ids or subscription group names, and they stay as they are. A draft is a new version of the words that App Review reads."
     },
+    "App Store Connect did not answer about the retention messages. %@" : {
+      "comment" : "Reason a push leaves every retention message alone. The value is the error from App Store Connect."
+    },
     "App Store Connect did not make a new draft of this product's words. %@ Nothing was written in %@." : {
       "comment" : "Reason a push wrote nothing for one in-app purchase. The first value is what App Store Connect said, in English. The second is a list of language codes such as de-DE, en-US.",
       "localizations" : {
@@ -3420,6 +3423,9 @@
     },
     "Renamed to the name App Store Connect uses:" : {
       "comment" : "Heading in a report. A list of subscription group files comes after it. App Store Connect changed the name of each group, and the app gave the file the new name."
+    },
+    "Retention messages" : {
+      "comment" : "Short text in the publish plan that names what a blocked change stops."
     },
     "Retention messages:" : {
       "comment" : "Heading in the publish plan, above the retention message words that change."

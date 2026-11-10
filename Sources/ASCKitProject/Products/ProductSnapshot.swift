@@ -19,8 +19,12 @@ public enum ProductSnapshot {
         /// Subscription group files written, by reference name.
         public var writtenGroups: [String] = []
 
+        /// Retention message files written, by reference name.
+        public var writtenRetentionMessages: [String] = []
+
         public var isEmpty: Bool {
             written.isEmpty && left.isEmpty && refused.isEmpty && writtenGroups.isEmpty
+                && writtenRetentionMessages.isEmpty
         }
     }
 
@@ -65,8 +69,11 @@ public enum ProductSnapshot {
             writtenGroups.append(group.referenceName)
         }
 
+        let retention = try RetentionSnapshot.write(remote.retentionMessages, to: project, overwrite: overwrite)
+
         return Outcome(
-            written: written, left: left, refused: refused, writtenGroups: writtenGroups
+            written: written, left: left, refused: refused, writtenGroups: writtenGroups,
+            writtenRetentionMessages: retention.written
         )
     }
 

@@ -102,7 +102,6 @@ struct Pull: AsyncParsableCommand {
 
         if products {
             try await readProducts(client: client, project: project)
-            try await readRetentionMessages(client: client, appID: listing.appID, project: project)
             try await reportTerritories(client: client)
         }
     }
@@ -147,8 +146,8 @@ struct Pull: AsyncParsableCommand {
         return "\(number), \(state)"
     }
 
-    private func readRetentionMessages(client: ASCClient, appID: String, project: Project) async throws {
-        let remote = try await client.retentionMessages(appID: appID)
+    /// The product snapshot writes their files, so this only lists them.
+    private static func reportRetentionMessages(_ remote: [RemoteRetentionMessage]) {
         guard remote.isEmpty == false else { return }
 
         print("")
@@ -159,14 +158,6 @@ struct Pull: AsyncParsableCommand {
             let editable = message.version?.acceptsChanges == true ? "" : ", so a push leaves it alone"
             print("  \(message.referenceName)  \(state)\(editable)")
             print("    words in: \(words.isEmpty ? "none" : words)")
-        }
-        guard write else { return }
-
-        let outcome = try RetentionSnapshot.write(remote, to: project, overwrite: force)
-        print("")
-        print("Retention message files written: \(outcome.written.count), left as they were: \(outcome.left.count).")
-        for refusal in outcome.refused {
-            print("  Not written: \(refusal.name). \(refusal.reason)")
         }
     }
 
@@ -192,6 +183,7 @@ struct Pull: AsyncParsableCommand {
             // worth seeing before the push.
             print("    words version: \(Self.versionLine(product.version))")
         }
+        Self.reportRetentionMessages(remote.retentionMessages)
 
         let unshipped = ProductSnapshot.unshippedLocales(in: remote, config: project.config)
         if unshipped.isEmpty == false {

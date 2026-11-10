@@ -25,6 +25,18 @@ enum RetentionPlanner {
         var skipped: [ChangePlan.Skipped] = []
         let onStore = remote.retentionMessagesByName
 
+        if let failure = remote.retentionReadFailure, local.retentionMessages.isEmpty == false {
+            blocked.append(ChangePlan.Blocked(
+                reason: LocalizedStringResource(
+                    "App Store Connect did not answer about the retention messages. \(failure)", bundle: .here
+                ),
+                affects: LocalizedStringResource("Retention messages", bundle: .here),
+                cause: .product,
+                parts: [.purchases]
+            ))
+            return Outcome(changes: [], images: [], blocked: blocked, skipped: [])
+        }
+
         for message in local.sortedRetentionMessages {
             let name = message.referenceName
             guard let match = onStore[name] else {

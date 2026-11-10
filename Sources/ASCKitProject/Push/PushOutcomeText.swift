@@ -173,7 +173,11 @@ public enum PushOutcomeText {
             String(localized: "Skipped \($0.productID). \($0.reason)", bundle: .module)
         }
         let text = join([
-            section(Words.written, outcome.written + outcome.writtenGroups.map { "groups/\($0)" }),
+            section(
+                Words.written,
+                outcome.written + outcome.writtenGroups.map { "groups/\($0)" }
+                    + outcome.writtenRetentionMessages.map { "\(ProductStore.retentionFolderName)/\($0)" }
+            ),
             section(Words.leftAlone, outcome.left),
             refusals
         ])

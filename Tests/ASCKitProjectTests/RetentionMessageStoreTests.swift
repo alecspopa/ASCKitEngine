@@ -150,4 +150,14 @@ final class RetentionMessageStoreTests {
         let again = try RetentionSnapshot.write([remote], to: project)
         #expect(again.left == ["Cancel"])
     }
+
+    @Test func theProductSnapshotWritesTheMessagesToo() throws {
+        let project = try project()
+        let remote = RemoteProducts(appID: "app", products: [], groupNames: [:], retentionMessages: [
+            RemoteRetentionMessage(id: "m1", referenceName: "Cancel", version: nil)
+        ])
+        let outcome = try ProductSnapshot.write(remote, to: project)
+        #expect(outcome.writtenRetentionMessages == ["Cancel"])
+        #expect(ProductStore.load(in: project).retentionMessages["Cancel"] != nil)
+    }
 }
