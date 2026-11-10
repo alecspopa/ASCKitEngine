@@ -61,6 +61,7 @@ public struct PlacementType: RawRepresentable, Sendable, Hashable, Codable {
     public static let appPreview = Self(rawValue: "APP_PREVIEW")
     public static let productPageHeader = Self(rawValue: "PRODUCT_PAGE_HEADER_ASSET")
     public static let searchResults = Self(rawValue: "APP_STORE_SEARCH_RESULTS_ASSET")
+    public static let retentionMessage = Self(rawValue: "RETENTION_MESSAGE_ASSET")
 }
 
 /// A placement follows its parent through review.
@@ -120,11 +121,13 @@ public enum PlacementParent: Sendable, Hashable {
     case versionLocalization(id: String)
     case treatmentLocalization(id: String)
     case customProductPageLocalization(id: String)
+    /// A retention message holds one image for all languages, on its version.
+    case retentionMessageVersion(id: String)
 
     public var id: String {
         switch self {
         case let .versionLocalization(id), let .treatmentLocalization(id),
-             let .customProductPageLocalization(id):
+             let .customProductPageLocalization(id), let .retentionMessageVersion(id):
             id
         }
     }
@@ -134,6 +137,7 @@ public enum PlacementParent: Sendable, Hashable {
         case .versionLocalization: "appStoreVersionLocalization"
         case .treatmentLocalization: "appStoreVersionExperimentTreatmentLocalization"
         case .customProductPageLocalization: "appCustomProductPageLocalization"
+        case .retentionMessageVersion: "retentionMessageVersion"
         }
     }
 
@@ -142,6 +146,7 @@ public enum PlacementParent: Sendable, Hashable {
         case .versionLocalization: "appStoreVersionLocalizations"
         case .treatmentLocalization: "appStoreVersionExperimentTreatmentLocalizations"
         case .customProductPageLocalization: "appCustomProductPageLocalizations"
+        case .retentionMessageVersion: "retentionMessageVersions"
         }
     }
 

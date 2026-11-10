@@ -322,7 +322,7 @@ public struct ASCClient: Sendable {
         }
     }
 
-    private func url(_ path: String, query: [URLQueryItem] = []) -> URL {
+    func url(_ path: String, query: [URLQueryItem] = []) -> URL {
         guard var components = URLComponents(
             url: baseURL.appending(path: path),
             resolvingAgainstBaseURL: false
