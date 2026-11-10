@@ -73,6 +73,30 @@ enum ProjectReadmeProducts {
     ASCKit never makes a group. It writes the words of a group that App Store
     Connect already has.
 
+    ### A retention message
+
+    One file per message, in `products/retention-messages/`, named after the
+    message's reference name. App Store Connect shows the message when a
+    subscriber starts to cancel.
+
+    ```json
+    {
+      "status": "needs_human",
+      "localizations": {
+        "en-US": { "header": "Before you go", "body": "New lessons arrive every week." }
+      }
+    }
+    ```
+
+    `header` is 66 characters and `body` is 144. Both are needed in every
+    language the subscription is sold in. Do not name prices, discounts or
+    offers: App Review refuses them. One image shows in every language. Put it
+    beside the file as `<name>.png` or `<name>.jpg`, 3840 x 2160 or 5244 x 2950
+    pixels.
+
+    ASCKit never makes a message or a version. A push changes only a message
+    that is not yet published.
+
     An amount is written as a string. `4.99` as a JSON number is a `Double` and
     does not come back out of the file as the price you wrote.
 
