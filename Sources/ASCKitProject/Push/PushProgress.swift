@@ -109,7 +109,10 @@ public struct PushProgress: Sendable, Equatable {
         let groups = plan.groupTextChanges.count {
             seen.insert("group|\($0.group)|\($0.locale)").inserted
         }
-        return products + groups
+        let messages = plan.retentionTextChanges.count {
+            seen.insert("retention|\($0.message)|\($0.locale)").inserted
+        }
+        return products + groups + messages
     }
 
     /// A file goes up once however many slots use it. A slot then takes its

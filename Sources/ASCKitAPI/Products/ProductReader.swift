@@ -22,12 +22,14 @@ public extension ASCClient {
         let groups = try await subscriptions.groups
         async let withWords = includeWords ? readWords(for: found) : found
         async let groupsWithWords = includeWords ? readWords(for: groups) : groups
+        async let retention = includeWords ? retentionMessages(appID: app.id) : []
 
         return try await RemoteProducts(
             appID: app.id,
             products: withWords.sorted { $0.productID < $1.productID },
             groupNames: subscriptions.groupNames,
-            groups: groupsWithWords.sorted { $0.referenceName < $1.referenceName }
+            groups: groupsWithWords.sorted { $0.referenceName < $1.referenceName },
+            retentionMessages: retention.sorted { $0.referenceName < $1.referenceName }
         )
     }
 

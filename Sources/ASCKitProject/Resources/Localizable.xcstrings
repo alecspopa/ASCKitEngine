@@ -1651,6 +1651,99 @@
         }
       }
     },
+    "%lld fields, %lld purchases, %lld groups, %lld retention messages" : {
+      "comment" : "Count beside In-App Purchases in the publish sheet. Keep it short. The first count is the text fields that change. The others are the in-app purchases, the subscription groups and the retention messages.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@arg1@, %#@arg2@, %#@arg3@, %#@arg4@"
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg field"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg fields"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg purchase"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg purchases"
+                    }
+                  }
+                }
+              }
+            },
+            "arg3" : {
+              "argNum" : 3,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg group"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg groups"
+                    }
+                  }
+                }
+              }
+            },
+            "arg4" : {
+              "argNum" : 4,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg retention message"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg retention messages"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld header and search results assets" : {
       "comment" : "Part of the summary of the publish plan. The count is the number of product page header and search results assets that change.",
       "localizations" : {
@@ -2000,6 +2093,29 @@
                       "value" : "%arg products"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld retention message fields" : {
+      "comment" : "Part of the one-line summary of the publish plan. The count is the number of retention message text fields that change.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld retention message field"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld retention message fields"
                 }
               }
             }
@@ -2683,6 +2799,9 @@
     "App Store Connect has no page in %@, so nothing is written in those. Make the language there and read again, or ignore it with asckit ignore." : {
       "comment" : "Line in the publish plan, shown as fixed-width text. The value is a list of language codes. Do not translate asckit ignore, which is a command somebody types."
     },
+    "App Store Connect has no retention message called %@, and ASCKit never makes one." : {
+      "comment" : "Reason a push leaves a retention message file alone. The value is the message name."
+    },
     "App Store Connect has no subscription group called %@, and ASCKit never makes one." : {
       "comment" : "Reason in the publish plan that a subscription group cannot be written. The value is the reference name of the group."
     },
@@ -2765,6 +2884,9 @@
     },
     "App Store Connect needs iPhone Duo screenshots for every submission from April 2027." : {
       "comment" : "Warning in a check. Do not translate App Store Connect or iPhone Duo."
+    },
+    "App Store Connect no longer takes changes to this retention message." : {
+      "comment" : "Reason a push did not write a retention message."
     },
     "App Store Connect refuses a submission without it." : {
       "comment" : "Fix in the problem list about a missing text field. The word it refers to the field. A submission is a version that a person sends to App Review."
@@ -3276,6 +3398,9 @@
     "Renamed to the name App Store Connect uses:" : {
       "comment" : "Heading in a report. A list of subscription group files comes after it. App Store Connect changed the name of each group, and the app gave the file the new name."
     },
+    "Retention messages:" : {
+      "comment" : "Heading in the publish plan, above the retention message words that change."
+    },
     "Save it again as a PNG or a JPEG." : {
       "comment" : "Fix for a retention message image that could not be read."
     },
@@ -3623,6 +3748,17 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "The retention message %1$@ holds %2$@, which this project does not ship."
+          }
+        }
+      }
+    },
+    "The retention message %@ is %@. ASCKit changes only a message that is not yet published. Make a new version in App Store Connect to change it." : {
+      "comment" : "Reason a push leaves a retention message alone. The first value is the message name. The second is its state.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The retention message %1$@ is %2$@. ASCKit changes only a message that is not yet published. Make a new version in App Store Connect to change it."
           }
         }
       }

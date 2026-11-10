@@ -75,6 +75,7 @@ struct ProductReaderTests {
             ("/subscriptionGroups/g1/subscriptions", .ok(subscriptions)),
             ("/subscriptions/s1/versions", .ok(versions("subscriptionVersions", id: "sv1"))),
             ("/subscriptionGroups", .ok(groups)),
+            ("/retentionMessages", .ok(#"{"data":[]}"#)),
             ("/apps", .ok(app))
         ]
     }
@@ -283,6 +284,7 @@ struct ProductReaderTests {
         let routes: [(String, StubTransport.Reply)] = [
             ("/inAppPurchasesV2", .ok(#"{"data":[]}"#)),
             ("/subscriptionGroups", .ok(#"{"data":[]}"#)),
+            ("/retentionMessages", .ok(#"{"data":[]}"#)),
             ("/apps", .ok(Self.app))
         ]
         let client = try ASCClient.stubbed(transport: StubTransport(routes: routes))

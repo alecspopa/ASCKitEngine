@@ -43,6 +43,7 @@ public enum ProductPlanner {
     public struct Outcome: Sendable {
         public let textChanges: [ChangePlan.ProductTextChange]
         public let groupTextChanges: [ChangePlan.GroupTextChange]
+        public var retentionTextChanges: [ChangePlan.RetentionTextChange] = []
         public let pricePlans: [ChangePlan.PriceChange]
         public let newProducts: [String]
 
@@ -142,9 +143,14 @@ public enum ProductPlanner {
         skipped += groups.skipped
         newDrafts += groups.newDrafts
 
+        let retention = RetentionPlanner.plan(local: local, config: config, remote: remote)
+        blocked += retention.blocked
+        skipped += retention.skipped
+
         return Outcome(
             textChanges: textChanges,
             groupTextChanges: groups.changes,
+            retentionTextChanges: retention.changes,
             pricePlans: pricePlans,
             newProducts: newProducts,
             newDrafts: newDrafts,

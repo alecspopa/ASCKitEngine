@@ -98,6 +98,8 @@ extension ProductPusher {
 
         await pushGroupWords(plan, to: remote, dryRun: dryRun,
                              progress: progress, into: &result)
+        await pushRetentionWords(plan, to: remote, dryRun: dryRun,
+                                 progress: progress, into: &result)
         return result
     }
 

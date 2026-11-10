@@ -151,7 +151,9 @@ public extension StubTransport {
         ("/assetLibrary", .ok(#"{"data":{"type":"appAssetLibraries","id":"lib0"}}"#)),
         ("/appAssetLibraries/lib0/images", .ok(#"{"data":[]}"#)),
         ("/appAssetLibraries/lib0/videos", .ok(#"{"data":[]}"#)),
-        ("/appAssetLibraryRefData", .ok(#"{"data":[]}"#))
+        ("/appAssetLibraryRefData", .ok(#"{"data":[]}"#)),
+        // A read of the products reads the retention messages too.
+        ("/retentionMessages", .ok(#"{"data":[]}"#))
     ]
 }
 

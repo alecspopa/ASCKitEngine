@@ -28,6 +28,7 @@ public enum ChangePlanFormatter {
         static let creative = LocalizedStringResource("Header and search results:", bundle: .here)
         static let purchases = LocalizedStringResource("In-app purchases:", bundle: .here)
         static let groups = LocalizedStringResource("Subscription groups:", bundle: .here)
+        static let retentionMessages = LocalizedStringResource("Retention messages:", bundle: .here)
         static let prices = LocalizedStringResource("Prices:", bundle: .here)
         static let leftOut = LocalizedStringResource("Left out:", bundle: .here)
         static let noChange = LocalizedStringResource("no change", bundle: .here)
@@ -115,6 +116,12 @@ public enum ChangePlanFormatter {
             ))
         }
 
+        if plan.retentionTextChanges.isEmpty == false {
+            parts.append(String(
+                localized: "\(plan.retentionTextChanges.count) retention message fields", bundle: .module
+            ))
+        }
+
         let priced = plan.pricePlans.filter { $0.changing.isEmpty == false }
         if priced.isEmpty == false {
             let rows = priced.reduce(0) { $0 + $1.changing.count }
@@ -164,6 +171,14 @@ public enum ChangePlanFormatter {
             \(plan.textChanges.count) fields, \(plan.changedTextLocales) languages
             """, bundle: .module)
         case .purchases:
+            if plan.retentionTextChanges.isEmpty == false {
+                let fields = plan.productTextChanges.count + plan.groupTextChanges.count
+                    + plan.retentionTextChanges.count
+                return String(localized: """
+                \(fields) fields, \(plan.changedTextProducts) purchases, \(plan.changedTextGroups) groups, \
+                \(plan.changedTextRetentionMessages) retention messages
+                """, bundle: .module)
+            }
             guard plan.groupTextChanges.isEmpty == false else {
                 return String(localized: """
                 \(plan.productTextChanges.count) fields, \(plan.changedTextProducts) purchases
@@ -289,7 +304,7 @@ public enum ChangePlanFormatter {
     }
 
     private static func productTextLines(_ plan: ChangePlan) -> [String] {
-        purchaseTextLines(plan) + groupTextLines(plan) + newDraftLines(plan)
+        purchaseTextLines(plan) + groupTextLines(plan) + retentionTextLines(plan) + newDraftLines(plan)
     }
 
     /// Said before the push, because the new draft stays in App Store Connect
@@ -313,6 +328,22 @@ public enum ChangePlanFormatter {
 
         for change in plan.groupTextChanges {
             lines.append("  \(change.group), \(change.locale)")
+            lines.append("    \(change.field.rawValue)")
+            if let oldValue = change.oldValue {
+                lines.append("      was:  \(shorten(oldValue))")
+            }
+            let label = change.oldValue == nil ? "new:" : "now: "
+            lines.append("      \(label) \(shorten(change.newValue))")
+        }
+        return lines + [""]
+    }
+
+    private static func retentionTextLines(_ plan: ChangePlan) -> [String] {
+        guard plan.retentionTextChanges.isEmpty == false else { return [] }
+        var lines = [String(localized: Words.retentionMessages)]
+
+        for change in plan.retentionTextChanges {
+            lines.append("  \(change.message), \(change.locale)")
             lines.append("    \(change.field.rawValue)")
             if let oldValue = change.oldValue {
                 lines.append("      was:  \(shorten(oldValue))")

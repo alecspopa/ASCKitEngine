@@ -95,6 +95,14 @@ public extension ChangePlan {
             )
         }
 
+        // Fed only when there is one, so older plans keep their digest.
+        for change in retentionTextChanges {
+            feed(
+                "retention", change.message, change.locale, change.field.rawValue,
+                change.action.rawValue, change.oldValue ?? "", change.newValue
+            )
+        }
+
         // Every country goes in, not only the ones that change. A one-time
         // purchase's write sends all of them, so all of them are what somebody
         // agreed to. Where the number came from goes in too, so that a row

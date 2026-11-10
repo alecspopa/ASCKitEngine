@@ -44,6 +44,10 @@ public struct ChangePlan: Sendable {
     /// language. Sorted by group, then language, then field.
     public let groupTextChanges: [GroupTextChange]
 
+    /// A retention message's header or body, in one language. Sorted by
+    /// message, then language, then field.
+    public let retentionTextChanges: [RetentionTextChange]
+
     /// What each in-app purchase would cost, everywhere.
     public let pricePlans: [PriceChange]
 
@@ -69,6 +73,7 @@ public struct ChangePlan: Sendable {
             && hasScreenshotChanges == false
             && productTextChanges.isEmpty
             && groupTextChanges.isEmpty
+            && retentionTextChanges.isEmpty
             && hasPriceChanges == false
     }
 
@@ -80,10 +85,11 @@ public struct ChangePlan: Sendable {
             || unusedFiles.isEmpty == false
     }
 
-    /// The words of a purchase or of a subscription group. Both go out as one
-    /// part of a push.
+    /// The words of a purchase, a subscription group or a retention message.
+    /// All go out as one part of a push.
     public var hasProductTextChanges: Bool {
         productTextChanges.isEmpty == false || groupTextChanges.isEmpty == false
+            || retentionTextChanges.isEmpty == false
     }
 
     public var hasPriceChanges: Bool {
@@ -114,6 +120,10 @@ public struct ChangePlan: Sendable {
     /// How many subscription groups the words would touch.
     public var changedTextGroups: Int {
         Set(groupTextChanges.map(\.group)).count
+    }
+
+    public var changedTextRetentionMessages: Int {
+        Set(retentionTextChanges.map(\.message)).count
     }
 
     public var changedPricedProducts: Int {
@@ -168,6 +178,7 @@ public struct ChangePlan: Sendable {
         unusedFiles: [UnusedFile] = [],
         productTextChanges: [ProductTextChange] = [],
         groupTextChanges: [GroupTextChange] = [],
+        retentionTextChanges: [RetentionTextChange] = [],
         pricePlans: [PriceChange] = [],
         newProducts: [String] = [],
         newDrafts: [String] = [],
@@ -184,6 +195,7 @@ public struct ChangePlan: Sendable {
         self.unusedFiles = unusedFiles
         self.productTextChanges = productTextChanges
         self.groupTextChanges = groupTextChanges
+        self.retentionTextChanges = retentionTextChanges
         self.pricePlans = pricePlans
         self.newProducts = newProducts
         self.newDrafts = newDrafts
@@ -335,6 +347,34 @@ public struct ChangePlan: Sendable {
         }
 
         public var id: String { "\(group)|\(locale)|\(field.rawValue)" }
+    }
+
+    /// The same shape as a `GroupTextChange`, for a retention message.
+    public struct RetentionTextChange: Sendable, Hashable, Identifiable {
+        public let message: String
+        public let locale: String
+        public let field: RetentionField
+        public let action: ProductTextChange.Action
+        public let oldValue: String?
+        public let newValue: String
+
+        public init(
+            message: String,
+            locale: String,
+            field: RetentionField,
+            action: ProductTextChange.Action,
+            oldValue: String?,
+            newValue: String
+        ) {
+            self.message = message
+            self.locale = locale
+            self.field = field
+            self.action = action
+            self.oldValue = oldValue
+            self.newValue = newValue
+        }
+
+        public var id: String { "\(message)|\(locale)|\(field.rawValue)" }
     }
 
     /// What one in-app purchase would cost in every country.

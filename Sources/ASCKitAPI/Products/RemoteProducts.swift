@@ -15,16 +15,25 @@ public struct RemoteProducts: Sendable {
     /// Every subscription group, with its own words when they were read.
     public let groups: [RemoteSubscriptionGroup]
 
+    /// Every retention message, read with the words.
+    public let retentionMessages: [RemoteRetentionMessage]
+
     public init(
         appID: String,
         products: [RemoteProduct],
         groupNames: [String: String],
-        groups: [RemoteSubscriptionGroup] = []
+        groups: [RemoteSubscriptionGroup] = [],
+        retentionMessages: [RemoteRetentionMessage] = []
     ) {
         self.appID = appID
         self.products = products
         self.groupNames = groupNames
         self.groups = groups
+        self.retentionMessages = retentionMessages
+    }
+
+    public var retentionMessagesByName: [String: RemoteRetentionMessage] {
+        Dictionary(retentionMessages.map { ($0.referenceName, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
     /// Keyed by the reference name, which is what a group file is named after

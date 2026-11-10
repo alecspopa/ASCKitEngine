@@ -198,6 +198,7 @@ public struct PushSession: Sendable {
             unusedFiles: listingPlan?.unusedFiles ?? [],
             productTextChanges: product?.textChanges ?? [],
             groupTextChanges: product?.groupTextChanges ?? [],
+            retentionTextChanges: product?.retentionTextChanges ?? [],
             pricePlans: product?.pricePlans ?? [],
             newProducts: product?.newProducts ?? [],
             newDrafts: product?.newDrafts ?? [],
