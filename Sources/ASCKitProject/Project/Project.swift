@@ -248,6 +248,21 @@ public struct Project: Sendable {
         subscriptionGroupsURL.appending(path: "\(name).json")
     }
 
+    public var retentionMessagesURL: URL {
+        productsURL.appending(path: ProductStore.retentionFolderName)
+    }
+
+    public func retentionMessageURL(name: String) -> URL {
+        retentionMessagesURL.appending(path: "\(name).json")
+    }
+
+    /// Every image beside the message file. More than one is a problem.
+    public func retentionImageURLs(name: String) -> [URL] {
+        RetentionMessage.imageExtensions
+            .map { retentionMessagesURL.appending(path: "\(name).\($0)") }
+            .filter { FileManager.default.fileExists(atPath: $0.path) }
+    }
+
     /// This project's own price curves, for a shape none of the shipped ones
     /// have.
     public var priceCurvesURL: URL { rootURL.appending(path: "price-curves") }

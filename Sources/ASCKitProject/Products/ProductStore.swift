@@ -22,18 +22,37 @@ public struct ProductCatalog: Sendable {
     /// Group files that could not be read at all, with the reason.
     public let unreadableGroups: [String: String]
 
+    /// Retention message files, keyed by reference name.
+    public let retentionMessages: [String: RetentionMessage]
+
+    /// Retention message files that could not be read at all, with the reason.
+    public let unreadableRetentionMessages: [String: String]
+
+    /// The image files beside each retention message file, by reference name.
+    public let retentionImages: [String: [URL]]
+
     public init(
         products: [String: Product] = [:],
         unreadable: [String: String] = [:],
         misnamed: [String: String] = [:],
         groups: [String: SubscriptionGroup] = [:],
-        unreadableGroups: [String: String] = [:]
+        unreadableGroups: [String: String] = [:],
+        retentionMessages: [String: RetentionMessage] = [:],
+        unreadableRetentionMessages: [String: String] = [:],
+        retentionImages: [String: [URL]] = [:]
     ) {
+        self.retentionImages = retentionImages
         self.products = products
         self.unreadable = unreadable
         self.misnamed = misnamed
         self.groups = groups
         self.unreadableGroups = unreadableGroups
+        self.retentionMessages = retentionMessages
+        self.unreadableRetentionMessages = unreadableRetentionMessages
+    }
+
+    public var sortedRetentionMessages: [RetentionMessage] {
+        retentionMessages.values.sorted { $0.referenceName < $1.referenceName }
     }
 
     /// In the order they read, which is by product id.
@@ -66,6 +85,7 @@ public struct ProductCatalog: Sendable {
 
     public var isEmpty: Bool {
         products.isEmpty && unreadable.isEmpty && groups.isEmpty && unreadableGroups.isEmpty
+            && retentionMessages.isEmpty && unreadableRetentionMessages.isEmpty
     }
 }
 
@@ -79,6 +99,10 @@ public enum ProductStore {
     /// The folder inside the products folder that holds one file per
     /// subscription group. The product files never read a folder.
     public static let groupsFolderName = "groups"
+
+    /// The folder inside the products folder that holds one file per
+    /// retention message, and its image.
+    public static let retentionFolderName = "retention-messages"
 
     /// Never throws. A missing folder is a project with no products yet, which
     /// is every project until somebody adds one.
@@ -120,13 +144,52 @@ public enum ProductStore {
             }
         }
 
+        var messages: [String: RetentionMessage] = [:]
+        var unreadableMessages: [String: String] = [:]
+        var images: [String: [URL]] = [:]
+        for file in DirectoryListing.jsonFiles(in: project.retentionMessagesURL) {
+            let name = file.deletingPathExtension().lastPathComponent
+            let found = project.retentionImageURLs(name: name)
+            if found.isEmpty == false { images[name] = found }
+            do {
+                var loaded = try decoder.decode(RetentionMessage.self, from: Data(contentsOf: file))
+                loaded.referenceName = name
+                messages[name] = loaded
+            } catch {
+                unreadableMessages[name] = "\(error)"
+            }
+        }
+
         return ProductCatalog(
             products: products,
             unreadable: unreadable,
             misnamed: misnamed,
             groups: groups,
-            unreadableGroups: unreadableGroups
+            unreadableGroups: unreadableGroups,
+            retentionMessages: messages,
+            unreadableRetentionMessages: unreadableMessages,
+            retentionImages: images
         )
+    }
+
+    /// A retention message name that cannot be a file name. Nil when the name is fine.
+    public static func reasonToRefuse(retentionName name: String) -> String? {
+        if name.isEmpty {
+            return String(localized: "A retention message name cannot be empty.", bundle: .module)
+        }
+        if name.contains("/") || name.contains(":") {
+            return String(
+                localized: "A retention message name cannot hold a slash or a colon, because it is the file name.",
+                bundle: .module
+            )
+        }
+        if name.hasPrefix(".") {
+            return String(
+                localized: "A retention message name cannot start with a dot, because the file would be hidden.",
+                bundle: .module
+            )
+        }
+        return nil
     }
 
     /// A group name that cannot be a file name. Nil when the name is fine.

@@ -285,6 +285,17 @@
         }
       }
     },
+    "%@ cannot be a retention message name. %@" : {
+      "comment" : "Error when a retention message name cannot be a file name. The first value is the name. The second is the reason.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ cannot be a retention message name. %2$@"
+          }
+        }
+      }
+    },
     "%@ cannot be a subscription group name. %@" : {
       "comment" : "Error when a subscription group file cannot be written. The first value is the group name. The second value is the reason, as a full sentence.",
       "localizations" : {
@@ -824,6 +835,17 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%@ is %lld x %lld pixels." : {
+      "comment" : "Problem about a retention message image. The first value is the file name. The others are its width and height.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is %2$lld x %3$lld pixels."
           }
         }
       }
@@ -2436,6 +2458,15 @@
     "A product id cannot start with a dot, because the file would be hidden." : {
       "comment" : "Error sentence when a person names a new in-app purchase. A file name that starts with a dot is hidden."
     },
+    "A retention message name cannot be empty." : {
+      "comment" : "Reason a retention message name is refused."
+    },
+    "A retention message name cannot hold a slash or a colon, because it is the file name." : {
+      "comment" : "Reason a retention message name is refused."
+    },
+    "A retention message name cannot start with a dot, because the file would be hidden." : {
+      "comment" : "Reason a retention message name is refused."
+    },
     "A screenshot taken off a set stays in the app's asset library." : {
       "comment" : "Note in the publish sheet. Removing a screenshot from a set does not delete the file from App Store Connect."
     },
@@ -2535,6 +2566,9 @@
     },
     "Add %@ to locales, or take it out of the group." : {
       "comment" : "Fix in the problem list. The value is a locale code, such as de-DE. Do not translate locales. It is a JSON key."
+    },
+    "Add %@ to locales, or take it out of the message." : {
+      "comment" : "Fix for a retention message that holds a language the project does not ship. The value is the locale code."
     },
     "Add %@ to locales, or take it out of the product." : {
       "comment" : "Fix in the problem list. The value is a language code. Do not translate locales, which is a JSON key. The word it refers to the language."
@@ -2835,6 +2869,9 @@
     "Auto-renewable subscription" : {
       "comment" : "Noun. The name of a kind of in-app purchase, as App Store Connect names it. It renews each period until the person stops it."
     },
+    "Body" : {
+      "comment" : "Name of the second text field of a retention message, under the header."
+    },
     "Both have to be languages this project ships, and the same language, such as es-ES and es-MX. %@ has to be a device class it lists. Correct the entry, or take it out of copiesScreenshotsFrom." : {
       "comment" : "Fix in the problem list. Do not translate copiesScreenshotsFrom. It is a JSON key. The value is a device class identifier, such as ipad-13."
     },
@@ -2967,6 +3004,9 @@
     "Give it an amount, a price point, or skip. Otherwise take it out and let the curve decide." : {
       "comment" : "Fix in the problem list about a price set by hand for one country. Do not translate skip. It is a JSON key. The curve is the price curve of the product."
     },
+    "Header" : {
+      "comment" : "Name of the first text field of a retention message, the line that opens it."
+    },
     "Header and search results:" : {
       "comment" : "Heading in the publish plan, over the product page header and search results art that changes."
     },
@@ -2981,6 +3021,9 @@
     },
     "It has to map each file name to a time code, such as {\"01-a.mov\": \"00:00:05:00\"}." : {
       "comment" : "How to fix a damaged poster-frames.json. Keep the example as it is."
+    },
+    "Keep one. A message shows one image in every language." : {
+      "comment" : "Fix for a retention message with more than one image file."
     },
     "Keep one. An amount is rounded up to a real point, and a point is taken as it is." : {
       "comment" : "Fix in the problem list about a price set by hand. A point is a price point, which is one fixed price on the list of prices of the App Store."
@@ -3038,6 +3081,9 @@
           }
         }
       }
+    },
+    "Make it 3840 x 2160 or 5244 x 2950 pixels. App Store Connect takes no other size." : {
+      "comment" : "Fix for a retention message image of the wrong size."
     },
     "Marketing URL" : {
       "comment" : "Noun. The name of the marketing URL field of the listing. URL is a web address."
@@ -3229,6 +3275,9 @@
     },
     "Renamed to the name App Store Connect uses:" : {
       "comment" : "Heading in a report. A list of subscription group files comes after it. App Store Connect changed the name of each group, and the app gave the file the new name."
+    },
+    "Save it again as a PNG or a JPEG." : {
+      "comment" : "Fix for a retention message image that could not be read."
     },
     "Screenshots" : {
       "comment" : "Noun. The name of one part of a publish, on its checkbox in the publish sheet and on its report."
@@ -3542,6 +3591,42 @@
     "The push went. The record of it could not be written: %@" : {
       "comment" : "Last line in the report of what a push did. The value is the error text from the system. The record is a file that the app writes after each push."
     },
+    "The retention message %@ has more than one image: %@." : {
+      "comment" : "Problem. The first value is the message name. The second is a list of file names.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The retention message %1$@ has more than one image: %2$@."
+          }
+        }
+      }
+    },
+    "The retention message %@ has no %@ in %@." : {
+      "comment" : "Warning. The first value is the message name. The second is Header or Body. The third is a locale code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The retention message %1$@ has no %2$@ in %3$@."
+          }
+        }
+      }
+    },
+    "The retention message %@ has no words in any language." : {
+      "comment" : "Warning. The value is the message name."
+    },
+    "The retention message %@ holds %@, which this project does not ship." : {
+      "comment" : "Warning. The first value is the message name. The second is a locale code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The retention message %1$@ holds %2$@, which this project does not ship."
+          }
+        }
+      }
+    },
     "The review note is %lld characters, and the limit is 4000." : {
       "comment" : "Problem message in the problem list about an in-app purchase. The count is the number of characters in the note for App Review. Keep 4000 as it is.",
       "localizations" : {
@@ -3833,6 +3918,9 @@
     "Write a display name, or take the language out of the group file." : {
       "comment" : "Fix in the problem list about an empty display name on a subscription group."
     },
+    "Write a header and a body in each language." : {
+      "comment" : "Fix for a retention message with no words."
+    },
     "Write a price above zero, or skip the country." : {
       "comment" : "Fix in the problem list about a price set by hand for one country. Skip is a verb."
     },
@@ -3845,8 +3933,14 @@
     "Write it as hours, minutes, seconds and frames, such as 00:00:05:00, and keep it inside the video." : {
       "comment" : "How to fix a poster frame time code. Keep the example as it is."
     },
+    "Write it, or take the language out of the message file." : {
+      "comment" : "Fix for an empty header or body of a retention message."
+    },
     "Write one, or the store shows this language the group's name from another language." : {
       "comment" : "Fix in the problem list about a subscription group with no display name in one language."
+    },
+    "Write one. App Store Connect needs every language the subscription is sold in." : {
+      "comment" : "Fix for a retention message with no header or body in a language the project ships."
     },
     "Written again with no alpha channel:" : {
       "comment" : "Heading in the report of the action that removes the alpha channel from screenshots. A list of file names comes after it."

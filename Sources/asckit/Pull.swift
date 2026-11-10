@@ -102,6 +102,7 @@ struct Pull: AsyncParsableCommand {
 
         if products {
             try await readProducts(client: client, project: project)
+            try await readRetentionMessages(client: client, appID: listing.appID, project: project)
             try await reportTerritories(client: client)
         }
     }
@@ -144,6 +145,29 @@ struct Pull: AsyncParsableCommand {
             return "\(number), \(state), so a push waits for it"
         }
         return "\(number), \(state)"
+    }
+
+    private func readRetentionMessages(client: ASCClient, appID: String, project: Project) async throws {
+        let remote = try await client.retentionMessages(appID: appID)
+        guard remote.isEmpty == false else { return }
+
+        print("")
+        print("Retention messages on App Store Connect: \(remote.count)")
+        for message in remote {
+            let state = StateWords.readable(message.version?.state?.rawValue ?? unknownState)
+            let words = message.version?.words.keys.sorted().joined(separator: ", ") ?? ""
+            let editable = message.version?.acceptsChanges == true ? "" : ", so a push leaves it alone"
+            print("  \(message.referenceName)  \(state)\(editable)")
+            print("    words in: \(words.isEmpty ? "none" : words)")
+        }
+        guard write else { return }
+
+        let outcome = try RetentionSnapshot.write(remote, to: project, overwrite: force)
+        print("")
+        print("Retention message files written: \(outcome.written.count), left as they were: \(outcome.left.count).")
+        for refusal in outcome.refused {
+            print("  Not written: \(refusal.name). \(refusal.reason)")
+        }
     }
 
     /// A product is not tied to a version, so this runs whatever the version

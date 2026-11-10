@@ -38,6 +38,7 @@ public struct Validator: Sendable {
     public func validate(_ catalog: ProductCatalog) -> [Problem] {
         var problems = validateProducts(catalog)
         problems += validateSubscriptionGroups(catalog)
+        problems += validateRetentionMessages(catalog)
         problems += validatePricing(catalog)
         return problems.sortedForDisplay
     }

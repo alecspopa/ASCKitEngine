@@ -192,6 +192,32 @@ public enum GroupField: String, Sendable, CaseIterable, Codable {
     }
 }
 
+/// A retention message's words in one language. Both are needed.
+public enum RetentionField: String, Sendable, CaseIterable, Codable {
+    /// The line that opens the message.
+    case header
+    case body
+
+    public var displayName: String {
+        switch self {
+        case .header: String(localized: "Header", bundle: .module)
+        case .body: String(localized: "Body", bundle: .module)
+        }
+    }
+
+    /// Read from the App Store Connect page on 2026-11-10. The API sets none.
+    public var maximumLength: Int {
+        switch self {
+        case .header: 66
+        case .body: 144
+        }
+    }
+
+    public func length(of value: String) -> Int {
+        value.count
+    }
+}
+
 // MARK: - Words a language writes itself
 
 extension MetadataField: LocalizedField {
@@ -201,6 +227,10 @@ extension MetadataField: LocalizedField {
 }
 
 extension GroupField: LocalizedField {
+    public var needsItsOwnWords: Bool { true }
+}
+
+extension RetentionField: LocalizedField {
     public var needsItsOwnWords: Bool { true }
 }
 

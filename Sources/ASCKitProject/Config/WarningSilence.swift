@@ -36,6 +36,10 @@ public struct SilencedWarning: Codable, Sendable, Hashable, Identifiable {
     public var subscriptionGroup: String?
     public var groupField: GroupField?
 
+    /// Optional, so an older file still reads.
+    public var retentionMessage: String?
+    public var retentionField: RetentionField?
+
     public var path: String?
 
     public var id: String {
@@ -47,6 +51,9 @@ public struct SilencedWarning: Codable, Sendable, Hashable, Identifiable {
         ]
         if let subscriptionGroup {
             parts += [subscriptionGroup, groupField?.rawValue ?? ""]
+        }
+        if let retentionMessage {
+            parts += [retentionMessage, retentionField?.rawValue ?? ""]
         }
         return parts.joined(separator: "|")
     }
@@ -63,6 +70,8 @@ public struct SilencedWarning: Codable, Sendable, Hashable, Identifiable {
         productField = problem.productField
         subscriptionGroup = problem.subscriptionGroup
         groupField = problem.groupField
+        retentionMessage = problem.retentionMessage
+        retentionField = problem.retentionField
         path = problem.path
     }
 
@@ -92,6 +101,8 @@ public struct SilencedWarning: Codable, Sendable, Hashable, Identifiable {
             && problem.productField == productField
             && problem.subscriptionGroup == subscriptionGroup
             && problem.groupField == groupField
+            && problem.retentionMessage == retentionMessage
+            && problem.retentionField == retentionField
             && problem.path == path
     }
 }

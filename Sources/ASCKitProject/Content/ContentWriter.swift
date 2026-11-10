@@ -65,6 +65,14 @@ public enum ContentWriter {
         try ProjectJSON.write(group, to: project.subscriptionGroupURL(name: group.referenceName))
     }
 
+    public static func writeRetentionMessage(_ message: RetentionMessage, in project: Project) throws {
+        if let reason = ProductStore.reasonToRefuse(retentionName: message.referenceName) {
+            throw ContentWriteError.badRetentionName(message.referenceName, reason: reason)
+        }
+
+        try ProjectJSON.write(message, to: project.retentionMessageURL(name: message.referenceName))
+    }
+
     // MARK: - Screenshots
 
     /// Puts images into one set of a version, a treatment or a custom product
@@ -483,6 +491,7 @@ public enum ContentWriteError: ReadableError {
     case incompleteOrder(missing: [String])
     case badProductID(String, reason: String)
     case badGroupName(String, reason: String)
+    case badRetentionName(String, reason: String)
 
     public var localizedStringResource: LocalizedStringResource {
         switch self {
@@ -510,6 +519,8 @@ public enum ContentWriteError: ReadableError {
             LocalizedStringResource("\(productID) cannot be a product id. \(reason)", bundle: .here)
         case let .badGroupName(name, reason):
             LocalizedStringResource("\(name) cannot be a subscription group name. \(reason)", bundle: .here)
+        case let .badRetentionName(name, reason):
+            LocalizedStringResource("\(name) cannot be a retention message name. \(reason)", bundle: .here)
         }
     }
 }

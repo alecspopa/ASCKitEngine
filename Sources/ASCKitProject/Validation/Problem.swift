@@ -171,6 +171,21 @@ public struct Problem: Sendable, Hashable, Identifiable {
         case groupTextOverLimit
         /// A group field starts or ends with a space.
         case groupTextHasEdgeSpace
+        /// A retention message file could not be read.
+        case retentionFileUnreadable
+        /// A retention message has no words in any language.
+        case retentionHasNoWords
+        /// A retention message file holds a language the project does not ship.
+        case retentionLocaleNotShipped
+        /// A retention message has no header or body in a language the project ships.
+        case retentionTextNotTranslated
+        case retentionTextEmpty
+        case retentionTextOverLimit
+        case retentionTextHasEdgeSpace
+        /// More than one image beside a retention message file.
+        case retentionTwoImages
+        case retentionImageUnreadable
+        case retentionImageWrongSize
         /// A product holds words for a language the project does not ship.
         case productLocaleNotShipped
         /// A product's name or description is missing in a language the
@@ -335,6 +350,11 @@ public struct Problem: Sendable, Hashable, Identifiable {
 
     public let groupField: GroupField?
 
+    /// The retention message this is about, by its reference name.
+    public let retentionMessage: String?
+
+    public let retentionField: RetentionField?
+
     /// Relative to the project root, so it reads the same in every window.
     public let path: String?
 
@@ -354,6 +374,9 @@ public struct Problem: Sendable, Hashable, Identifiable {
         if let subscriptionGroup {
             parts += [subscriptionGroup, groupField?.rawValue ?? ""]
         }
+        if let retentionMessage {
+            parts += [retentionMessage, retentionField?.rawValue ?? ""]
+        }
         return parts.joined(separator: "|")
     }
 
@@ -370,9 +393,13 @@ public struct Problem: Sendable, Hashable, Identifiable {
         productField: ProductField? = nil,
         subscriptionGroup: String? = nil,
         groupField: GroupField? = nil,
+        retentionMessage: String? = nil,
+        retentionField: RetentionField? = nil,
         path: String? = nil,
         kind: Kind
     ) {
+        self.retentionMessage = retentionMessage
+        self.retentionField = retentionField
         self.severity = severity
         self.area = area
         self.message = message
@@ -419,6 +446,9 @@ public extension [Problem] {
             if lhs.area != rhs.area { return lhs.area < rhs.area }
             if lhs.subscriptionGroup != rhs.subscriptionGroup {
                 return (lhs.subscriptionGroup ?? "") < (rhs.subscriptionGroup ?? "")
+            }
+            if lhs.retentionMessage != rhs.retentionMessage {
+                return (lhs.retentionMessage ?? "") < (rhs.retentionMessage ?? "")
             }
             if lhs.productID != rhs.productID {
                 return (lhs.productID ?? "") < (rhs.productID ?? "")

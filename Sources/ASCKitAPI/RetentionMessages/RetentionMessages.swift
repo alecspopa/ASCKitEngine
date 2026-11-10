@@ -23,6 +23,12 @@ public struct RemoteRetentionMessage: Sendable, Hashable {
     public let id: String
     public let referenceName: String
     public let version: RemoteRetentionVersion?
+
+    public init(id: String, referenceName: String, version: RemoteRetentionVersion?) {
+        self.id = id
+        self.referenceName = referenceName
+        self.version = version
+    }
 }
 
 public struct RemoteRetentionVersion: Sendable, Hashable {
@@ -30,6 +36,13 @@ public struct RemoteRetentionVersion: Sendable, Hashable {
     public let state: RetentionVersionState?
     public let words: [String: RemoteRetentionWords]
     public let placementID: String?
+
+    public init(id: String, state: RetentionVersionState?, words: [String: RemoteRetentionWords], placementID: String?) {
+        self.id = id
+        self.state = state
+        self.words = words
+        self.placementID = placementID
+    }
 
     /// Only a version that is not yet published takes a change.
     public var acceptsChanges: Bool { state?.isEditable == true }
@@ -39,6 +52,12 @@ public struct RemoteRetentionWords: Sendable, Hashable {
     public let id: String
     public let header: String?
     public let body: String?
+
+    public init(id: String, header: String?, body: String?) {
+        self.id = id
+        self.header = header
+        self.body = body
+    }
 }
 
 // MARK: - What a write sends
